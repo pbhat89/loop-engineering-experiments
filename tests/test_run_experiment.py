@@ -38,7 +38,8 @@ def test_stub_run_completes_all_tasks_and_writes_status(tmp_path):
     assert sl["first_attempt_pass"] == {"T2": False, "T3": True, "T4": True}
     assert bl["first_attempt_pass"] == {"T2": False, "T3": False, "T4": False}  # baseline never learns across tasks
     assert sl["operator_steps_used"] > 0 and sl["operator_steps_cap"] == 40
-    assert snap["provider"]["provider_mode"] == "stub" and snap["freeze_sha256"] == "unfrozen"
+    # stub runs record the repo's freeze hash when config/freeze_manifest.json exists, else "unfrozen"
+    assert snap["provider"]["provider_mode"] == "stub" and snap["freeze_sha256"] and isinstance(snap["freeze_sha256"], str)
     assert set(sl["scores"]) == {"T2", "T3", "T4"}
     assert sl["median_seconds_per_task"] is not None and sl["eta_label"].startswith("rough ETA")
 

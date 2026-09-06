@@ -89,3 +89,15 @@ Recorded in `docs/plan.md` and marked **(A1 formalisation)**: `analysis_plan` ty
 - **Alternatives:** keep 40 and accept `operator_cap` stops in `skill_learning`; remove the cap.
 - **Rationale:** the stub end-to-end run (`stub_001`) used 38 of 40 steps in `skill_learning` with one retry per task. The manual worst case per task is 8 steps (plan, 2 × (reflect + revise), reflect, propose, revise proposal) → 64 for eight tasks. The cap is a safety net; the stopping rule that ends the loop is "pass → finalize". A cap that fires routinely would truncate the learning path and bias the comparison.
 - **Impact:** `config/experiment.yaml`, `config/graph.yaml` (asserted equal by test), `docs/OPERATOR_PROTOCOL.md` and the brief's Addendum B now say 64; existing stub logs keep their recorded cap of 40.
+
+## D-16 · 2026-09-07 · Operator requests now list remaining tasks with titles (lead, applied mid-run after T1)
+
+- **Alternatives:** keep ids only; postpone until a second run.
+- **Rationale:** the first `reflect_on_feedback` operator noted it could not target lessons at specific future tasks because requests carried only `remaining_task_ids`. Task titles are public parts of the fixed suite, identical for every condition and carry no golden information, so adding them is fairness-neutral and improves the specificity of proposed skills — the quantity the study measures.
+- **Impact:** `Services.task_titles` + `remaining_tasks: [{task_id, title}]` in every request payload from `run_001` T1 onwards (all conditions, at the same point in the suite); recorded here and in the write-up's limitations.
+
+## D-17 · 2026-09-07 · Model-metric sanity ranges relaxed in the golden pack (lead)
+
+- **Alternatives:** keep `roc_auc ≥ 0.5` and `pr_auc ≥ prevalence` as A3 first wrote them; drop the range checks.
+- **Rationale:** A6 measured ROC-AUC 0.499 / 0.498 / 0.515 for leakage-free logistic / random-forest / gradient-boosting models on the synthetic `fraud_label` — the label is essentially unpredictable without leakage. A floor at chance would fail honest plans on rounding noise while rewarding leaky ones. The ranges are sanity checks, not performance bars; the discriminating checks in T6/T7 are leakage exclusion, stratification, train-only fitting/thresholds and prevalence reporting.
+- **Impact:** `src/build_goldens.py` writes `roc_auc ∈ [0.40, 1.0]` and `pr_auc ≥ 0.5 × prevalence_test` (T6) / `0.5 × positive_rate_test` (T7) via a `{ref, factor}` bound that `src/evaluator.py::_check_range` now resolves; goldens rebuilt, `--check` clean, then frozen and reviewed by the user.

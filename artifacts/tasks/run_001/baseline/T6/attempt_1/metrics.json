@@ -1,0 +1,181 @@
+{
+  "task_id": "T6",
+  "run_id": "run_001",
+  "condition": "baseline",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-06T23:14:37+00:00",
+  "plan_sha256": "f77cdef1d850aa32e779775bafbea85b665bd0623745fe7982e2165f25acfd8a",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "primary_icd10_cm",
+            "drg_present",
+            "billed_amount",
+            "allowed_amount",
+            "paid_amount",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "elective_flag",
+            "preventive_flag",
+            "auth_required_flag"
+          ]
+        }
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25,
+          "stratify": true
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "train_only",
+          "scaling": "standard"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression",
+            "random_forest"
+          ],
+          "class_weight": "balanced"
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "class_imbalance",
+            "model_limitations",
+            "no_operational_use"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Features: 16 prediction-time fields (7 categoricals incl. drg_present, 5 numerics, 4 binary flags). Excluded identifiers (claim_id, member_id, rendering_npi) and fraud_pattern_type, which is label-derived: it is null on 12198/12845 rows and populated only for positives, so it would leak the label (it is in the catalogue default and must be removed). Also excluded high_cost_flag as a derived flag redundant with the amount features. Split: test_size 0.25 (a quarter held out) with stratify=true so prevalence is preserved and reported per partition; the seed comes from the run. Preprocessing: fit_on=train_only (catalogue default all_data leaks test distribution into encoder/scaler); standard scaling since logistic regression is scale-sensitive. Models: logistic_regression plus random_forest as the single tree-based model; class_weight=balanced because prevalence is ~5% (~647/12845) and the component scores at a fixed 0.5 threshold, where unweighted models collapse to near-zero recall. Report: the four caveats map one-to-one to the required limitations (synthetic label, class imbalance, baseline model, no operational use); denominators shown for every rate and every result bullet cited to model_metrics.json / feature_list.json / metrics keys for traceability.",
+    "changes_summary": null
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "network_status",
+      "primary_icd10_cm",
+      "drg_present",
+      "billed_amount",
+      "allowed_amount",
+      "paid_amount",
+      "service_units",
+      "length_of_stay",
+      "er_flag",
+      "elective_flag",
+      "preventive_flag",
+      "auth_required_flag"
+    ],
+    "n_categorical": 6,
+    "n_numeric": 10,
+    "id_fields_present": [],
+    "label_derived_present": []
+  },
+  "split": {
+    "test_size": 0.25,
+    "stratify": true,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212,
+    "prevalence_train": 0.05034776289837019,
+    "prevalence_test": 0.050435865504358655
+  },
+  "preprocessing": {
+    "fit_on": "train_only",
+    "scaling": "standard",
+    "n_features_out": 106
+  },
+  "models": {
+    "logistic_regression": {
+      "precision": 0.048034934497816595,
+      "recall": 0.4074074074074074,
+      "f1": 0.0859375,
+      "pr_auc": 0.05215434390105019,
+      "roc_auc": 0.49895972475207445,
+      "confusion_matrix": [
+        [
+          1742,
+          1308
+        ],
+        [
+          96,
+          66
+        ]
+      ],
+      "threshold": 0.5,
+      "n_test": 3212
+    },
+    "random_forest": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "pr_auc": 0.050325881074427405,
+      "roc_auc": 0.49527423598461845,
+      "confusion_matrix": [
+        [
+          3042,
+          8
+        ],
+        [
+          162,
+          0
+        ]
+      ],
+      "threshold": 0.5,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "class_imbalance",
+      "model_limitations",
+      "no_operational_use"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

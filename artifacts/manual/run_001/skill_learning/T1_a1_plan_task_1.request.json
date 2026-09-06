@@ -1,0 +1,1558 @@
+{
+  "request_id": "run_001:skill_learning:T1:a1:plan_task:1",
+  "run_id": "run_001",
+  "condition": "skill_learning",
+  "task_id": "T1",
+  "attempt": 1,
+  "node": "plan_task",
+  "seq": 1,
+  "created_at": "2026-09-06T23:05:37+00:00",
+  "instructions": "Produce an analysis plan for this task by selecting components from the catalogue and setting their parameters. Use only catalogue component ids and declared parameter options; omitted parameters take their defaults. Deterministic code executes the plan exactly as written, and the result is scored against a frozen rubric (correctness, completeness, reproducibility, statistical discipline, communication) and a frozen golden reference. List in skills_applied the ids of any provided skills you actually used.",
+  "payload": {
+    "task_id": "T1",
+    "condition": "skill_learning",
+    "task_spec": {
+      "task_id": "T1",
+      "title": "Dataset reconnaissance",
+      "objective": "Five synthetic files arrived from the HLT-008 sample: members, providers, medical claims, pharmacy claims and an adherence table. Load each file separately and produce a data contract for every table (row count, column names and types). Profile missingness across every column of every table and call out columns that are entirely empty. Check whether the natural identifier of each table is actually a unique key, including the composite member-plus-therapeutic-class key of the adherence table. Report the range of every date column in the medical claims table and check whether the dates are ordered consistently (for example adjudication happening before the service ended). Verify every cross-file relationship you would rely on later: member ids from each claims table to the members table, the rendering and billing provider ids to the provider directory, and whether pharmacy claims can be joined to the provider directory at all; report cardinality, unmatched keys and row counts. Write a data-quality report that states the data is synthetic and that any value samples shown are previews.",
+      "tags": [
+        "data_contract",
+        "schema",
+        "keys",
+        "missingness",
+        "duplicates",
+        "dates",
+        "joins",
+        "cardinality",
+        "data_quality"
+      ],
+      "input_tables": [
+        "members",
+        "providers",
+        "medical_claims",
+        "pharmacy_claims",
+        "adherence"
+      ],
+      "required_artifacts": [
+        "data_contract.json",
+        "missingness.csv",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "schema_summary",
+        "description": "Column names, dtypes and dtype counts per table, written as the data contract.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "schema",
+            "shape": "{table: {rows: int, n_columns: int, dtypes: {dtype: count}}}"
+          }
+        ],
+        "artifacts": [
+          "data_contract.json"
+        ]
+      },
+      {
+        "id": "missingness",
+        "description": "Null counts per column with a list of entirely empty columns per table.",
+        "default_selected": true,
+        "params": {
+          "scope": {
+            "description": "Whether to profile only the ten most-null columns per table or every column.",
+            "options": [
+              "top_10",
+              "all_columns"
+            ],
+            "default": "top_10"
+          }
+        },
+        "produces": [
+          {
+            "key": "missingness",
+            "shape": "{scope: str, per_table: {table: {column: null_count}}, all_null_columns: {table: [column]}}"
+          }
+        ],
+        "artifacts": [
+          "missingness.csv"
+        ]
+      },
+      {
+        "id": "duplicate_check",
+        "description": "Row count versus distinct count for candidate key columns, deciding whether each is a unique key.",
+        "default_selected": false,
+        "params": {
+          "keys": {
+            "description": "Which table.column keys (composite keys joined with '+') to test for uniqueness.",
+            "multi": true,
+            "options": [
+              "medical_claims.claim_id",
+              "pharmacy_claims.rx_claim_id",
+              "members.member_id",
+              "providers.provider_npi",
+              "adherence.member_id",
+              "adherence.member_id+therapeutic_class"
+            ],
+            "default": [
+              "medical_claims.claim_id"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "duplicates",
+            "shape": "{key: {n_rows: int, n_unique: int, duplicate_rows: int, is_candidate_key: bool}}"
+          }
+        ]
+      },
+      {
+        "id": "date_ranges",
+        "description": "Minimum, maximum and unparseable count for date columns, optionally with date-order consistency checks.",
+        "default_selected": false,
+        "params": {
+          "columns": {
+            "description": "Which table.column date columns to profile.",
+            "multi": true,
+            "options": [
+              "medical_claims.service_date_from",
+              "medical_claims.service_date_to",
+              "medical_claims.adjudication_date",
+              "pharmacy_claims.fill_date",
+              "pharmacy_claims.paid_date",
+              "members.enrollment_start",
+              "members.enrollment_end"
+            ],
+            "default": [
+              "medical_claims.service_date_from"
+            ]
+          },
+          "consistency_checks": {
+            "description": "Whether to count medical claims whose adjudication precedes the service end or whose service end precedes its start.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "date_ranges",
+            "shape": "{column: {min: 'YYYY-MM-DD', max: 'YYYY-MM-DD', unparseable: int}}"
+          },
+          {
+            "key": "date_consistency",
+            "shape": "(only when consistency_checks) {adjudication_before_service_end: int, service_end_before_start: int}"
+          }
+        ]
+      },
+      {
+        "id": "join_check",
+        "description": "Cardinality, unmatched keys and row counts for selected cross-table key pairs.",
+        "default_selected": false,
+        "params": {
+          "pairs": {
+            "description": "Which left.key->right.key relationships to verify.",
+            "multi": true,
+            "options": [
+              "medical_claims.member_id->members.member_id",
+              "medical_claims.rendering_npi->providers.provider_npi",
+              "medical_claims.billing_npi->providers.provider_npi",
+              "pharmacy_claims.member_id->members.member_id",
+              "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+              "adherence.member_id->members.member_id"
+            ],
+            "default": []
+          }
+        },
+        "produces": [
+          {
+            "key": "join_check",
+            "shape": "{pair: {cardinality: many_to_one|one_to_one|no_match|many_to_many, rows_left: int, rows_after_inner_join: int, unmatched_left: int, unmatched_left_denominator: int, right_key_unique: bool}}"
+          }
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "members": {
+          "rows": 500,
+          "columns": [
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "age",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "age_band",
+              "dtype": "str",
+              "null_count": 2
+            },
+            {
+              "name": "sex",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "race_ethnicity",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "zip_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "payer_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "income_band",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dual_eligible_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "lis_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hcc_risk_score",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "n_chronic_conditions",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "enrollment_start",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "enrollment_end",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "care_management_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ami",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_alzheimer",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_anemia",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_asthma",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_atrialfib",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cataract",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_chrnkidn",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_copd",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_chf",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_diabetes",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_deprssion",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hyperl",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hyperp",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ihd",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_mo_diabetes",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_osteoprs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ra_oa",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_stroke_tia",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_colorectal",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_endometrial",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_lung",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_prostate",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_breast",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_glaucoma",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hip_fracture",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hipvteib",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_bnign_prostate",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "member_id"
+          ],
+          "date_columns": [
+            "enrollment_start",
+            "enrollment_end"
+          ],
+          "date_ranges": {
+            "enrollment_end": [
+              "2023-12-31",
+              "2023-12-31"
+            ],
+            "enrollment_start": [
+              "2020-01-03",
+              "2021-01-01"
+            ]
+          }
+        },
+        "providers": {
+          "rows": 150,
+          "columns": [
+            {
+              "name": "provider_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "nucc_taxonomy",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "group_id",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "provider_npi"
+          ],
+          "date_columns": [],
+          "date_ranges": {}
+        },
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        },
+        "pharmacy_claims": {
+          "rows": 18310,
+          "columns": [
+            {
+              "name": "rx_claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "fill_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "paid_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pharmacy_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "prescriber_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "bin_number",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pcn_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "ndc_11",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "drug_name_generic",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "drug_name_brand",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "therapeutic_class",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "atc_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "formulary_tier",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "days_supply",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "quantity_dispensed",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "refill_number",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "pharmacy_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dispense_as_written_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty_rx_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "compounded_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ingredient_cost",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "dispensing_fee",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "gross_amount_due",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "copay_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "plan_paid",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "dir_fee_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "awp_per_unit",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "nadac_per_unit",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "early_refill_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label_rx",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "diversion_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "controlled_substance_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "end_date",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "rx_claim_id"
+          ],
+          "date_columns": [
+            "fill_date",
+            "paid_date",
+            "end_date"
+          ],
+          "date_ranges": {
+            "end_date": [
+              "2021-01-08",
+              "2024-03-30"
+            ],
+            "fill_date": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "paid_date": [
+              "2021-01-02",
+              "2024-01-04"
+            ]
+          }
+        },
+        "adherence": {
+          "rows": 10627,
+          "columns": [
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "therapeutic_class",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "total_days_supply",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "n_fills",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "pdc",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "mpr",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "adherence_flag_pdc80",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [],
+          "date_columns": [],
+          "date_ranges": {}
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "pharmacy_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "adherence.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 10627,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 10627,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "no_match",
+          "from": "pharmacy_claims.pharmacy_npi",
+          "from_distinct": 18310,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 0.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 150,
+          "to_unique": true,
+          "unmatched_from": 18310,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 18310
+        },
+        {
+          "cardinality": "no_match",
+          "from": "pharmacy_claims.prescriber_npi",
+          "from_distinct": 18310,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 0.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 150,
+          "to_unique": true,
+          "unmatched_from": 18310,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 18310
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "retrieved_skills": [
+      {
+        "skill_id": "foundational_001",
+        "name": "data_contract",
+        "kind": "foundational",
+        "version": 1,
+        "tags": [
+          "data_contract",
+          "schema",
+          "keys",
+          "identifiers",
+          "missingness",
+          "duplicates",
+          "date_ranges",
+          "reconnaissance",
+          "quality",
+          "assumptions"
+        ],
+        "sections": {
+          "trigger": "Use at the start of any task that reads a dataset file for the first time, whenever a new table, column, or data snapshot enters an analysis, and before any join, rate, model, or brief is produced from it. Use it again when a later result looks implausible and the inputs need to be re-verified.",
+          "objective": "Establish an explicit, written contract for each input table — what rows it holds, which columns exist with which types, which identifiers are unique, which dates bound the data, how much is missing, and what is assumed — so that every downstream number has a documented, checkable foundation.",
+          "procedure": [
+            "Load each file separately and record its path, byte size, and content hash from the manifest, plus the row count and column count.",
+            "For every column record the observed type, the count and share of missing values (with the row count as denominator), the number of distinct values, and a few short sample values.",
+            "Identify candidate identifier columns: any column whose distinct count equals the row count is a candidate primary key; report duplicate counts for the expected key (for claims usually `claim_id`) and decide whether duplicates are true repeats or legitimate multi-line records.",
+            "For every date-like column parse it, record the minimum and maximum, the count that failed to parse, and any values outside the plausible service window; note which date column defines \"the period\" for trend work.",
+            "Check target availability and type: if a label such as `fraud_label` or a status field exists, record its distinct values, prevalence with denominator, and whether any column is derived from the label (a leakage candidate, e.g. `fraud_pattern_type`).",
+            "Check cross-file relationships: for each foreign key (member, provider, policy) count matched and unmatched rows on both sides and state the expected …"
+          ],
+          "required_checks": [
+            "Row and column counts are stated for every table and match the manifest.",
+            "Every missingness figure is a count and a share with the row count as denominator.",
+            "The chosen key is either proven unique or the duplicate-handling rule is written down.",
+            "Every date column has a parsed min/max and a parse-failure count.",
+            "Label-derived or post-outcome columns are listed explicitly as leakage candidates.",
+            "Every assumption is labelled as documented or inferred."
+          ],
+          "expected_artifacts": [
+            "A data-contract JSON (tables, columns, types, keys, date ranges, missingness, relationships).",
+            "A data-quality report in Markdown summarising issues, duplicates, and assumptions.",
+            "A missingness table (column, missing count, missing share, denominator)."
+          ],
+          "failure_modes": [
+            "Treating a column as unique because it \"looks like an ID\" without counting distinct values.",
+            "Reporting missingness as a bare count or a percentage without its denominator.",
+            "Silently coercing unparseable dates to null and then computing trends on the remainder.",
+            "Assuming amount columns share units, or that billed ≥ allowed ≥ paid, without checking.",
+            "Skipping the contract on a \"familiar\" file after the snapshot changed."
+          ],
+          "example": "A synthetic claims table has 12,800 rows and 31 columns. `claim_id` has 12,800 distinct values (unique key); `denial_code` is missing in 9,050 rows (70.7% of 12,800), which is expected because only denied claims carry a code; `service_date_from` parses fully and spans 2021-01-01 to 2023-12-31; `fraud_pattern_type` is populated only when `fraud_label` = 1 and is therefore recorded as a leakage candidate to exclude from any model."
+        }
+      },
+      {
+        "skill_id": "foundational_002",
+        "name": "safe_claims_joins",
+        "kind": "foundational",
+        "version": 1,
+        "tags": [
+          "joins",
+          "cardinality",
+          "keys",
+          "unmatched",
+          "duplicates",
+          "relationships",
+          "data_contract",
+          "providers",
+          "members"
+        ],
+        "sections": {
+          "trigger": "Use whenever two or more tables are combined — claims to members, providers, policies, or denial-code lookups — or whenever a metric is computed on a joined frame rather than a single source table. Use it also when row counts change unexpectedly between analysis steps.",
+          "objective": "Guarantee that a join neither multiplies nor drops claims silently: the join key is understood, the cardinality is stated, row counts are compared before and after, and unmatched records are counted and handled by a written rule.",
+          "procedure": [
+            "Name the join key(s) on each side and confirm, from the data contract, whether each side is unique on that key; write the expected cardinality (one-to-one, many-to-one, many-to-many).",
+            "Count rows on both sides before the join, and count distinct key values on both sides.",
+            "Count keys present on the left but not the right and vice versa; report each as a count and a share of the respective side's rows.",
+            "Choose the join type deliberately (left join to keep every claim; inner join only when losing unmatched rows is intended) and state why.",
+            "Perform the join and count rows after it; for a many-to-one join the row count must equal the left row count, otherwise the lookup side has duplicate keys.",
+            "If duplicates exist on the lookup side, resolve them with a written rule (deduplicate on a documented column, take the latest effective date, or aggregate) before joining — never after.",
+            "Re-check duplicate `claim_id` values after the join and confirm that amount totals (billed, allowed, paid) are unchanged by the join.",
+            "Record the join audit (keys, cardinality, counts before and after, unmatched counts, rule applied) in the artifacts and cite it wherever the joined data is used."
+          ],
+          "required_checks": [
+            "Expected cardinality is stated and verified by distinct-key counts, not assumed.",
+            "Row count after a many-to-one join equals the left row count.",
+            "Unmatched counts are reported on both sides with denominators.",
+            "Any deduplication rule is written down and applied before the join.",
+            "Financial totals are identical before and after the join."
+          ],
+          "expected_artifacts": [
+            "A join audit table (left table, right table, key, cardinality, rows before, rows after, unmatched left, unmatched right, rule).",
+            "A note in the report on how unmatched records were handled."
+          ],
+          "failure_modes": [
+            "Joining claims to a provider table whose provider key repeats across effective-date rows, doubling claim counts and paid amounts.",
+            "Using an inner join by default and losing denied claims whose provider record is missing.",
+            "Reporting an unmatched count without saying which side and which denominator.",
+            "Joining on a formatted string key (leading zeros, letter case) that differs between files."
+          ],
+          "example": "Claims (12,800 rows, unique on `claim_id`) are joined to providers (1,200 rows) on `provider_id`. Distinct providers: 1,200 on the right, 1,180 referenced on the left; 0 claims lack a provider row (0.0% of 12,800). The left join preserves 12,800 rows and the total paid amount is unchanged, so the join is accepted as many-to-one."
+        }
+      },
+      {
+        "skill_id": "foundational_004",
+        "name": "categorical_numeric_analysis",
+        "kind": "foundational",
+        "version": 1,
+        "tags": [
+          "categorical",
+          "numeric",
+          "small_groups",
+          "association",
+          "comparison",
+          "group_sizes",
+          "denials",
+          "providers",
+          "network_status",
+          "uncertainty"
+        ],
+        "sections": {
+          "trigger": "Use when comparing an outcome (denial rate, paid amount, fraud-label rate, claim count) across categories such as provider specialty, network status, claim type, place of service, denial code, or authorization requirement, and when describing differences between flagged and unflagged claims.",
+          "objective": "Make group comparisons that are statistically honest: the right summary for the variable type, group sizes shown next to every estimate, unstable small groups flagged rather than ranked, and wording that describes association without implying causation.",
+          "procedure": [
+            "Classify each variable as categorical or numeric and pick the comparison accordingly: counts and rates with denominators for categorical outcomes; median, interquartile range, and mean for numeric outcomes (report both when skewed).",
+            "Build one table per comparison with columns group, group size, numerator, denominator, rate or median, and a stability flag.",
+            "Set and state a minimum group size (a common default is 30 claims); mark groups below it as unstable and exclude them from rankings while still listing them.",
+            "Where a rate is reported for a group, add an uncertainty indication (for example a Wilson interval or the standard error) so that differences between small groups are not over-read.",
+            "Rank groups only among stable groups and say what the ranking is by (rate, count, or amount) and over which denominator.",
+            "Report missing category values as their own bucket with size and rate instead of dropping them silently.",
+            "Write findings as associations (\"denial rate is higher among out-of-network claims in this sample\") and list the plausible confounders (specialty mix, claim type) a causal reading would need to rule out.",
+            "When the outcome is a synthetic fraud label, say that it is synthetic and that…"
+          ],
+          "required_checks": [
+            "Every group row shows the group size and the denominator used.",
+            "The minimum group size threshold is stated once and applied consistently; small groups carry a visible flag.",
+            "Rankings include only stable groups and name the ranking metric.",
+            "Comparison text uses association language and lists confounders.",
+            "Missing category values appear as an explicit bucket."
+          ],
+          "expected_artifacts": [
+            "One comparison table per dimension (CSV) with size, numerator, denominator, rate, and flag columns.",
+            "A bar chart per key comparison with group sizes annotated.",
+            "A findings section that separates stable and unstable groups."
+          ],
+          "failure_modes": [
+            "Ranking a specialty with five claims and a very high denial rate above one with nine hundred claims and a moderate rate.",
+            "Comparing means of paid amounts across groups when a few very large claims dominate.",
+            "Writing that network status \"drives\" denials from a cross-tabulation.",
+            "Dropping claims with missing specialty and reporting shares over the reduced base without saying so."
+          ],
+          "example": "Denial rate by network status on synthetic claims: in-network 8,900 claims, 801 denied (9.0%); out-of-network 2,600 claims, 349 denied (13.4%); unknown 300 claims, 30 denied (10.0%). All groups exceed the 30-claim threshold, so all are stable; the report describes the out-of-network rate as higher in this sample and notes that specialty mix differs between the groups."
+        }
+      },
+      {
+        "skill_id": "foundational_003",
+        "name": "descriptive_summary",
+        "kind": "foundational",
+        "version": 1,
+        "tags": [
+          "descriptive",
+          "rates",
+          "denominators",
+          "trends",
+          "financial",
+          "distributions",
+          "quantiles",
+          "grouped",
+          "status_mix",
+          "prevalence"
+        ],
+        "sections": {
+          "trigger": "Use for any task that describes a portfolio or population — counts, distributions, quantiles, grouped summaries, monthly trends — and whenever a rate, share, or percentage is reported, including denial rate, fraud-label prevalence, status mix, and billed/allowed/paid financial summaries.",
+          "objective": "Produce descriptive statistics a reader can verify: every rate carries its numerator, denominator, and the definition of both; skewed amounts are summarised with quantiles rather than a single mean; and time trends state the date column, the period grain, and the coverage of each period.",
+          "procedure": [
+            "State the unit of analysis (claim, claim line, member, provider) and the row count that forms the base population; note any exclusions and their counts.",
+            "For every rate decide and write down the denominator definition before computing it (for example denial rate over adjudicated claims — paid plus denied — rather than over all claims including pending) and report numerator, denominator, and rate together.",
+            "For categorical fields (status, category, specialty) report counts and shares that sum to the base population, including a share for missing values.",
+            "For amounts (billed, allowed, paid) report count, mean, standard deviation, minimum, 25th, 50th, 75th and 95th percentiles, and maximum; report the share of zero and negative values separately.",
+            "For trends choose one date column, state it, aggregate to a monthly grain, and report claim count and amounts per month together with the number of days covered by the first and last months so partial months are visible.",
+            "For grouped summaries include the group size next to every group statistic and order groups by size or by a stated key, never by an unstated default.",
+            "Cross-check totals: category shares sum to the base, monthly counts sum to the tota…"
+          ],
+          "required_checks": [
+            "Every rate is accompanied by numerator, denominator, and their definitions.",
+            "Category and status shares sum to the base population (including a missing bucket).",
+            "Trend tables and charts name the date column and the period grain and flag partial periods.",
+            "Quantiles, not only means, are reported for skewed amount fields.",
+            "Metrics are written to a machine-readable file with the same values shown in the report."
+          ],
+          "expected_artifacts": [
+            "A metrics JSON with each rate as value, numerator, denominator, numerator definition, denominator definition.",
+            "A status or category distribution table and chart.",
+            "A monthly volume and amount trend table and chart.",
+            "A financial summary table with quantiles."
+          ],
+          "failure_modes": [
+            "Reporting a denial rate with no denominator, or computing it over all claims when pending claims should be excluded.",
+            "Presenting a mean paid amount for a heavily skewed distribution without the median and upper quantiles.",
+            "Monthly trends that mix two date columns or include a partial last month without flagging it.",
+            "Grouped tables that omit group sizes, making small noisy groups look like large ones."
+          ],
+          "example": "Of 12,800 synthetic claims, 11,500 are adjudicated (paid or denied). Denials number 1,150, so the denial rate is 1,150 / 11,500 = 10.0% of adjudicated claims (9.0% of all 12,800 claims, reported separately and labelled as such). Paid amount has median 420 and 95th percentile 6,800 while the mean is 1,150, so the median and quantiles lead the summary."
+        }
+      },
+      {
+        "skill_id": "foundational_005",
+        "name": "reproducible_python_analysis",
+        "kind": "foundational",
+        "version": 1,
+        "tags": [
+          "reproducibility",
+          "seeds",
+          "splits",
+          "leakage",
+          "modeling",
+          "metrics",
+          "artifacts",
+          "machine_readable",
+          "fraud",
+          "high_cost"
+        ],
+        "sections": {
+          "trigger": "Use whenever an analysis produces numbers that will be cited, compared across runs or conditions, or used to train and evaluate a model — in particular any task with random sampling, train/test splits, model fitting, or threshold selection such as a high-cost percentile.",
+          "objective": "Ensure that the same inputs and the same analysis code produce the same outputs: fixed seeds, explicit named inputs and outputs, preprocessing and thresholds fitted on training data only, and every reported number saved in a machine-readable metrics file alongside the saved figures.",
+          "procedure": [
+            "Declare inputs explicitly: table names, the data snapshot hash from the manifest, the columns used, and the exclusion rules (identifier columns, label-derived columns such as `fraud_pattern_type`, post-outcome fields).",
+            "Fix one integer seed for the task and pass it to every random operation (sampling, splitting, model initialisation); record the seed in the metrics file.",
+            "Create the train/test split once, stratified on the target when the target is a class label, and save the split sizes and class counts per split with denominators.",
+            "Fit every preprocessing step (imputation, scaling, encoding, percentile thresholds such as a high-cost cut-off) on the training split only, then apply it unchanged to the test split.",
+            "Keep the analysis as a single script or module with named output paths under the task's output directory; do not depend on interactive state or hand-edited intermediates.",
+            "Write metrics to a machine-readable JSON (metric name, value, numerator and denominator where applicable, split, seed) and take the values shown in the report from that file, not from memory.",
+            "Save every figure to a file with a descriptive name and record the list of artifacts produced; a figure that is not saved …"
+          ],
+          "required_checks": [
+            "The seed and the data snapshot hash appear in the metrics file.",
+            "No identifier or label-derived column is in the model feature list.",
+            "Preprocessing and thresholds are fitted on the training split only.",
+            "Every number in the report has a matching key in the metrics file.",
+            "A repeat of the pipeline reproduces the metrics within tolerance."
+          ],
+          "expected_artifacts": [
+            "A metrics JSON with seed, snapshot hash, split sizes, and all reported metrics.",
+            "Saved figures with descriptive filenames.",
+            "The analysis script or module and a list of produced artifacts."
+          ],
+          "failure_modes": [
+            "Computing a high-cost percentile threshold on the full dataset and then evaluating on a test set that helped define it (leakage).",
+            "Leaving `fraud_pattern_type` in the features and reporting a near-perfect model.",
+            "Different seeds across split, sampling, and model, so no two repeats agree.",
+            "Figures shown once and never saved, or metrics typed into the report by hand."
+          ],
+          "example": "A baseline fraud model uses seed 42, a stratified 80/20 split (10,240 train / 2,560 test; positives 3.1% in both), a scaler fitted on the training split only, and excludes `claim_id`, `member_id`, `provider_id`, and `fraud_pattern_type`. The metrics JSON records seed, split sizes, prevalence, precision, recall, F1, PR-AUC, and ROC-AUC; the report quotes each value from that file."
+        }
+      },
+      {
+        "skill_id": "foundational_006",
+        "name": "evaluation_and_charting",
+        "kind": "foundational",
+        "version": 1,
+        "tags": [
+          "metrics",
+          "charts",
+          "caveats",
+          "communication",
+          "evaluation",
+          "traceability",
+          "executive_brief",
+          "limitations",
+          "figures",
+          "rubric"
+        ],
+        "sections": {
+          "trigger": "Use when scoring an analysis against a frozen rubric, when producing charts that describe results, and when writing any summary or executive brief in which numeric statements must trace to saved metrics or artifacts.",
+          "objective": "Keep evaluation and communication honest and traceable: scores come from a frozen rubric applied to saved artifacts, every chart is generated from logged data rather than from memory, every number in prose cites its source metric, and limitations and synthetic-data caveats are stated explicitly.",
+          "procedure": [
+            "Identify the rubric version and the golden or expected values that apply; treat them as frozen — they stay exactly as they were before the output was seen.",
+            "For each rubric dimension (correctness, completeness, reproducibility, statistical discipline, communication) list the deterministic checks to apply and the artifact each check reads.",
+            "Score each dimension on the fixed 0–4 scale from the check results, record every check with its observed and expected values, and compute the overall score as the mean of the five dimension scores.",
+            "Build every chart from a saved data source (metrics file, log, or CSV); label axes with units, name the denominator for any rate, and state the sample size in the caption.",
+            "Prefer simple chart types: bars for category comparisons with group sizes annotated, lines for monthly trends with partial periods marked, and confusion matrices or precision–recall curves for classifiers with prevalence in the title.",
+            "In prose, attach every numeric statement to its source (metric key or artifact filename) so a reader can find it; a number that has no saved source is left out.",
+            "Write a limitations section covering data limitations (synthetic data, single snapshot), statistica…"
+          ],
+          "required_checks": [
+            "Rubric version and golden identifiers are recorded with every evaluation.",
+            "Each chart names its data source, axis units, denominator, and sample size.",
+            "Every numeric statement in the brief maps to a metric key or artifact.",
+            "A limitations and synthetic-data caveat section is present.",
+            "No claim of statistical significance is made without repeated runs."
+          ],
+          "expected_artifacts": [
+            "An evaluation record (rubric version, checks with observed and expected values, dimension scores, overall score).",
+            "Charts saved as files, each generated from a named data source.",
+            "A brief or report with a limitations section and per-number source references."
+          ],
+          "failure_modes": [
+            "Rubric or golden values that drift after the output is seen.",
+            "Charts drawn from remembered numbers that no longer match the metrics file.",
+            "An executive brief that states a rate \"improved\" with no artifact behind it.",
+            "Presenting a one-run difference between two conditions as significant."
+          ],
+          "example": "An executive brief states \"denial rate 10.0% of 11,500 adjudicated claims (metrics.json: denial_rate)\" and \"PR-AUC 0.41 at 3.1% prevalence (model_metrics.json: pr_auc)\". Each figure caption names its CSV source and sample size, and the limitations section notes that the data are synthetic, the model was evaluated on a single split, and the condition comparison is illustrative."
+        }
+      }
+    ]
+  },
+  "response_schema": {
+    "$defs": {
+      "PlanStep": {
+        "properties": {
+          "component": {
+            "description": "Component id from the task's catalogue.",
+            "title": "Component",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "Parameter values; only declared options are valid.",
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "component"
+        ],
+        "title": "PlanStep",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``plan_task`` and ``revise_plan``. A revised plan is a complete plan, not a diff.",
+    "properties": {
+      "steps": {
+        "items": {
+          "$ref": "#/$defs/PlanStep"
+        },
+        "minItems": 1,
+        "title": "Steps",
+        "type": "array"
+      },
+      "skills_applied": {
+        "description": "Skill ids the operator actually used.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Skills Applied",
+        "type": "array"
+      },
+      "rationale": {
+        "default": "",
+        "title": "Rationale",
+        "type": "string"
+      },
+      "changes_summary": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "revise_plan only: what changed and why.",
+        "title": "Changes Summary"
+      }
+    },
+    "required": [
+      "steps"
+    ],
+    "title": "PlanResponse",
+    "type": "object"
+  }
+}

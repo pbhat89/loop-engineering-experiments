@@ -1,0 +1,164 @@
+{
+  "task_id": "T7",
+  "run_id": "run_001",
+  "condition": "baseline",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-06T23:16:13+00:00",
+  "plan_sha256": "4aa0284bfc8ac8f59898206c9e3883d7f0548a5d73f510d93486e4f9a58fad64",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25
+        }
+      },
+      {
+        "component": "target_definition",
+        "params": {
+          "amount_column": "paid_amount",
+          "percentile": 95,
+          "threshold_source": "train_only"
+        }
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "elective_flag",
+            "preventive_flag",
+            "auth_required_flag",
+            "primary_icd10_cm",
+            "drg_present"
+          ]
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "train_only",
+          "scaling": "standard"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression",
+            "gradient_boosting"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "class_imbalance",
+            "model_limitations",
+            "no_operational_use"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Split: plain random 25% hold-out with the run seed, as specified (no stratification since the target is defined after the split). Target: paid_amount > 95th percentile with threshold_source=train_only, overriding the all_data default so the test partition cannot inform the threshold; the component records threshold_value and positive rate/count per partition into threshold.json. Features: only fields known at claim submission (claim type, CPT category, place of service, specialty, network status, units, length of stay, ER/elective/preventive/auth flags, primary diagnosis, DRG presence). Excluded all amount fields (billed, allowed, paid, member_oop, cob) because the target is derived from paid_amount and the others are adjudication outputs, plus high_cost_flag (a pre-computed label) and claim_id/member_id (identifiers); the catalogue default feature set was rejected because it contains billed_amount and allowed_amount. Preprocessing: fit_on=train_only to prevent encoder/scaler leakage; standard scaling aids logistic regression convergence across service_units and length_of_stay and is harmless for trees. Models: logistic regression plus gradient boosting as the single tree-based model, yielding PR-AUC, ROC-AUC and precision/recall at the top 5% of held-out claims. Report: denominators printed for every rate, every result cited to an artifact, and caveats for synthetic data, ~5% class prevalence, baseline-model limitations and no operational use.",
+    "changes_summary": null
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "split": {
+    "test_size": 0.25,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212
+  },
+  "target_definition": {
+    "amount_column": "paid_amount",
+    "percentile": 95,
+    "threshold_source": "train_only",
+    "threshold_value": 3198.9879999999994,
+    "positive_rate_train": 0.05003633343714315,
+    "positive_rate_test": 0.046699875466998754,
+    "n_positive_train": 482,
+    "n_positive_test": 150
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "network_status",
+      "service_units",
+      "length_of_stay",
+      "er_flag",
+      "elective_flag",
+      "preventive_flag",
+      "auth_required_flag",
+      "primary_icd10_cm",
+      "drg_present"
+    ],
+    "n_categorical": 6,
+    "n_numeric": 7,
+    "id_fields_present": [],
+    "target_derived_present": []
+  },
+  "preprocessing": {
+    "fit_on": "train_only",
+    "scaling": "standard",
+    "n_features_out": 103
+  },
+  "models": {
+    "logistic_regression": {
+      "pr_auc": 0.2232961168354745,
+      "roc_auc": 0.9060450685826257,
+      "precision_at_top_5pct": 0.22981366459627328,
+      "recall_at_top_5pct": 0.24666666666666667,
+      "n_test": 3212
+    },
+    "gradient_boosting": {
+      "pr_auc": 0.21737344211633483,
+      "roc_auc": 0.9025419116046156,
+      "precision_at_top_5pct": 0.21739130434782608,
+      "recall_at_top_5pct": 0.23333333333333334,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "class_imbalance",
+      "model_limitations",
+      "no_operational_use"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

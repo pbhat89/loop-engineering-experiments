@@ -1,0 +1,35 @@
+{
+  "reusable_lessons": [
+    {
+      "lesson": "Catalogue defaults under-deliver relative to task objectives: duplicate_check, date_ranges and join_check are default-off, missingness defaults to top_10, and write_report defaults to no caveats, no denominators and no citations. Before planning, map every scope word in the objective ('every column', 'each table', 'every relationship') to a component and parameter, enable each non-default component the objective names, and pick the widest option (missingness scope=all_columns, every listed key, every date column, every join pair) rather than the default. T1 ran this way and scored 4.0 on all five dimensions with no failed checks and no evaluator feedback.",
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Report hygiene that passed evaluation cleanly in T1: always include the synthetic_data and sample_preview caveats, set show_denominators=true so every rate prints as numerator / denominator = rate, and set cite_artifacts=true so every results bullet traces to a saved artifact or metrics key. Add descriptive_only and no_operational_use for descriptive tasks; swap in association_not_causation, small_groups, class_imbalance or model_limitations when the task compares groups or fits a model.",
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Join map for the HLT-008 sample (verified by join_check in T1): member-level joins are clean and many_to_one - medical_claims 12,845/12,845, pharmacy_claims 18,310/18,310 and adherence 10,627/10,627 rows match members.member_id, members.member_id is unique, and all 500 members are referenced by each table. medical_claims.rendering_npi and billing_npi match providers.provider_npi 12,845/12,845 (150 distinct NPIs, all 150 providers referenced). pharmacy_claims.pharmacy_npi and prescriber_npi have 18,310 distinct values over 18,310 rows and match 0/18,310 provider keys (cardinality no_match): pharmacy claims cannot be linked to the provider directory, so provider-level analyses must use medical claims only and pharmacy NPI fields should be treated as opaque per-row identifiers. Run join_check on every pair a task relies on and report unmatched_left / unmatched_left_denominator before quoting any merged count.",
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Table grain: adherence.member_id is not unique (10,627 rows over 500 distinct member_ids, about 21 rows per member); the intended grain is member_id + therapeutic_class, the only composite key in the catalogue - confirm it with duplicate_check before use. Joining adherence to members or claims on member_id alone fans rows out; aggregate over therapeutic_class first or join on the composite key. claim_id, rx_claim_id, members.member_id and providers.provider_npi are one row per key. Always run duplicate_check on the key you will group or join by before trusting counts.",
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Missingness in medical_claims is structural, not random: dx3, dx4, dx5, modifier1, modifier2, denial_reason_desc and auth_number are entirely null (12,845/12,845) and must be dropped from any profile or feature set; drg_code, drg_type, mdc_code and poa_flag are null on 10,914/12,845 rows (populated only on a 1,931-row DRG-bearing subset), revenue_code on 7,041/12,845, denial_code_carc on 11,559/12,845 (1,286 rows carry a denial code) and fraud_pattern_type on 12,198/12,845 (647 rows, 5.0%, likely mirroring fraud_label=1 - treat it as label-derived, exclude it from any fraud model, and expect a rare positive class; confirm prevalence from fraud_label). State the subset denominator whenever reporting rates on these fields. No other table has an all-null column; members.age_band has 2/500 nulls.",
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Time window and eligibility facts: medical service_date_from spans 2021-01-01 to 2023-12-31 (service_date_to to 2024-01-09, adjudication_date 2021-01-08 to 2024-02-11); pharmacy fill_date spans 2021-01-01 to 2023-12-31 (paid_date to 2024-01-04, end_date to 2024-03-30). members.enrollment_start ranges 2020-01-03 to 2021-01-01 and enrollment_end is constant 2023-12-31, so per the single enrollment span per member all 500 members are enrolled for the whole 36-month claims window and per-member rates can use a common 2021-2023 denominator. Date columns are stored as str: parse explicitly, count unparseables, and run date_ranges with consistency_checks=true whenever ordering matters (adjudication before service end, service end before start).",
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+      "source_feedback_ids": []
+    }
+  ],
+  "current_task_corrections": []
+}

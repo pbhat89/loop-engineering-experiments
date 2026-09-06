@@ -1,0 +1,696 @@
+{
+  "request_id": "run_001:reflection_only:T7:a1:plan_task:1",
+  "run_id": "run_001",
+  "condition": "reflection_only",
+  "task_id": "T7",
+  "attempt": 1,
+  "node": "plan_task",
+  "seq": 1,
+  "created_at": "2026-09-06T23:17:03+00:00",
+  "instructions": "Produce an analysis plan for this task by selecting components from the catalogue and setting their parameters. Use only catalogue component ids and declared parameter options; omitted parameters take their defaults. Deterministic code executes the plan exactly as written, and the result is scored against a frozen rubric (correctness, completeness, reproducibility, statistical discipline, communication) and a frozen golden reference. List in skills_applied the ids of any provided skills you actually used.",
+  "payload": {
+    "task_id": "T7",
+    "condition": "reflection_only",
+    "task_spec": {
+      "task_id": "T7",
+      "title": "High-cost claim identification",
+      "objective": "Build a simple experiment that identifies high-cost medical claims. First hold out a quarter of the claims with a plain random split using the run seed. Define \"high cost\" as a paid amount above the 95th percentile, where the percentile is computed on the training partition alone and then applied to both partitions; report the threshold value and the positive rate in each partition. Use only features that would be known when a claim is submitted: the amount fields (the target is derived from them), the dataset's pre-computed high-cost flag and identifiers must not be features. Fit preprocessing on the training partition only. Train logistic regression plus one tree-based model and report PR-AUC, ROC-AUC and the precision and recall among the top 5 percent of held-out claims ranked by score. Save the threshold and the feature list, and state the limitations: synthetic data, a baseline model, no operational use.",
+      "tags": [
+        "modeling",
+        "high_cost",
+        "threshold",
+        "percentile",
+        "leakage",
+        "splits",
+        "seeds",
+        "ranking",
+        "metrics"
+      ],
+      "input_tables": [
+        "medical_claims"
+      ],
+      "required_artifacts": [
+        "model_metrics.json",
+        "threshold.json",
+        "feature_list.json",
+        "precision_at_k.png",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "split",
+        "description": "Plain random train/test split of row indices with the run seed (no stratification; the target is defined afterwards).",
+        "default_selected": true,
+        "params": {
+          "test_size": {
+            "description": "Share of rows held out for testing.",
+            "options": [
+              0.2,
+              0.25,
+              0.3
+            ],
+            "default": 0.25
+          }
+        },
+        "produces": [
+          {
+            "key": "split",
+            "shape": "{test_size: float, seed: int, n_train: int, n_test: int}"
+          }
+        ]
+      },
+      {
+        "id": "target_definition",
+        "description": "Define the high-cost target as amount above a percentile threshold computed on a chosen set of rows.",
+        "default_selected": true,
+        "params": {
+          "amount_column": {
+            "description": "Which amount column defines cost.",
+            "options": [
+              "paid_amount",
+              "billed_amount",
+              "allowed_amount"
+            ],
+            "default": "paid_amount"
+          },
+          "percentile": {
+            "description": "Which percentile of the amount column sets the threshold.",
+            "options": [
+              90,
+              95,
+              99
+            ],
+            "default": 95
+          },
+          "threshold_source": {
+            "description": "Which rows the percentile is computed on.",
+            "options": [
+              "train_only",
+              "all_data"
+            ],
+            "default": "all_data"
+          }
+        },
+        "produces": [
+          {
+            "key": "target_definition",
+            "shape": "{amount_column: str, percentile: int, threshold_source: str, threshold_value: float, positive_rate_train: float, positive_rate_test: float, n_positive_train: int, n_positive_test: int} (threshold_value = numpy.percentile(values, percentile); positive = amount > threshold_value)"
+          }
+        ],
+        "artifacts": [
+          "threshold.json"
+        ]
+      },
+      {
+        "id": "feature_set",
+        "description": "Select model features and record which identifier or target-derived fields the selection contains.",
+        "default_selected": true,
+        "params": {
+          "features": {
+            "description": "Which columns enter the model as features (drg_present = drg_code.notna()).",
+            "multi": true,
+            "options": [
+              "claim_type",
+              "cpt_category",
+              "place_of_service",
+              "provider_specialty",
+              "network_status",
+              "service_units",
+              "length_of_stay",
+              "er_flag",
+              "elective_flag",
+              "preventive_flag",
+              "auth_required_flag",
+              "primary_icd10_cm",
+              "drg_present",
+              "billed_amount",
+              "allowed_amount",
+              "paid_amount",
+              "member_oop",
+              "cob_amount",
+              "high_cost_flag",
+              "claim_id",
+              "member_id"
+            ],
+            "default": [
+              "claim_type",
+              "billed_amount",
+              "allowed_amount"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "feature_set",
+            "shape": "{features: [str], n_categorical: int, n_numeric: int, id_fields_present: [str], target_derived_present: [str]}"
+          }
+        ],
+        "artifacts": [
+          "feature_list.json"
+        ]
+      },
+      {
+        "id": "preprocessing",
+        "description": "One-hot encode categoricals and optionally scale numerics, fitted on a chosen partition.",
+        "default_selected": true,
+        "params": {
+          "fit_on": {
+            "description": "Which rows the encoder and scaler are fitted on.",
+            "options": [
+              "train_only",
+              "all_data"
+            ],
+            "default": "all_data"
+          },
+          "scaling": {
+            "description": "Whether numeric features are standardised.",
+            "options": [
+              "none",
+              "standard"
+            ],
+            "default": "none"
+          }
+        },
+        "produces": [
+          {
+            "key": "preprocessing",
+            "shape": "{fit_on: str, scaling: str, n_features_out: int}"
+          }
+        ]
+      },
+      {
+        "id": "models",
+        "description": "Fit the chosen classifiers and report held-out ranking metrics (top 5 percent of test rows by score).",
+        "default_selected": true,
+        "params": {
+          "models": {
+            "description": "Which classifiers to train.",
+            "multi": true,
+            "options": [
+              "logistic_regression",
+              "random_forest",
+              "gradient_boosting"
+            ],
+            "default": [
+              "logistic_regression"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "models",
+            "shape": "{name: {pr_auc: float, roc_auc: float, precision_at_top_5pct: float, recall_at_top_5pct: float, n_test: int}}"
+          }
+        ],
+        "artifacts": [
+          "model_metrics.json",
+          "precision_at_k.png"
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T8"
+    ],
+    "remaining_tasks": [
+      {
+        "task_id": "T8",
+        "title": "Executive brief"
+      }
+    ]
+  },
+  "response_schema": {
+    "$defs": {
+      "PlanStep": {
+        "properties": {
+          "component": {
+            "description": "Component id from the task's catalogue.",
+            "title": "Component",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "Parameter values; only declared options are valid.",
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "component"
+        ],
+        "title": "PlanStep",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``plan_task`` and ``revise_plan``. A revised plan is a complete plan, not a diff.",
+    "properties": {
+      "steps": {
+        "items": {
+          "$ref": "#/$defs/PlanStep"
+        },
+        "minItems": 1,
+        "title": "Steps",
+        "type": "array"
+      },
+      "skills_applied": {
+        "description": "Skill ids the operator actually used.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Skills Applied",
+        "type": "array"
+      },
+      "rationale": {
+        "default": "",
+        "title": "Rationale",
+        "type": "string"
+      },
+      "changes_summary": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "revise_plan only: what changed and why.",
+        "title": "Changes Summary"
+      }
+    },
+    "required": [
+      "steps"
+    ],
+    "title": "PlanResponse",
+    "type": "object"
+  }
+}

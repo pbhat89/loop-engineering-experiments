@@ -1,0 +1,54 @@
+{
+  "proposal": {
+    "name": "label_leakage_and_protected_attribute_screen",
+    "tags": [
+      "leakage",
+      "protected_attributes",
+      "feature_eligibility",
+      "identifiers",
+      "fraud",
+      "high_cost",
+      "guardrail",
+      "origin:T5"
+    ],
+    "trigger": "Any task whose comparison, ranking, targeting or model is organised around a label, target flag or outcome column (for example a fraud label, a high-cost flag, a denial or readmission flag) and that must choose which columns to compare on, rank by or feed to a model.",
+    "objective": "Decide feature eligibility before any comparison or model is run so that no label-derived column, identifier field or protected attribute (or close proxy) enters the analysis, and record that decision as an explicit, machine-checkable leakage assessment rather than as prose only.",
+    "procedure": [
+      "Name the label or target column and obtain its positive and negative counts (from the class-prevalence step or the manifest) before selecting any feature.",
+      "Screen every candidate column in the manifest, including catalogue defaults, with three label-encoding tests: (a) name test - the column name references the label or target concept (e.g. *_pattern_type, *_reason, *_label); (b) missingness test - the column's non-null count equals or closely tracks the positive-class count, or its null count equals the negative-class count, meaning it is populated only where the label is set; (c) definition test - the column is a deterministic function of the label, or the label is defined from the column (e.g. a flag that is a threshold of an amount). Exclude any column that fails a test even if it is a catalogue default.",
+      "List identifier fields (claim, member, provider/NPI, plan, authorisation numbers and other near-unique codes) and exclude them from features; they may serve only as join or grouping keys.",
+      "List protected attributes (sex, race/ethnicity, age and age band) and close proxies (payer type, dual-eligibility or low-income-subsidy flags, income band, zip code) in every input table and exclude them from characterisation, ranking, targeting and modelling. Do not join the member table at all unless a non-protected member attribute is explicitly required; if it is joined, first confirm many-to-one cardinality, match rate and unmatched-key count from the manifest relationships.",
+      "When the catalogue offers a leakage or guardrail assessment component, switch it on even if it is off by default, and choose the feature set so that its flagged_in_plan list is empty. If no such component exists, write the three lists (label-derived, identifier, protected) in the report method section.",
+      "In the plan rationale name each excluded column, the test it failed and the manifest evidence (null count, name, definition), and state why each retained field is legitimately available at decision time.",
+      "For predictive tasks apply the identical exclusion list to training and test data and restate the exclusions in the report and metrics."
+    ],
+    "required_checks": [
+      "The leakage assessment output lists label_derived_fields, id_fields and protected_attributes, and flagged_in_plan is empty.",
+      "Every catalogue default feature was screened; any dropped default is named in the rationale with manifest evidence.",
+      "No retained feature has a non-null count equal to the positive-class count or a null count equal to the negative-class count.",
+      "No member demographic column or proxy (sex, race/ethnicity, age band, payer type, income band, dual/LIS flags, zip code) appears in features, group-bys, rankings or model inputs.",
+      "If the member table is joined, the join is many-to-one with match rate and unmatched-key count recorded before joined counts are used.",
+      "For predictive tasks the exclusion list is identical for train and test and is stated in report.md."
+    ],
+    "expected_artifacts": [
+      "leakage_risks entry in metrics.json with label_derived_fields, id_fields, protected_attributes and flagged_in_plan",
+      "report.md method section naming excluded fields and the reason for each exclusion",
+      "plan rationale text citing manifest null counts or definitions for each excluded column"
+    ],
+    "failure_modes": [
+      "Keeping a catalogue default feature because it is the default, when its missingness pattern mirrors the label.",
+      "Satisfying an explicit leakage-assessment requirement with prose only and leaving the catalogue component off, so the check is not machine-verifiable.",
+      "Treating payer type, income band or age as acceptable non-protected features when they proxy protected attributes.",
+      "Joining the member table for one attribute and silently pulling demographic columns into the feature set.",
+      "Using a column that defines the target (e.g. the amount behind a high-cost flag) as a predictor and reporting near-perfect separation as a finding.",
+      "Over-excluding legitimate claim-level fields out of caution so the comparison or model becomes uninformative without stating why."
+    ],
+    "example": "A task compares or predicts a binary claim label. The analyst records positive and negative counts, then finds in the manifest a *_pattern_type column whose null count equals the negative-class count; it fails the missingness and name tests and is dropped despite being a catalogue default. Member sex, race/ethnicity, age band and payer type are listed as protected or proxy and the member join is skipped entirely. The leakage_assessment component is enabled and its flagged_in_plan list comes back empty; the rationale cites the null counts. Origin: T5 attempt 1 reflection (task passed with no evaluator feedback ids).",
+    "applicable_task_ids": [
+      "T6",
+      "T7"
+    ],
+    "source_feedback_ids": []
+  },
+  "reason_if_null": null
+}

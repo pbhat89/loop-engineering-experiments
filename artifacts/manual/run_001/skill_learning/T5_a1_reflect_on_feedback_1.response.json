@@ -1,0 +1,35 @@
+{
+  "reusable_lessons": [
+    {
+      "lesson": "Before choosing features for any task built around a label or target flag, screen the manifest for label-encoding fields: a column whose non-null count matches the positive-class count (e.g. fraud_pattern_type populated only where fraud_label=1) or whose name references the label encodes it and must be excluded even when it is a catalogue default. State the exclusion and the manifest evidence in the plan rationale.",
+      "applicable_task_ids": ["T6", "T7"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Never use member sex, race/ethnicity or age band, or close proxies such as payer_type, to characterise, rank or predict claims. Keep feature sets claim-level; join members only when a member attribute is explicitly required, and then confirm the m:1 cardinality, match rate and unmatched-key count from the manifest relationships before trusting joined counts.",
+      "applicable_task_ids": ["T6", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "When the task text asks for a leakage or guardrail assessment and the catalogue offers a matching component that is off by default (e.g. leakage_assessment), switch it on and pick features so that its flagged_in_plan list is empty; do not rely on prose alone to satisfy an explicit assessment requirement.",
+      "applicable_task_ids": ["T6", "T7"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "For any binary label or flag, report positive and negative counts, prevalence and imbalance ratio with denominators before any comparison or model, and include the class_imbalance caveat; a minority class of a few percent also means per-value cells in high-cardinality categoricals are small, so add the small_groups caveat when breaking the minority class down by category.",
+      "applicable_task_ids": ["T6", "T7"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "In write_report set show_denominators=true and cite_artifacts=true, and match caveats to the task rather than the empty default: synthetic_data and no_operational_use for any fraud or high-cost work, association_not_causation for any group comparison, descriptive_only when no model is fitted, model_limitations only when one is, sample_preview only when a sample is used. Omit caveats that do not apply.",
+      "applicable_task_ids": ["T6", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Report both mean and median for dollar amounts, service units and length of stay; these fields are right-skewed, so a mean alone misrepresents typical claims, especially when high-cost claims are the subject.",
+      "applicable_task_ids": ["T7", "T8"],
+      "source_feedback_ids": []
+    }
+  ],
+  "current_task_corrections": []
+}

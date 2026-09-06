@@ -1,0 +1,20 @@
+{
+  "current_task_corrections": [],
+  "reusable_lessons": [
+    {
+      "lesson": "Verify a claims-to-reference-table join in two layers before using any joined attribute: (1) run join_check on the exact key pair to record cardinality, right_key_unique, unmatched_left and its denominator; (2) perform the merge with how=left and validate=many_to_one so the merge itself asserts the relationship and records rows_before, rows_after and unmatched. Rely on joined columns only when rows_after == rows_before and unmatched == 0; otherwise report the shortfall as an explicit filter with its denominator. (From the passing T3 plan, 4.0/4.0 with no failed checks; no evaluator feedback was issued.)",
+      "applicable_task_ids": ["T4", "T5", "T6", "T7"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Translate the task text directly into rate parameters instead of accepting defaults: set the denial-rate denominator to the population the task names (adjudicated_claims when it says claims whose adjudication has concluded, not the default all_claims), set min_group_size to the stability threshold the task states (30 here, not 0), request every metric the objective lists, and set show_denominators=true so each rate is printed as numerator / denominator = rate. Pair any min_group_size > 0 with the small_groups caveat. (From the passing T3 plan; no evaluator feedback was issued.)",
+      "applicable_task_ids": ["T4", "T5", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Keep grouping scope to exactly the comparisons the objective requests, each as its own group_by, and do not add unrequested composite groupings that only multiply small cells. In the report set cite_artifacts=true and choose the caveat set that matches the claims made: synthetic_data always; descriptive_only and association_not_causation for any between-group comparison; small_groups whenever small-group flags are produced. (From the passing T3 plan; no evaluator feedback was issued.)",
+      "applicable_task_ids": ["T4", "T5", "T7", "T8"],
+      "source_feedback_ids": []
+    }
+  ]
+}

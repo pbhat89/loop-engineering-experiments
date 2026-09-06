@@ -1,0 +1,56 @@
+{
+  "proposal": {
+    "name": "objective_scope_coverage",
+    "tags": [
+      "planning",
+      "scope",
+      "coverage",
+      "catalogue_defaults",
+      "required_artifacts",
+      "completeness"
+    ],
+    "trigger": "At plan_task or revise_plan, whenever the task objective uses scope quantifiers ('every', 'each', 'all', 'both', 'across') or enumerates specific columns, keys, relationships, checks or artifacts, and the component catalogue contains default-off components, subset defaults (top_N, a single item, an empty list) or rigor booleans that default to false.",
+    "objective": "Guarantee that the selected components and parameter values cover every scope requirement and every required artifact stated in the task, with each non-default choice justified by a phrase in the objective or a documented analytic standard, so that catalogue defaults never silently narrow the analysis and the plan never over-extends beyond what the task calls for.",
+    "procedure": [
+      "Decompose the objective into an explicit requirement list: one line per quantified or enumerated noun phrase (e.g., 'every column of every table', 'natural key of each table including composite X+Y', 'every date column in table Z', 'every cross-file relationship'), one line per named check (uniqueness, date ordering, cardinality, unmatched keys), and one line per entry in required_artifacts.",
+      "Audit the catalogue: for each component record default_selected; for each parameter record its default and mark it as a subset default when it is top_N, a single option or an empty list, or a rigor boolean whose default is false (denominators, citations, consistency checks).",
+      "Map every requirement line to exactly one component and parameter value that satisfies it. Select any default-off component a requirement maps to. For multi-select parameters, choose the set of catalogue options that covers the scope the objective names (all listed keys, columns or pairs it refers to), not the default subset.",
+      "Widen only what a requirement line or a documented analytic standard justifies; do not add components, columns or pairs that nothing calls for. In the plan rationale, name the objective phrase or standard that justifies each non-default choice.",
+      "Confirm every required artifact has a producing component in the plan (via the component's artifacts list or a produced key the pipeline writes to metrics). If an artifact is orphaned, add or reconfigure its producer before finalising.",
+      "For the report component, set rigor booleans to true unless the objective excludes them, and pick caveats that match the task type (descriptive, group comparison, predictive) plus any caveats the objective states verbatim; never leave the caveat list at its empty default.",
+      "Re-read the requirement list once against the final steps and tick each line; any unticked line means the plan is incomplete, not that the requirement is optional."
+    ],
+    "required_checks": [
+      "Every quantified or enumerated phrase in the objective maps to a selected component and a parameter value, and the mapping is visible in the plan rationale.",
+      "No component the objective requires is left at default_selected=false.",
+      "No multi-select parameter is left at a top_N, single-item or empty default when the objective names a wider set.",
+      "Every entry in required_artifacts is produced by a selected component.",
+      "Each non-default choice cites an objective phrase or analytic standard; no widening is justified by 'more is better'.",
+      "Rigor booleans (denominators, citations, consistency checks) are true unless the objective excludes them, and the caveat list is non-empty and task-appropriate."
+    ],
+    "expected_artifacts": [
+      "plan.steps in which every default-off component the objective requires is present with parameters covering the named scope",
+      "plan.rationale containing a requirement-to-component/parameter coverage list, one clause per objective requirement",
+      "all task required_artifacts traceable to a producing component in plan.steps"
+    ],
+    "failure_modes": [
+      "Accepting a default-off component (uniqueness, date-order or join check) as unselected although the objective names that check, so the requirement is silently unaddressed and completeness or correctness is penalised.",
+      "Leaving a multi-select parameter at top_N or a single item when the objective says 'every' or 'each', producing a partial artifact.",
+      "Over-widening: enabling columns, pairs or fields that no requirement calls for, which adds noise and cost and, for predictive tasks, leakage risk.",
+      "No component in the plan produces one of the required_artifacts, causing a hard failure regardless of analysis quality.",
+      "Leaving report rigor booleans false and the caveat list empty because those are the defaults, so numbers lack denominators and citations and mandatory caveats are missing."
+    ],
+    "example": "Provenance: T1 (dataset reconnaissance), attempt 1, evaluated 4.0 on all five dimensions with no failed checks and no evaluator feedback. The objective said 'every column of every table', the natural key of each table including a composite key, every date column of one table with ordering checks, and every named cross-file relationship. Three of those checks were default-off components and missingness defaulted to top_10; the plan selected all of them, set missingness scope=all_columns, listed every catalogue key, date column and join pair the objective referred to, enabled consistency checks, and turned on denominators and citations with the caveats the objective required plus task-type caveats. The rationale named the objective phrase behind each choice.",
+    "applicable_task_ids": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "source_feedback_ids": []
+  },
+  "reason_if_null": null
+}

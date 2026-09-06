@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 95,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "gradient_boosting"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "class_imbalance",
+          "model_limitations",
+          "no_operational_use"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Split: plain random 25% hold-out with the run seed, as specified (no stratification since the target is defined after the split). Target: paid_amount > 95th percentile with threshold_source=train_only, overriding the all_data default so the test partition cannot inform the threshold; the component records threshold_value and positive rate/count per partition into threshold.json. Features: only fields known at claim submission (claim type, CPT category, place of service, specialty, network status, units, length of stay, ER/elective/preventive/auth flags, primary diagnosis, DRG presence). Excluded all amount fields (billed, allowed, paid, member_oop, cob) because the target is derived from paid_amount and the others are adjudication outputs, plus high_cost_flag (a pre-computed label) and claim_id/member_id (identifiers); the catalogue default feature set was rejected because it contains billed_amount and allowed_amount. Preprocessing: fit_on=train_only to prevent encoder/scaler leakage; standard scaling aids logistic regression convergence across service_units and length_of_stay and is harmless for trees. Models: logistic regression plus gradient boosting as the single tree-based model, yielding PR-AUC, ROC-AUC and precision/recall at the top 5% of held-out claims. Report: denominators printed for every rate, every result cited to an artifact, and caveats for synthetic data, ~5% class prevalence, baseline-model limitations and no operational use.",
+  "changes_summary": null
+}

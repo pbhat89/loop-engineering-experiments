@@ -48,6 +48,7 @@ class Services:
     manifest_summary: dict = field(default_factory=dict)
     retrieval_k: int = 6
     max_validation_retries: int = 2
+    task_titles: dict[str, str] = field(default_factory=dict)  # task_id -> title, so operators can target lessons at remaining tasks
 
 
 # --------------------------------------------------------------------------- operator instructions
@@ -335,6 +336,9 @@ class ClaimsNodes:
                 ],
             },
             "remaining_task_ids": list(state.get("remaining_task_ids") or []),
+            "remaining_tasks": [
+                {"task_id": t, "title": self.s.task_titles.get(t)} for t in (state.get("remaining_task_ids") or [])
+            ],
         }
 
     # ---- load_context ----------------------------------------------------------------

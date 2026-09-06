@@ -184,6 +184,7 @@ def build_services(config: RunConfig):
 
     provider = get_provider(ProviderSettings(mode=config.mode, model_identifier=config.model_identifier, operator=config.operator))
     manifest = read_json(DATA_DIR / "processed" / "manifest.json", default={}) or {}
+    tasks = load_tasks()
     return Services(
         provider=provider,
         execute_task=execute_task,
@@ -195,6 +196,7 @@ def build_services(config: RunConfig):
         load_golden=load_golden_file,
         manifest_summary=summarize_manifest(manifest),
         retrieval_k=config.retrieval_k,
+        task_titles={tid: spec.get("title", "") for tid, spec in tasks.items()},
     )
 
 

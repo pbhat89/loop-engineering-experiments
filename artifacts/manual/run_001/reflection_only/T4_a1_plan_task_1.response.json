@@ -1,0 +1,44 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "claim_type",
+          "provider_specialty",
+          "network_status",
+          "place_of_service",
+          "auth_required_flag"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "small_groups",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Task asks for code shares of denials that sum to one, so the ranking scope is denied claims rather than all claims (denial_code_carc is null on 11559 of 12845 rows, so an all-claims base would not sum to one over codes). Missing-code quantification is set to by_status because the spec requires overall, among-denied, and per-claim-status counts. Denial rates are segmented by all five named columns (claim_type, provider_specialty, network_status, place_of_service, auth_required_flag) with the adjudicated-claims denominator to match 'claims whose adjudication has concluded', and min_group_size 30 to flag unstable segments as specified. The report prints every rate as numerator / denominator, cites an artifact or metrics key for every number, and carries the required synthetic-data and small-groups caveats plus descriptive_only since segment comparisons are associational, not causal. Single-table task, so no join checks are needed; manifest shows claim_id as a unique key with no null segment columns.",
+  "changes_summary": null
+}

@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "schema_summary",
+      "params": {}
+    },
+    {
+      "component": "missingness",
+      "params": {
+        "scope": "all_columns"
+      }
+    },
+    {
+      "component": "duplicate_check",
+      "params": {
+        "keys": [
+          "members.member_id",
+          "providers.provider_npi",
+          "medical_claims.claim_id",
+          "pharmacy_claims.rx_claim_id",
+          "adherence.member_id",
+          "adherence.member_id+therapeutic_class"
+        ]
+      }
+    },
+    {
+      "component": "date_ranges",
+      "params": {
+        "columns": [
+          "medical_claims.service_date_from",
+          "medical_claims.service_date_to",
+          "medical_claims.adjudication_date",
+          "pharmacy_claims.fill_date",
+          "pharmacy_claims.paid_date",
+          "members.enrollment_start",
+          "members.enrollment_end"
+        ],
+        "consistency_checks": true
+      }
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.member_id->members.member_id",
+          "pharmacy_claims.member_id->members.member_id",
+          "adherence.member_id->members.member_id",
+          "medical_claims.rendering_npi->providers.provider_npi",
+          "medical_claims.billing_npi->providers.provider_npi",
+          "pharmacy_claims.pharmacy_npi->providers.provider_npi"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "sample_preview",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Reconnaissance of all five tables, so every optional component is switched on and defaults that truncate coverage are overridden. load_tables + schema_summary give the per-table data contract (data_contract.json). missingness uses scope=all_columns rather than top_10 because the task asks for every column of every table and needs the fully-empty columns named (manifest shows dx3-dx5, modifier1/2, denial_reason_desc, auth_number all-null in medical_claims). duplicate_check tests the natural key of each table plus adherence.member_id alone next to the composite member_id+therapeutic_class, so the report shows why the composite key is required (10,627 rows vs 500 members). date_ranges covers all three medical_claims date columns with consistency_checks=true to count adjudication-before-service-end and end-before-start rows; the pharmacy and enrollment date columns are added because later tasks depend on those windows. join_check verifies the six catalogue relationships: both claims tables and adherence to members, rendering and billing NPI to providers, and pharmacy_npi to providers to establish whether pharmacy claims can be joined to the directory at all (manifest indicates no_match, 18,310/18,310 unmatched). write_report includes the required synthetic_data and sample_preview caveats plus descriptive_only, with show_denominators=true so every unmatched/duplicate rate prints as numerator/denominator and cite_artifacts=true so each number traces to an artifact or metrics key. No skills were provided in this baseline request.",
+  "changes_summary": null
+}

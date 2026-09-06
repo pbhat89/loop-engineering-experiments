@@ -1,0 +1,36 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": ["T1", "T2", "T3", "T4", "T5", "T6", "T7"]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps"],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "no_operational_use",
+          "association_not_causation",
+          "model_limitations",
+          "class_imbalance",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The brief must draw on the portfolio description, the fraud exploration, both modelling tasks and at least one provider or denial analysis, but the request does not map T1-T7 to those topics, so all seven sources are collected; the component records absent sources as missing rather than inventing values, so over-inclusion costs nothing while a subset risks omitting a required source. Sections are exactly the five the task specifies (methodology omitted to respect the 600-word cap for a non-technical sponsor). causal_language=avoid and cite_artifacts=true enforce the association-only wording and per-number [source: path] traceability the task demands. The report prints every rate as numerator/denominator, cites artifacts for each results bullet, and carries the synthetic-data and no-operational-use statements plus association, model-limitation, class-imbalance (fraud_pattern_type is populated on only 647/12845 claims, so the fraud label is rare) and small-group caveats relevant to synthesising provider/denial subgroup results. descriptive_only is excluded because the brief reports model results; sample_preview is excluded because T8 has no input tables.",
+  "changes_summary": null
+}

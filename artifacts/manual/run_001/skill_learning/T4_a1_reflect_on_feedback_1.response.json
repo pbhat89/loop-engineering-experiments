@@ -1,0 +1,20 @@
+{
+  "reusable_lessons": [
+    {
+      "lesson": "Match every rate/share parameter to the population the task names and never leave it to catalogue defaults. In T4 the defaults (scope=all_claims, denominator=all_claims, min_group_size=0) would each have violated the spec; the passing plan set scope=denied_claims so shares sum to one over denied claims, denominator=adjudicated_claims because rates were asked 'among claims whose adjudication has concluded', included all five segment columns the task listed, and set min_group_size to the task's own threshold (30) so unstable segments are flagged rather than hidden. Procedure: walk the objective sentence by sentence, map each population, threshold and segment list to an explicit parameter, and report numerator/denominator for every rate.",
+      "applicable_task_ids": ["T5", "T7", "T8"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Scan manifest null_count against row count before choosing fields. Columns null in every row (dx3-dx5, modifier1/modifier2, auth_number, denial_reason_desc) carry no information and must be excluded from rankings, groupings and model features; partially-null columns (denial_code_carc, drg_code/drg_type/mdc_code/poa_flag, revenue_code, fraud_pattern_type) are populated only for a subset, so quantify their missingness with an explicit denominator overall and within the relevant subset (denied claims, fraud-labelled claims, inpatient claims) instead of treating null as an ordinary category. In T4 this identified denial_code_carc as the only usable code field and justified quantify_missing=by_status.",
+      "applicable_task_ids": ["T5", "T6", "T7"],
+      "source_feedback_ids": []
+    },
+    {
+      "lesson": "Configure write_report for full credit rather than accepting its defaults: show_denominators=true, cite_artifacts=true, and a caveats list that always contains synthetic_data plus the statements matching the analysis type: small_groups whenever segments are compared, descriptive_only and association_not_causation for cross-tabulations, and class_imbalance, model_limitations and no_operational_use for predictive work. T4's report scored 4.0 on communication and reproducibility with exactly this configuration.",
+      "applicable_task_ids": ["T5", "T6", "T7", "T8"],
+      "source_feedback_ids": []
+    }
+  ],
+  "current_task_corrections": []
+}

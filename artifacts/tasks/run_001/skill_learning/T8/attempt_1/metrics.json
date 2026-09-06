@@ -1,0 +1,258 @@
+{
+  "task_id": "T8",
+  "run_id": "run_001",
+  "condition": "skill_learning",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-06T23:46:11+00:00",
+  "plan_sha256": "65358cfe0afbc7ad1990439838b2e64234ac5f66814f52c4102e25d118d96313",
+  "plan": {
+    "steps": [
+      {
+        "component": "collect_findings",
+        "params": {
+          "sources": [
+            "T1",
+            "T2",
+            "T3",
+            "T4",
+            "T5",
+            "T6",
+            "T7"
+          ]
+        }
+      },
+      {
+        "component": "brief_sections",
+        "params": {
+          "sections": [
+            "key_findings",
+            "model_results",
+            "limitations",
+            "synthetic_caveats",
+            "next_steps"
+          ],
+          "causal_language": "avoid",
+          "cite_artifacts": true
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "no_operational_use",
+            "association_not_causation",
+            "model_limitations",
+            "class_imbalance",
+            "small_groups"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [
+      "foundational_006",
+      "foundational_004",
+      "foundational_003"
+    ],
+    "rationale": "The brief must draw on the portfolio description, the fraud exploration, both modelling tasks and at least one provider or denial analysis, but the catalogue does not say which of T1-T7 is which, so all seven sources are collected: collect_findings records any absent source as missing rather than inventing a value, which the task explicitly allows, and the default [T2, T6] could not satisfy the five-source requirement. The brief contains exactly the five sections the task names (key findings, model results, limitations, synthetic-data caveats, next steps); methodology is omitted because it is not requested, the reader is non-technical and the 600-word cap is tight. causal_language=avoid enforces association-only wording and cite_artifacts=true makes every numeric statement end with a [source: path] citation so each number traces to a saved artifact (foundational_006). report.md prints every rate as numerator / denominator (foundational_003), cites an artifact per results bullet, and carries the caveats the task requires (synthetic_data, no_operational_use, association_not_causation) plus those inherited from the summarised analyses: model_limitations and class_imbalance for the fraud/high-cost models, small_groups for the provider and denial group comparisons (foundational_004).",
+    "changes_summary": null
+  },
+  "tables": {},
+  "findings": [
+    {
+      "task_id": "T1",
+      "metric_key": "tables.members.rows",
+      "label": "members row count",
+      "value": 500,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T1/attempt_1/metrics.json#tables.members.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.providers.rows",
+      "label": "providers row count",
+      "value": 150,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T1/attempt_1/metrics.json#tables.providers.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.medical_claims.rows",
+      "label": "medical_claims row count",
+      "value": 12845,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T1/attempt_1/metrics.json#tables.medical_claims.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.pharmacy_claims.rows",
+      "label": "pharmacy_claims row count",
+      "value": 18310,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T1/attempt_1/metrics.json#tables.pharmacy_claims.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.adherence.rows",
+      "label": "adherence row count",
+      "value": 10627,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T1/attempt_1/metrics.json#tables.adherence.rows"
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "denial_rate",
+      "label": "Denial rate (denominator: adjudicated_claims)",
+      "value": 0.10422238430991167,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T2/attempt_1/metrics.json#denial_rate",
+      "numerator": 1286,
+      "denominator": 12339
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "claim_volume.total_claims",
+      "label": "Total medical claims",
+      "value": 12845,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T2/attempt_1/metrics.json#claim_volume.total_claims"
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "financial_summary.paid_amount.sum",
+      "label": "Total paid amount",
+      "value": 9783415.77,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T2/attempt_1/metrics.json#financial_summary.paid_amount.sum"
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "fraud_prevalence",
+      "label": "Fraud prevalence (denominator: all_claims)",
+      "value": 0.050369793694044374,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T2/attempt_1/metrics.json#fraud_prevalence",
+      "numerator": 647,
+      "denominator": 12845
+    },
+    {
+      "task_id": "T3",
+      "metric_key": "group_comparison.groups.network_status.In-Network.denial_rate",
+      "label": "Denial rate, network_status = In-Network",
+      "value": 0.1055930568948891,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T3/attempt_1/metrics.json#group_comparison.groups.network_status.In-Network.denial_rate",
+      "numerator": 1095,
+      "denominator": 10370
+    },
+    {
+      "task_id": "T3",
+      "metric_key": "group_comparison.groups.network_status.Out-of-Network.denial_rate",
+      "label": "Denial rate, network_status = Out-of-Network",
+      "value": 0.09700355510411376,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T3/attempt_1/metrics.json#group_comparison.groups.network_status.Out-of-Network.denial_rate",
+      "numerator": 191,
+      "denominator": 1969
+    },
+    {
+      "task_id": "T4",
+      "metric_key": "denial_code_ranking.codes[0]",
+      "label": "Top denial code CO-15 (scope: denied_claims)",
+      "value": 0.187402799377916,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T4/attempt_1/metrics.json#denial_code_ranking.codes[0]",
+      "numerator": 241,
+      "denominator": 1286
+    },
+    {
+      "task_id": "T5",
+      "metric_key": "class_prevalence.prevalence",
+      "label": "Fraud label prevalence",
+      "value": 0.050369793694044374,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T5/attempt_1/metrics.json#class_prevalence.prevalence",
+      "numerator": 647,
+      "denominator": 12845
+    },
+    {
+      "task_id": "T6",
+      "metric_key": "models.logistic_regression.roc_auc",
+      "label": "Fraud model logistic_regression ROC-AUC",
+      "value": 0.4988322201983404,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T6/attempt_1/metrics.json#models.logistic_regression.roc_auc"
+    },
+    {
+      "task_id": "T6",
+      "metric_key": "models.logistic_regression.pr_auc",
+      "label": "Fraud model logistic_regression PR-AUC",
+      "value": 0.052134677907675224,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T6/attempt_1/metrics.json#models.logistic_regression.pr_auc"
+    },
+    {
+      "task_id": "T6",
+      "metric_key": "models.random_forest.roc_auc",
+      "label": "Fraud model random_forest ROC-AUC",
+      "value": 0.4984780408824125,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T6/attempt_1/metrics.json#models.random_forest.roc_auc"
+    },
+    {
+      "task_id": "T6",
+      "metric_key": "models.random_forest.pr_auc",
+      "label": "Fraud model random_forest PR-AUC",
+      "value": 0.05095174978197171,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T6/attempt_1/metrics.json#models.random_forest.pr_auc"
+    },
+    {
+      "task_id": "T6",
+      "metric_key": "feature_set.features",
+      "label": "Fraud model feature count",
+      "value": 17,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T6/attempt_1/metrics.json#feature_set.features"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "target_definition.threshold_value",
+      "label": "High-cost threshold (paid_amount p95, train_only)",
+      "value": 3198.9879999999994,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T7/attempt_1/metrics.json#target_definition.threshold_value"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "models.logistic_regression.pr_auc",
+      "label": "High-cost model logistic_regression PR-AUC",
+      "value": 0.2232961168354745,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T7/attempt_1/metrics.json#models.logistic_regression.pr_auc"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "models.gradient_boosting.pr_auc",
+      "label": "High-cost model gradient_boosting PR-AUC",
+      "value": 0.21737344211633483,
+      "source_path": "artifacts/tasks/run_001/skill_learning/T7/attempt_1/metrics.json#models.gradient_boosting.pr_auc"
+    }
+  ],
+  "brief": {
+    "sections": [
+      "key_findings",
+      "model_results",
+      "limitations",
+      "synthetic_caveats",
+      "next_steps"
+    ],
+    "causal_language": "avoid",
+    "cite_artifacts": true,
+    "word_count": 394,
+    "n_numeric_statements": 21,
+    "n_cited_statements": 21
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "no_operational_use",
+      "association_not_causation",
+      "model_limitations",
+      "class_imbalance",
+      "small_groups"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

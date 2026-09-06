@@ -1,7 +1,8 @@
 {
-  "generated_at": "2026-09-06T17:17:54+00:00",
+  "generated_at": "2026-09-06T23:47:48+00:00",
   "logs_dir": "logs",
   "run_ids": [
+    "run_001",
     "stub_001"
   ],
   "task_ids": [
@@ -28,12 +29,13 @@
       "title": "Learning curve",
       "description": "Final rubric score (0-4) by task and condition.",
       "run_ids": [
+        "run_001",
         "stub_001"
       ],
       "observations": true,
       "notes": [
         "series are offset slightly along the task axis so overlapping scores stay visible",
-        "no observations: foundational_only"
+        "no observations: foundational_only · run_001, foundational_only · stub_001"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -46,11 +48,12 @@
       "title": "Reliability curve",
       "description": "Execution errors and retries by task and condition.",
       "run_ids": [
+        "run_001",
         "stub_001"
       ],
       "observations": true,
       "notes": [
-        "no observations: foundational_only"
+        "no observations: foundational_only · run_001, foundational_only · stub_001"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -63,6 +66,7 @@
       "title": "Skill accumulation",
       "description": "Foundational and evolved skills available over task order.",
       "run_ids": [
+        "run_001",
         "stub_001"
       ],
       "observations": true,
@@ -81,6 +85,7 @@
       "title": "Skill utility (illustrative)",
       "description": "Reuse count per evolved skill and mean final score where reused vs not.",
       "run_ids": [
+        "run_001",
         "stub_001"
       ],
       "observations": true,
@@ -99,11 +104,12 @@
       "title": "Observed skill lifecycle",
       "description": "task -> feedback -> skill created -> later retrieval / reuse, from logs.",
       "run_ids": [
+        "run_001",
         "stub_001"
       ],
       "observations": true,
       "notes": [
-        "observed from logs; 44 foundational skill retrieval events omitted for legibility",
+        "observed from logs; 118 foundational skill retrieval events omitted for legibility",
         "74 of 79 feedback items never became a skill source and are not drawn"
       ],
       "sources": [
@@ -121,11 +127,12 @@
       "title": "Rubric heatmap",
       "description": "Mean dimension score per task and condition, plus one panel per dimension.",
       "run_ids": [
+        "run_001",
         "stub_001"
       ],
       "observations": true,
       "notes": [
-        "no observations: foundational_only"
+        "no observations: foundational_only · run_001, foundational_only · stub_001"
       ],
       "sources": [
         "logs/experiment_events.jsonl"

@@ -1,0 +1,49 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "claim_type",
+          "provider_specialty",
+          "network_status",
+          "place_of_service",
+          "auth_required_flag"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "small_groups",
+          "descriptive_only",
+          "association_not_causation"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "foundational_004",
+    "foundational_003",
+    "foundational_006"
+  ],
+  "rationale": "Ranking scope is denied_claims so code shares sum to one over denied claims as the task requires; quantify_missing=by_status covers all three missingness asks (overall, among denied, distribution across claim_status). Manifest shows denial_code_carc null in 11559 of 12845 rows and denial_reason_desc fully null, so the CARC code is the only usable code field and a missing-code bucket is essential. Denial rates use adjudicated_claims as the denominator (only claims whose adjudication has concluded), cover all five requested segments, and flag groups under 30 claims as unstable per the task and the categorical-comparison skill. The report prints numerator/denominator for every rate, cites artifacts for traceability, and carries the mandated synthetic-data and small-group caveats plus descriptive-only and association-not-causation wording since segment comparisons are cross-tabulations, not causal estimates. No joins are needed (single table, claim_id unique), so the join skill was not used.",
+  "changes_summary": null
+}

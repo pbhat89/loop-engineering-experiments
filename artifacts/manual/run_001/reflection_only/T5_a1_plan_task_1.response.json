@@ -1,0 +1,54 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "class_prevalence",
+      "params": {}
+    },
+    {
+      "component": "leakage_assessment",
+      "params": {}
+    },
+    {
+      "component": "feature_comparison",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "auth_required_flag",
+          "high_cost_flag"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "association_not_causation",
+          "small_groups",
+          "class_imbalance",
+          "no_operational_use"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "class_prevalence gives positive/negative counts, prevalence and imbalance ratio with fraud_prevalence.png. leakage_assessment is switched on because the task explicitly requires a named assessment of label-derived, identifier and protected fields. feature_comparison is restricted to claim-level fields that are legitimately available and not label-derived: fraud_pattern_type is excluded as label-derived (non-null on only 647 of 12845 rows, i.e. essentially the flagged set); member_sex, member_race_ethnicity and member_age_band are excluded as protected attributes; member_payer_type is excluded as a member-level attribute and a plausible proxy for age/income, keeping the comparison claim-level and avoiding the join entirely. The 13 retained features cover coding (claim_type, cpt_category, place_of_service), provider context (provider_specialty, network_status), financials (billed/allowed/paid), utilisation (service_units, length_of_stay) and operational flags (er_flag, auth_required_flag, high_cost_flag). Report prints every rate as numerator/denominator, cites artifacts for each result, and states synthetic data, descriptive-only, association-not-causation, small groups (flagged group is ~5% so categorical cells can be thin), class imbalance and no operational use. No skills were provided for this step.",
+  "changes_summary": null
+}

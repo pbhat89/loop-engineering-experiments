@@ -1,0 +1,56 @@
+{
+  "proposal": {
+    "name": "spec_population_binding",
+    "tags": [
+      "denominators",
+      "rates",
+      "shares",
+      "segments",
+      "small_groups",
+      "spec_compliance",
+      "plan_parameters",
+      "learned_from:T4"
+    ],
+    "trigger": "The task objective mentions any rate, share, proportion, ranking share, an inclusion condition on the base population (for example 'among claims whose adjudication has concluded' or 'among labelled claims'), a small-group or percentile threshold, or an enumerated list of segment columns, and the available plan components expose parameters with catalogue defaults (scope, denominator, segments, min_group_size, or equivalents) that decide which population those numbers are computed over.",
+    "objective": "Bind every share base, rate denominator, inclusion filter, threshold and segment list in the plan explicitly to the population and values the task specification names, so that no catalogue default silently defines a denominator, base or cut-off the spec did not ask for. This complements descriptive_summary and categorical_numeric_analysis, which govern how rates are presented, by governing how their populations are chosen.",
+    "procedure": [
+      "Read the objective sentence by sentence and extract every quantitative ask into a checklist: the quantity (count, rate, share), its numerator definition, its base population (denominator), any inclusion filter on that base, any explicit threshold (small-group cut-off, percentile, minimum count), and any enumerated list of segments or columns.",
+      "For each checklist item, identify the plan component and parameter that controls it (scope, denominator, segments, min_group_size, or their equivalents) and set it explicitly; treat every catalogue default as unverified until it has been compared with the spec.",
+      "When the spec says shares must sum to one, set the share base equal to the set over which the sum is required and confirm the ranking is computed over that same set; do not use an all-rows base for shares of a subset.",
+      "When the spec restricts the denominator by a condition, select the denominator option that applies that condition, write the filter definition (which rows qualify) in metrics and the report, and never fall back to an all-rows denominator.",
+      "When the spec enumerates segment columns, include every listed column and no unlisted ones; when it gives a small-group threshold, set min_group_size to exactly that value with the spec's comparison direction (for example 'fewer than 30' means groups of 29 or fewer are flagged); when no threshold is given, choose one, state it, and label it analyst-chosen.",
+      "Record numerator, denominator, filter definition and threshold for each rate in the metrics file and print every rate in the report as numerator / denominator = rate with its small-group flag where applicable.",
+      "Before finalising the plan, reconcile the checklist: every quantitative ask maps to a parameter or artifact, and every parameter left at its default is justified in the plan rationale."
+    ],
+    "required_checks": [
+      "Shares within a ranking sum to 1.0 (within rounding) over the stated base, and the base is the set the spec named.",
+      "Each denominator equals the count of rows satisfying the stated inclusion filter, and each numerator is less than or equal to its denominator.",
+      "The segment list in the plan equals the list in the spec, with no omissions or additions.",
+      "min_group_size equals the spec's threshold when one is given, and small-group flags are present in the segment-level artifact.",
+      "No rate appears in the report without its numerator, denominator and filter definition.",
+      "The plan rationale names every parameter whose value differs from the catalogue default and why, and justifies any default that was kept."
+    ],
+    "expected_artifacts": [
+      "A segment-level CSV with columns for segment, value, numerator, denominator, rate and small_group_flag.",
+      "A ranking CSV with count and share per item, where shares sum to one over the stated base and any missing-value bucket is reported with its own explicit denominator.",
+      "metrics.json entries recording the chosen scope, denominator option, filter definition and min_group_size.",
+      "Report results bullets in numerator / denominator = rate form, each citing the artifact or metrics key it comes from."
+    ],
+    "failure_modes": [
+      "Leaving the share scope at an all-rows default when the spec asks shares to sum to one over a subset, so shares sum to less than one.",
+      "Using an all-rows denominator when the spec restricts to concluded, adjudicated or labelled rows, which inflates denominators and understates rates.",
+      "Dropping segment columns the spec listed, or adding columns it did not list.",
+      "Leaving min_group_size at 0 so unstable segments are ranked without any flag.",
+      "Interpreting the threshold loosely (for example treating 'fewer than 30' as 'at most 30').",
+      "Reporting rates as bare percentages so readers cannot reconcile them with the underlying counts."
+    ],
+    "example": "Objective fragment: 'Compare the 30-day readmission rate across facility type and payer among inpatient discharges, flagging groups with fewer than 50 discharges.' Binding: inclusion filter = inpatient discharges (denominator option restricted to that set, filter written in the report); segments = [facility_type, payer] exactly; numerator = discharges readmitted within 30 days; min_group_size = 50 with 'fewer than' meaning 49 or below is flagged; each rate printed as numerator / denominator = rate with its flag and a metrics entry naming the denominator option. Provenance: lesson from task T4, attempt 1, where the catalogue defaults for share scope, rate denominator and small-group threshold each named a different population from the one the specification required and had to be overridden explicitly.",
+    "applicable_task_ids": [
+      "T5",
+      "T7",
+      "T8"
+    ],
+    "source_feedback_ids": []
+  },
+  "reason_if_null": null
+}
