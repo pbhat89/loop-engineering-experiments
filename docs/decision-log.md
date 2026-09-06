@@ -71,3 +71,21 @@ Format: date · decision · alternatives considered · rationale · impact. Bind
 ## D-12 · 2026-09-06 · A1 formalisations pending L0 confirmation
 
 Recorded in `docs/plan.md` and marked **(A1 formalisation)**: `analysis_plan` typed `dict | None` (brief said `str | None`; LEAD §4 makes plans structured); routers `route_after_reflection`, `route_after_proposal`, `route_after_validation`; ≤ 2 validation re-requests then catalogue-default fallback; `operator_steps_used` counts every request file including re-requests; `execution_timeout_seconds` lives in `config/graph.yaml` (LEAD §12 fixes the `experiment.yaml` key list); freeze-manifest JSON shape and `freeze_sha256 = sha256_file(manifest)`; `logs/runs/<run_id>.json` run metadata; dropped-`skills_applied` handling; feedback `incorporated`/`resolved` rules; empty-dimension handling in scoring; `feedback_update` records. Any of these can be overridden by L0 without changing the spec.
+
+## D-13 · 2026-09-07 · `foundational_only` control implemented as an opt-in fourth condition (lead)
+
+- **Alternatives:** keep the brief's three conditions only (D-11 deferred the control); run `skill_learning` twice with and without foundational skills.
+- **Rationale:** `skill_learning` bundles two effects — access to the curated foundational library and accumulation of evolved skills. A condition that retrieves foundational skills but never reflects across tasks, proposes, or persists separates the two at the cost of ~8–16 extra operator steps. Implementing it is cheap (routing reads `SKILL_RETRIEVING_CONDITIONS`; `retrieve_skills` filters to `kind == foundational`), so the choice of whether to spend the operator budget on it is left to the user at the Phase 1.5 checkpoint.
+- **Impact:** `CONDITIONS` gains `foundational_only`; `DEFAULT_CONDITIONS` stays the brief's three; `designed_topology()["per_condition"]`, `config/graph.yaml` and tests cover it; the spec's limitation note about the confound stands unless the control is run.
+
+## D-14 · 2026-09-07 · `config/graph.yaml` v2 mirrors the single compiled graph (lead correction of A1's v1)
+
+- **Alternatives:** compile one graph per condition as v1 documented; keep v1 and let the test skip the mismatch.
+- **Rationale:** the implementation is one `StateGraph` whose routers read `state["condition"]` and the `next_route` decision written by `evaluate_output` / `validate_skill`; a null skill proposal is rejected inside `validate_skill` (there is no `route_after_proposal`), and the operator cap suppresses further retries because a retry needs an operator. Documentation must describe what runs.
+- **Impact:** `graph.yaml` now lists the edge union with labels, four routers, `per_condition` node subsets (incl. `foundational_only`) and the termination rules; `tests/test_graph_routes.py::test_graph_yaml_mirrors_designed_topology_and_experiment_config` asserts it equals `designed_topology()` and `experiment.yaml`.
+
+## D-15 · 2026-09-07 · Operator-step cap raised from 40 to 64 per condition (lead)
+
+- **Alternatives:** keep 40 and accept `operator_cap` stops in `skill_learning`; remove the cap.
+- **Rationale:** the stub end-to-end run (`stub_001`) used 38 of 40 steps in `skill_learning` with one retry per task. The manual worst case per task is 8 steps (plan, 2 × (reflect + revise), reflect, propose, revise proposal) → 64 for eight tasks. The cap is a safety net; the stopping rule that ends the loop is "pass → finalize". A cap that fires routinely would truncate the learning path and bias the comparison.
+- **Impact:** `config/experiment.yaml`, `config/graph.yaml` (asserted equal by test), `docs/OPERATOR_PROTOCOL.md` and the brief's Addendum B now say 64; existing stub logs keep their recorded cap of 40.

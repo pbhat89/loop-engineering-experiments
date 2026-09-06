@@ -278,6 +278,31 @@ def test_skill_learning_creates_then_reuses_a_skill():
     assert any(e["event"] == "skill_proposal_skipped" for e in logger.skill)
 
 
+def test_foundational_only_uses_curated_skills_but_never_learns():
+    store, logger = FakeStore(), FakeLogger()
+    store.skills.append(
+        {
+            "skill_id": "foundational_003",
+            "name": "descriptive_summary",
+            "kind": "foundational",
+            "version": 1,
+            "tags": ["rates"],
+            "sections": {"required_checks": ["denial_rate.denominator=adjudicated_claims and state it"]},
+            "created_after_task_index": -1,
+            "path": "skills/foundational/03_descriptive_summary.md",
+        }
+    )
+    graph = build_claims_skill_graph(make_services(stub(), store, logger))
+    out = graph.invoke(make_state("foundational_only"))
+    assert out["route_history"] == ["load_context", "retrieve_skills", "plan_task", "execute_task", "evaluate_output", "finalize_task"]
+    assert out["evaluation"]["passed"] and out["skills_created"] == []
+    assert logger.experiment[-1]["skills_reused"] == ["foundational_003"]
+    # evolved skills are invisible to the control even when the store has them
+    store.persist({"name": "evolved_thing", "tags": []}, {"created_after_task_index": 0})
+    again = graph.invoke(make_state("foundational_only", task_id="T3", task_index=2, remaining=("T4",)))
+    assert [s["skill_id"] for s in again["retrieved_skills"]] == ["foundational_003"]
+
+
 def test_skill_not_retrievable_in_same_task_index():
     store = FakeStore()
     store.persist({"name": "x", "tags": []}, {"created_after_task_index": 1})
@@ -325,3 +350,17 @@ def test_designed_topology_matches_compiled_graph():
     graph = build_claims_skill_graph(make_services(stub()))
     designed = {(e["source"], e["target"]) for e in designed_topology()["edges"]}
     assert designed == compiled_edges(graph)
+
+
+def test_graph_yaml_mirrors_designed_topology_and_experiment_config():
+    from src.utils import CONFIG_DIR, read_yaml
+
+    doc = read_yaml(CONFIG_DIR / "graph.yaml")
+    designed = designed_topology()
+    assert doc["nodes"] == designed["nodes"]
+    assert {(e["source"], e["target"], e["label"]) for e in doc["edges"]} == {(e["source"], e["target"], e["label"]) for e in designed["edges"]}
+    assert doc["per_condition"] == designed["per_condition"]
+    assert set(doc["llm_decision_nodes"]) == {"plan_task", "revise_plan", "reflect_on_feedback", "propose_skill", "revise_skill_proposal"}
+    experiment = read_yaml(CONFIG_DIR / "experiment.yaml")
+    assert doc["termination"]["max_retries"] == experiment["max_retries"]
+    assert doc["termination"]["max_operator_steps_per_condition"] == experiment["max_operator_steps_per_condition"]

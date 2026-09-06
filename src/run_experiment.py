@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
-from src.graph_state import CONDITIONS, initial_state
+from src.graph_state import CONDITIONS, DEFAULT_CONDITIONS, initial_state
 from src.llm_provider import (
     DEFAULT_MODEL_BY_MODE,
     DEFAULT_OPERATOR_BY_MODE,
@@ -482,6 +482,18 @@ class Runner:
         )
         self._save()
         self.write_status()
+        self._refresh_figures()
+
+    def _refresh_figures(self) -> None:
+        """Best-effort regeneration of the log-derived figures after each completed task (A5's charts)."""
+        if not self.paths.render_dashboard:
+            return
+        try:
+            from src.charts import render_all
+
+            render_all(LOGS_DIR, ARTIFACTS_DIR / "figures")
+        except Exception:  # noqa: BLE001 - figures never block the run
+            pass
 
     def resume(self, condition: str, response_path: Path | str) -> dict:
         """Copy an operator response into place for the pending request, then advance."""
@@ -505,6 +517,11 @@ class Runner:
     def pending(self) -> dict[str, str | None]:
         self._require_run()
         return {c: v.get("pending_request") for c, v in self.run["conditions"].items()}
+
+    def advance_all(self) -> dict[str, dict]:
+        """Advance every unfinished condition once (resuming any that have a response file) and return per-condition summaries."""
+        self._require_run()
+        return {c: self.advance(c) for c, v in self.run["conditions"].items() if v.get("status") != "done"}
 
     # ---- status snapshot --------------------------------------------------------------
     def status_snapshot(self) -> dict:
@@ -593,7 +610,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("freeze")
     sp = sub.add_parser("init")
     sp.add_argument("--run-id", required=True)
-    sp.add_argument("--conditions", default=",".join(CONDITIONS))
+    sp.add_argument("--conditions", default=",".join(DEFAULT_CONDITIONS), help=f"subset of {CONDITIONS}")
     sp.add_argument("--mode", default="manual", choices=["manual", "stub"])
     sp.add_argument("--allow-unfrozen", action="store_true", help="manual mode only: skip the freeze check (never for reported runs)")
     for name in ("advance", "resume"):
@@ -604,11 +621,11 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument("--response", required=True)
         else:
             sp.add_argument("--max-tasks", type=int, default=None)
-    for name in ("status", "pending"):
+    for name in ("status", "pending", "advance-all"):
         sub.add_parser(name).add_argument("--run-id", required=True)
     sp = sub.add_parser("run-stub")
     sp.add_argument("--run-id", required=True)
-    sp.add_argument("--conditions", default=",".join(CONDITIONS))
+    sp.add_argument("--conditions", default=",".join(DEFAULT_CONDITIONS), help=f"subset of {CONDITIONS}")
     args = p.parse_args(argv)
 
     if args.cmd == "freeze":
@@ -630,6 +647,15 @@ def main(argv: list[str] | None = None) -> int:
         _print_status(runner)
         return 0
     runner = Runner(args.run_id)
+    if args.cmd == "advance-all":
+        summaries = runner.advance_all()
+        print(json.dumps(summaries, indent=1))
+        pending = {c: s["pending_request"] for c, s in summaries.items() if s.get("pending_request")}
+        for c, path in pending.items():
+            print(f"\nOPERATOR NEEDED [{c}] -> {path}")
+        if not pending:
+            print("\nno operator requests pending")
+        return 0
     if args.cmd == "advance":
         summary = runner.advance(args.condition, max_tasks=args.max_tasks)
     elif args.cmd == "resume":

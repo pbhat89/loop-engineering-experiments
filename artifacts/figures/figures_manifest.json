@@ -1,0 +1,199 @@
+{
+  "generated_at": "2026-09-06T17:17:54+00:00",
+  "logs_dir": "logs",
+  "run_ids": [
+    "stub_001"
+  ],
+  "task_ids": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8"
+  ],
+  "condition_colors": {
+    "baseline": "#0072B2",
+    "reflection_only": "#E69F00",
+    "skill_learning": "#009E73",
+    "foundational_only": "#CC79A7"
+  },
+  "figures": [
+    {
+      "name": "learning_curve",
+      "file": "learning_curve.png",
+      "path": "artifacts/figures/learning_curve.png",
+      "title": "Learning curve",
+      "description": "Final rubric score (0-4) by task and condition.",
+      "run_ids": [
+        "stub_001"
+      ],
+      "observations": true,
+      "notes": [
+        "series are offset slightly along the task axis so overlapping scores stay visible",
+        "no observations: foundational_only"
+      ],
+      "sources": [
+        "logs/experiment_events.jsonl"
+      ]
+    },
+    {
+      "name": "reliability_curve",
+      "file": "reliability_curve.png",
+      "path": "artifacts/figures/reliability_curve.png",
+      "title": "Reliability curve",
+      "description": "Execution errors and retries by task and condition.",
+      "run_ids": [
+        "stub_001"
+      ],
+      "observations": true,
+      "notes": [
+        "no observations: foundational_only"
+      ],
+      "sources": [
+        "logs/experiment_events.jsonl"
+      ]
+    },
+    {
+      "name": "skill_accumulation",
+      "file": "skill_accumulation.png",
+      "path": "artifacts/figures/skill_accumulation.png",
+      "title": "Skill accumulation",
+      "description": "Foundational and evolved skills available over task order.",
+      "run_ids": [
+        "stub_001"
+      ],
+      "observations": true,
+      "notes": [
+        "no skill events: baseline, reflection_only, foundational_only (only skill_learning and foundational_only retrieve skills; only skill_learning creates them)"
+      ],
+      "sources": [
+        "logs/skill_events.jsonl",
+        "logs/graph_events.jsonl"
+      ]
+    },
+    {
+      "name": "skill_utility",
+      "file": "skill_utility.png",
+      "path": "artifacts/figures/skill_utility.png",
+      "title": "Skill utility (illustrative)",
+      "description": "Reuse count per evolved skill and mean final score where reused vs not.",
+      "run_ids": [
+        "stub_001"
+      ],
+      "observations": true,
+      "notes": [
+        "illustrative: descriptive comparison within one condition, later tasks only; not a causal estimate"
+      ],
+      "sources": [
+        "logs/skill_events.jsonl",
+        "logs/experiment_events.jsonl"
+      ]
+    },
+    {
+      "name": "skill_lifecycle_graph",
+      "file": "skill_lifecycle_graph.png",
+      "path": "artifacts/figures/skill_lifecycle_graph.png",
+      "title": "Observed skill lifecycle",
+      "description": "task -> feedback -> skill created -> later retrieval / reuse, from logs.",
+      "run_ids": [
+        "stub_001"
+      ],
+      "observations": true,
+      "notes": [
+        "observed from logs; 44 foundational skill retrieval events omitted for legibility",
+        "74 of 79 feedback items never became a skill source and are not drawn"
+      ],
+      "sources": [
+        "logs/skill_events.jsonl",
+        "logs/feedback_events.jsonl"
+      ],
+      "nodes": 21,
+      "edges": 25,
+      "copy": "artifacts/graphs/skill_lifecycle_graph.png"
+    },
+    {
+      "name": "rubric_heatmap",
+      "file": "rubric_heatmap.png",
+      "path": "artifacts/figures/rubric_heatmap.png",
+      "title": "Rubric heatmap",
+      "description": "Mean dimension score per task and condition, plus one panel per dimension.",
+      "run_ids": [
+        "stub_001"
+      ],
+      "observations": true,
+      "notes": [
+        "no observations: foundational_only"
+      ],
+      "sources": [
+        "logs/experiment_events.jsonl"
+      ]
+    }
+  ],
+  "skill_utility_rows": [
+    {
+      "run_id": "stub_001",
+      "condition": "skill_learning",
+      "skill_id": "evolved_stub_001_001",
+      "skill_name": "incomplete_scope_correctness",
+      "created_after_task": "T1",
+      "reuse_count": 0,
+      "tasks_reused": 0,
+      "tasks_not_reused": 7,
+      "mean_score_reused": null,
+      "mean_score_not_reused": 4.0
+    },
+    {
+      "run_id": "stub_001",
+      "condition": "skill_learning",
+      "skill_id": "evolved_stub_001_002",
+      "skill_name": "wrong_denominator_correctness",
+      "created_after_task": "T2",
+      "reuse_count": 0,
+      "tasks_reused": 0,
+      "tasks_not_reused": 6,
+      "mean_score_reused": null,
+      "mean_score_not_reused": 4.0
+    },
+    {
+      "run_id": "stub_001",
+      "condition": "skill_learning",
+      "skill_id": "evolved_stub_001_003",
+      "skill_name": "missing_denominators_communication",
+      "created_after_task": "T3",
+      "reuse_count": 1,
+      "tasks_reused": 1,
+      "tasks_not_reused": 4,
+      "mean_score_reused": 4.0,
+      "mean_score_not_reused": 4.0
+    },
+    {
+      "run_id": "stub_001",
+      "condition": "skill_learning",
+      "skill_id": "evolved_stub_001_004",
+      "skill_name": "missing_caveat_communication",
+      "created_after_task": "T4",
+      "reuse_count": 3,
+      "tasks_reused": 3,
+      "tasks_not_reused": 1,
+      "mean_score_reused": 4.0,
+      "mean_score_not_reused": 4.0
+    },
+    {
+      "run_id": "stub_001",
+      "condition": "skill_learning",
+      "skill_id": "evolved_stub_001_005",
+      "skill_name": "leakage_statistical_discipline",
+      "created_after_task": "T5",
+      "reuse_count": 0,
+      "tasks_reused": 0,
+      "tasks_not_reused": 3,
+      "mean_score_reused": null,
+      "mean_score_not_reused": 4.0
+    }
+  ],
+  "status_file": "logs/experiment_status.json",
+  "note": "Every figure is computed from the named log files; missing observations are drawn as missing and listed in 'notes'."
+}

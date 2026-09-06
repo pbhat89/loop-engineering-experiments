@@ -275,10 +275,9 @@ class FixtureProvider(BaseProvider):
                         for k, v in (rec.get("params") or {}).items():
                             if k not in declared:
                                 continue
-                            if declared[k].get("multi") and isinstance(v, list):
-                                params[k] = list(dict.fromkeys(list(params.get(k) or []) + v))
-                            else:
-                                params[k] = v
+                            # evaluator recommendations are complete corrected values: replace, never union,
+                            # so a fix that *removes* a leaking feature actually removes it in the stub too
+                            params[k] = list(dict.fromkeys(v)) if isinstance(v, list) else v
                         changes.append(f"{cid} <- {item.get('feedback_id')}")
         steps = [{"component": cid, "params": params} for cid, params in selected.items()]
         return {

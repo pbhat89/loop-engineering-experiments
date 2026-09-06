@@ -22,7 +22,7 @@ from typing import Any, Literal
 from langgraph.graph import END, START, StateGraph
 
 from src.graph_nodes import ClaimsNodes, Services
-from src.graph_state import ClaimsGraphState
+from src.graph_state import SKILL_RETRIEVING_CONDITIONS, ClaimsGraphState
 
 NODES: tuple[str, ...] = (
     "load_context",
@@ -44,7 +44,7 @@ NODES: tuple[str, ...] = (
 
 
 def route_after_load(state: dict) -> Literal["retrieve_skills", "plan_task"]:
-    return "retrieve_skills" if state.get("condition") == "skill_learning" else "plan_task"
+    return "retrieve_skills" if state.get("condition") in SKILL_RETRIEVING_CONDITIONS else "plan_task"
 
 
 def route_after_evaluation(state: dict) -> Literal["finalize_task", "revise_plan", "reflect_on_feedback"]:
@@ -103,7 +103,7 @@ def designed_topology() -> dict:
     """Nodes and labelled edges of the designed workflow, for the topology diagram and config/graph.yaml tests."""
     edges = [
         ("START", "load_context", ""),
-        ("load_context", "retrieve_skills", "skill_learning"),
+        ("load_context", "retrieve_skills", "skill_learning | foundational_only"),
         ("load_context", "plan_task", "baseline | reflection_only"),
         ("retrieve_skills", "plan_task", ""),
         ("plan_task", "execute_task", ""),
@@ -128,6 +128,9 @@ def designed_topology() -> dict:
             "load_context", "plan_task", "execute_task", "evaluate_output", "reflect_on_feedback", "revise_plan", "finalize_task",
         ],
         "skill_learning": list(NODES),
+        "foundational_only": [
+            "load_context", "retrieve_skills", "plan_task", "execute_task", "evaluate_output", "reflect_on_feedback", "revise_plan", "finalize_task",
+        ],
     }
     return {"nodes": list(NODES), "edges": [{"source": s, "target": t, "label": l} for s, t, l in edges], "per_condition": per_condition}
 

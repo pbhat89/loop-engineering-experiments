@@ -1,0 +1,348 @@
+{
+  "task_id": "T5",
+  "run_id": "stub_001",
+  "condition": "skill_learning",
+  "attempt": 2,
+  "seed": 42,
+  "generated_at": "2026-09-06T17:12:46+00:00",
+  "plan_sha256": "7720f5e0692810d865e9ca9528082c03b0fdc2d782ca743dbf07423be61f425c",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "class_prevalence",
+        "params": {}
+      },
+      {
+        "component": "feature_comparison",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "billed_amount",
+            "allowed_amount",
+            "paid_amount",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "auth_required_flag"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "class_imbalance",
+            "association_not_causation",
+            "no_operational_use"
+          ],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      },
+      {
+        "component": "leakage_assessment",
+        "params": {}
+      }
+    ],
+    "skills_applied": [
+      "evolved_stub_001_004"
+    ],
+    "rationale": "deterministic fixture: catalogue defaults + skill-referenced components + feedback-recommended components",
+    "changes_summary": "feature_comparison <- T5-no_leaking_features; feature_comparison <- T5-permitted_feature_coverage; leakage_assessment <- T5-leakage_assessment_executed; leakage_assessment <- T5-leakage_lists_pattern_type; write_report <- T5-caveat_synthetic; write_report <- T5-caveat_association; write_report <- T5-caveat_no_operational_use"
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    },
+    "members": {
+      "rows": 500,
+      "columns": 44
+    }
+  },
+  "class_prevalence": {
+    "positives": 647,
+    "negatives": 12198,
+    "total": 12845,
+    "prevalence": 0.050369793694044374,
+    "imbalance_ratio": 18.853168469860897
+  },
+  "feature_comparison": {
+    "claim_type": {
+      "kind": "categorical",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "Professional": 0.5224111282843895,
+        "Institutional-OP": 0.3261205564142195,
+        "Institutional-IP": 0.15146831530139104
+      },
+      "unflagged": {
+        "Professional": 0.5495163141498607,
+        "Institutional-OP": 0.30021314969667157,
+        "Institutional-IP": 0.15027053615346778
+      }
+    },
+    "cpt_category": {
+      "kind": "categorical",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "E&M": 0.2874806800618238,
+        "Surgery": 0.241112828438949,
+        "Medicine": 0.18238021638330756,
+        "Radiology": 0.16228748068006182,
+        "Pathology/Lab": 0.1267387944358578
+      },
+      "unflagged": {
+        "E&M": 0.30209870470568945,
+        "Surgery": 0.2520085259878669,
+        "Radiology": 0.15395966551893753,
+        "Medicine": 0.14789309722905394,
+        "Pathology/Lab": 0.1440400065584522
+      }
+    },
+    "place_of_service": {
+      "kind": "categorical",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "22": 0.4327666151468315,
+        "11": 0.2071097372488408,
+        "21": 0.2009273570324575,
+        "23": 0.03245749613601236,
+        "12": 0.02472952086553323,
+        "49": 0.02472952086553323,
+        "81": 0.02472952086553323,
+        "20": 0.021638330757341576,
+        "31": 0.017001545595054096,
+        "50": 0.0077279752704791345,
+        "65": 0.0061823802163833074
+      },
+      "unflagged": {
+        "22": 0.39883587473356286,
+        "11": 0.21651090342679127,
+        "21": 0.1971634694212166,
+        "23": 0.04279390063944909,
+        "20": 0.02885718970323004,
+        "49": 0.027709460567306117,
+        "12": 0.024184292506968356,
+        "81": 0.02041318248893261,
+        "50": 0.01705197573372684,
+        "31": 0.016560091818330874,
+        "65": 0.009919658960485326
+      }
+    },
+    "provider_specialty": {
+      "kind": "categorical",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "Critical Access Hospital": 0.08346213292117466,
+        "ASC": 0.07882534775888717,
+        "Orthopedic Surgery": 0.06646058732612056,
+        "DME Supplier": 0.05873261205564142,
+        "SNF": 0.05564142194744977,
+        "Geriatrics": 0.05409582689335394,
+        "Internal Medicine": 0.05100463678516229,
+        "Outpatient Clinic": 0.04791344667697063,
+        "Urology": 0.04791344667697063,
+        "Family Medicine": 0.04482225656877898,
+        "Pediatrics": 0.04482225656877898,
+        "Pulmonology": 0.03863987635239567,
+        "General Acute Care Hospital": 0.03554868624420402,
+        "Endocrinology": 0.03400309119010819,
+        "Oncology": 0.03245749613601236,
+        "Nephrology": 0.030911901081916538,
+        "Physical Therapy": 0.030911901081916538,
+        "Neurology": 0.02936630602782071,
+        "Home Health": 0.027820710973724884,
+        "OB/GYN": 0.027820710973724884,
+        "Clinical Laboratory": 0.02472952086553323,
+        "Gastroenterology": 0.01854714064914992,
+        "Cardiology": 0.013910355486862442,
+        "Psychiatry": 0.013910355486862442,
+        "Diagnostic Radiology": 0.0077279752704791345
+      },
+      "unflagged": {
+        "Critical Access Hospital": 0.09599934415477947,
+        "SNF": 0.07607804558124283,
+        "ASC": 0.0750122970978849,
+        "DME Supplier": 0.06583046401049353,
+        "Orthopedic Surgery": 0.05263157894736842,
+        "Internal Medicine": 0.04943433349729464,
+        "General Acute Care Hospital": 0.04886046892933268,
+        "Urology": 0.04779472044597475,
+        "Family Medicine": 0.04566322347925889,
+        "Pulmonology": 0.042465978029185114,
+        "Endocrinology": 0.03992457779963929,
+        "Geriatrics": 0.039350713231677326,
+        "Nephrology": 0.03877684866371536,
+        "Pediatrics": 0.03853090670601738,
+        "Outpatient Clinic": 0.03689129365469749,
+        "Oncology": 0.03148057058534186,
+        "Physical Therapy": 0.03107066732251189,
+        "OB/GYN": 0.028283325135268076,
+        "Home Health": 0.027873421872438103,
+        "Neurology": 0.020659124446630595,
+        "Clinical Laboratory": 0.019511395310706673,
+        "Gastroenterology": 0.015412362682406953,
+        "Psychiatry": 0.014920478767010985,
+        "Cardiology": 0.012133136579767174,
+        "Diagnostic Radiology": 0.0054107230693556324
+      }
+    },
+    "network_status": {
+      "kind": "categorical",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "In-Network": 0.839258114374034,
+        "Out-of-Network": 0.160741885625966
+      },
+      "unflagged": {
+        "In-Network": 0.8398917855386129,
+        "Out-of-Network": 0.16010821446138712
+      }
+    },
+    "billed_amount": {
+      "kind": "numeric",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "mean": 1692.4845285935085,
+        "median": 435.89
+      },
+      "unflagged": {
+        "mean": 1652.6620200032792,
+        "median": 429.24
+      }
+    },
+    "allowed_amount": {
+      "kind": "numeric",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "mean": 994.5379752704793,
+        "median": 240.38
+      },
+      "unflagged": {
+        "mean": 945.3809952451221,
+        "median": 241.93
+      }
+    },
+    "paid_amount": {
+      "kind": "numeric",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "mean": 832.0844204018546,
+        "median": 148.41
+      },
+      "unflagged": {
+        "mean": 757.9158181669125,
+        "median": 124.1
+      }
+    },
+    "service_units": {
+      "kind": "numeric",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "mean": 1.9876352395672334,
+        "median": 2.0
+      },
+      "unflagged": {
+        "mean": 2.0054927037219215,
+        "median": 2.0
+      }
+    },
+    "length_of_stay": {
+      "kind": "numeric",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "mean": 0.7125193199381762,
+        "median": 0.0
+      },
+      "unflagged": {
+        "mean": 0.750040990326283,
+        "median": 0.0
+      }
+    },
+    "er_flag": {
+      "kind": "categorical",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "0": 0.9675425038639877,
+        "1": 0.03245749613601236
+      },
+      "unflagged": {
+        "0": 0.9572060993605509,
+        "1": 0.04279390063944909
+      }
+    },
+    "auth_required_flag": {
+      "kind": "categorical",
+      "n_flagged": 647,
+      "n_unflagged": 12198,
+      "flagged": {
+        "0": 0.8284389489953632,
+        "1": 0.17156105100463678
+      },
+      "unflagged": {
+        "0": 0.8545663223479258,
+        "1": 0.1454336776520741
+      }
+    }
+  },
+  "leakage_risks": {
+    "label_derived_fields": [
+      "fraud_pattern_type"
+    ],
+    "id_fields": [
+      "claim_id",
+      "member_id",
+      "rendering_npi",
+      "billing_npi",
+      "plan_id",
+      "auth_number",
+      "rx_claim_id",
+      "provider_npi"
+    ],
+    "protected_attributes": [
+      "member_sex",
+      "member_race_ethnicity",
+      "member_age_band",
+      "member_income_band"
+    ],
+    "flagged_in_plan": []
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "class_imbalance",
+      "association_not_causation",
+      "no_operational_use"
+    ],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

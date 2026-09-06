@@ -22,6 +22,7 @@ from typing import Any, Callable
 from pydantic import BaseModel, ValidationError
 
 from src.graph_state import (
+    SKILL_RETRIEVING_CONDITIONS,
     PlanResponse,
     ReflectionResponse,
     SkillProposalResponse,
@@ -342,7 +343,7 @@ class ClaimsNodes:
         if missing:
             raise ValueError(f"load_context: state is missing {missing}")
         available: list[dict] = []
-        if state["condition"] == "skill_learning":
+        if state["condition"] in SKILL_RETRIEVING_CONDITIONS:
             lister = getattr(self.s.skill_store, "list_skills", None)
             if callable(lister):
                 available = [
@@ -355,6 +356,8 @@ class ClaimsNodes:
     # ---- retrieve_skills -------------------------------------------------------------
     def retrieve_skills(self, state: dict) -> dict:
         retrieved = list(self.s.skill_store.retrieve(state["task_spec"], state.get("task_index", 0), self.s.retrieval_k) or [])
+        if state["condition"] == "foundational_only":  # the control never sees evolved skills
+            retrieved = [s for s in retrieved if s.get("kind") == "foundational"]
         for skill in retrieved:
             self.s.logger.log_skill_event(
                 {
@@ -369,7 +372,7 @@ class ClaimsNodes:
                     "matched_terms": skill.get("matched_terms"),
                 }
             )
-        self._graph_event(state, "retrieve_skills", "condition=skill_learning", retrieved=[s.get("skill_id") for s in retrieved])
+        self._graph_event(state, "retrieve_skills", f"condition={state['condition']}", retrieved=[s.get("skill_id") for s in retrieved])
         return {"route_history": ["retrieve_skills"], "retrieved_skills": retrieved}
 
     # ---- plan_task -------------------------------------------------------------------
@@ -379,7 +382,7 @@ class ClaimsNodes:
             self._graph_event(state, "plan_task", "operator_cap: default plan", operator_steps=0)
             return {"route_history": ["plan_task"], "analysis_plan": plan, "plan_history": [plan], "stop_reason": "operator_cap"}
         payload = self._base_payload(state)
-        if state["condition"] == "skill_learning":
+        if state["condition"] in SKILL_RETRIEVING_CONDITIONS:
             payload["retrieved_skills"] = self._rendered_skills(state)
         plan, steps, errors = self._decide(state, "plan_task", PLAN_INSTRUCTIONS, payload, PlanResponse)
         reason = "operator plan"
@@ -534,7 +537,7 @@ class ClaimsNodes:
         )
         if state["condition"] != "baseline":
             payload["reflection"] = state.get("reflection")
-        if state["condition"] == "skill_learning":
+        if state["condition"] in SKILL_RETRIEVING_CONDITIONS:
             payload["retrieved_skills"] = self._rendered_skills(state)
         plan, steps, errors = self._decide(state, "revise_plan", REVISE_INSTRUCTIONS, payload, PlanResponse)
         reason = "operator revision"

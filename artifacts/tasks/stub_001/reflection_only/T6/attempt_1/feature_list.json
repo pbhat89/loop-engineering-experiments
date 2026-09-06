@@ -1,0 +1,23 @@
+{
+  "features": [
+    "claim_type",
+    "billed_amount",
+    "paid_amount",
+    "fraud_pattern_type"
+  ],
+  "n_categorical": 2,
+  "n_numeric": 2,
+  "id_fields_present": [],
+  "label_derived_present": [
+    "fraud_pattern_type"
+  ],
+  "target": "fraud_label",
+  "categorical": [
+    "claim_type",
+    "fraud_pattern_type"
+  ],
+  "numeric": [
+    "billed_amount",
+    "paid_amount"
+  ]
+}

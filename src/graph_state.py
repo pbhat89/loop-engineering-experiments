@@ -16,8 +16,13 @@ from typing import Annotated, Any, Literal, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field
 
-CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning")
-Condition = Literal["baseline", "reflection_only", "skill_learning"]
+# The brief's three conditions plus an optional control, `foundational_only`, which retrieves the
+# curated foundational skills but never reflects across tasks, proposes, or persists - it separates
+# "having a skill library" from "learning new skills" (decision D-11). Not run by default.
+CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning", "foundational_only")
+DEFAULT_CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning")
+SKILL_RETRIEVING_CONDITIONS: tuple[str, ...] = ("skill_learning", "foundational_only")
+Condition = Literal["baseline", "reflection_only", "skill_learning", "foundational_only"]
 
 LLM_DECISION_NODES: tuple[str, ...] = (
     "plan_task",

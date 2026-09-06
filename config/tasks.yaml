@@ -1,0 +1,855 @@
+# Fixed task suite and plan-component catalogue (A3). Binding contract: docs/LEAD_CATALOGUE_SKELETON.md.
+# Component ids, parameter options, defaults and produced metric keys are frozen; objectives are the analyst
+# brief an operator sees. Defaults are the naive analyst choice and are never automatically the golden choice.
+# Plan grammar: a param has options + default; `multi: true` params take a list whose items are all in options;
+# option values are matched by string form ("30" matches 30). Omitted params take defaults.
+# `produces` lists the metric keys the executor writes to metrics.json (shape documented as a string);
+# `artifacts` lists the side files a component writes into output_dir.
+suite_version: "1"
+task_order: [T1, T2, T3, T4, T5, T6, T7, T8]
+
+shared_conventions:
+  all_claims: every row of medical_claims
+  adjudicated_claims: claim_status in {Paid, Denied, Adjusted} (Pended excluded)
+  paid_and_denied: claim_status in {Paid, Denied}
+  denied: claim_status == "Denied"
+  fraud_positive: fraud_label == 1
+  month_key: "%Y-%m of the chosen date column parsed with pd.to_datetime(errors='coerce'); unparseable rows dropped and counted"
+  small_group: n < min_group_size (min_group_size 0 means never flagged)
+  seed: run_context["seed"] for every split and model
+  row_order: as returned by src.profile_data.load_table(name); never re-sort before splitting
+  split: sklearn train_test_split(np.arange(len(df)), test_size=test_size, random_state=seed, shuffle=True, stratify=<target or None>)
+  id_fields: [claim_id, member_id, rendering_npi, billing_npi, plan_id, auth_number, rx_claim_id, provider_npi]
+  protected_attributes: [member_sex, member_race_ethnicity, member_age_band, member_income_band]
+  label_derived_fields: [fraud_pattern_type]
+
+tasks:
+  # ------------------------------------------------------------------------------------------------ T1
+  - task_id: T1
+    title: Dataset reconnaissance
+    objective: >-
+      Five synthetic files arrived from the HLT-008 sample: members, providers, medical claims, pharmacy claims and
+      an adherence table. Load each file separately and produce a data contract for every table (row count,
+      column names and types). Profile missingness across every column of every table and call out columns that
+      are entirely empty. Check whether the natural identifier of each table is actually a unique key, including
+      the composite member-plus-therapeutic-class key of the adherence table. Report the range of every date
+      column in the medical claims table and check whether the dates are ordered consistently (for example
+      adjudication happening before the service ended). Verify every cross-file relationship you would rely on
+      later: member ids from each claims table to the members table, the rendering and billing provider ids to
+      the provider directory, and whether pharmacy claims can be joined to the provider directory at all; report
+      cardinality, unmatched keys and row counts. Write a data-quality report that states the data is synthetic
+      and that any value samples shown are previews.
+    tags: [data_contract, schema, keys, missingness, duplicates, dates, joins, cardinality, data_quality]
+    input_tables: [members, providers, medical_claims, pharmacy_claims, adherence]
+    golden_file: goldens/T1_data_contract.json
+    required_artifacts: [data_contract.json, missingness.csv, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: schema_summary
+        description: Column names, dtypes and dtype counts per table, written as the data contract.
+        default_selected: true
+        params: {}
+        produces:
+          - key: schema
+            shape: "{table: {rows: int, n_columns: int, dtypes: {dtype: count}}}"
+        artifacts: [data_contract.json]
+      - id: missingness
+        description: Null counts per column with a list of entirely empty columns per table.
+        default_selected: true
+        params:
+          scope:
+            description: Whether to profile only the ten most-null columns per table or every column.
+            options: [top_10, all_columns]
+            default: top_10
+        produces:
+          - key: missingness
+            shape: "{scope: str, per_table: {table: {column: null_count}}, all_null_columns: {table: [column]}}"
+        artifacts: [missingness.csv]
+      - id: duplicate_check
+        description: Row count versus distinct count for candidate key columns, deciding whether each is a unique key.
+        default_selected: false
+        params:
+          keys:
+            description: Which table.column keys (composite keys joined with '+') to test for uniqueness.
+            multi: true
+            options: [medical_claims.claim_id, pharmacy_claims.rx_claim_id, members.member_id, providers.provider_npi,
+                      adherence.member_id, adherence.member_id+therapeutic_class]
+            default: [medical_claims.claim_id]
+        produces:
+          - key: duplicates
+            shape: "{key: {n_rows: int, n_unique: int, duplicate_rows: int, is_candidate_key: bool}}"
+      - id: date_ranges
+        description: Minimum, maximum and unparseable count for date columns, optionally with date-order consistency checks.
+        default_selected: false
+        params:
+          columns:
+            description: Which table.column date columns to profile.
+            multi: true
+            options: [medical_claims.service_date_from, medical_claims.service_date_to, medical_claims.adjudication_date,
+                      pharmacy_claims.fill_date, pharmacy_claims.paid_date, members.enrollment_start, members.enrollment_end]
+            default: [medical_claims.service_date_from]
+          consistency_checks:
+            description: Whether to count medical claims whose adjudication precedes the service end or whose service end precedes its start.
+            options: [true, false]
+            default: false
+        produces:
+          - key: date_ranges
+            shape: "{column: {min: 'YYYY-MM-DD', max: 'YYYY-MM-DD', unparseable: int}}"
+          - key: date_consistency
+            shape: "(only when consistency_checks) {adjudication_before_service_end: int, service_end_before_start: int}"
+      - id: join_check
+        description: Cardinality, unmatched keys and row counts for selected cross-table key pairs.
+        default_selected: false
+        params:
+          pairs:
+            description: Which left.key->right.key relationships to verify.
+            multi: true
+            options: [medical_claims.member_id->members.member_id, medical_claims.rendering_npi->providers.provider_npi,
+                      medical_claims.billing_npi->providers.provider_npi, pharmacy_claims.member_id->members.member_id,
+                      pharmacy_claims.pharmacy_npi->providers.provider_npi, adherence.member_id->members.member_id]
+            default: []
+        produces:
+          - key: join_check
+            shape: "{pair: {cardinality: many_to_one|one_to_one|no_match|many_to_many, rows_left: int, rows_after_inner_join: int, unmatched_left: int, unmatched_left_denominator: int, right_key_unique: bool}}"
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T2
+  - task_id: T2
+    title: Claims portfolio description
+    objective: >-
+      Describe the medical claims portfolio for a payer analytics team. Report claim volume and the status mix.
+      Report the denial rate with its numerator and denominator stated explicitly, computed among claims whose
+      adjudication has concluded (claims still pending have not yet been accepted or denied). Report the
+      prevalence of the synthetic fraud label across the whole portfolio, again with numerator and denominator.
+      Summarise billed, allowed and paid amounts with totals, means and distribution quantiles. Show a monthly
+      volume trend keyed to the month in which the service began, and state how many rows had unparseable
+      dates. Every rate in the report must show its denominator. State that the data is synthetic and that the
+      analysis is descriptive.
+    tags: [descriptive, portfolio, rates, denominators, financial, trends, status_mix]
+    input_tables: [medical_claims]
+    golden_file: goldens/T2_portfolio_metrics.json
+    required_artifacts: [claims_status_distribution.png, monthly_claim_volume.png, financial_summary.csv, monthly_trend.csv, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: claim_volume
+        description: Total claim count and count/share breakdowns by one or more categorical columns.
+        default_selected: true
+        params:
+          by:
+            description: Which categorical columns to break the volume down by.
+            multi: true
+            options: [claim_status, claim_type, cpt_category, place_of_service, network_status, provider_specialty]
+            default: [claim_status]
+          figure:
+            description: Whether to draw the status distribution figure (when claim_status is among the breakdowns).
+            options: [true, false]
+            default: true
+        produces:
+          - key: claim_volume
+            shape: "{total_claims: int, by: {column: {value: {n: int, share: float}}}}"
+        artifacts: [claims_status_distribution.png]
+      - id: denial_rate
+        description: Denied claims divided by a stated denominator, with both counts and their definitions recorded.
+        default_selected: true
+        params:
+          denominator:
+            description: Which claims form the denominator of the denial rate.
+            options: [all_claims, adjudicated_claims, paid_and_denied]
+            default: all_claims
+        produces:
+          - key: denial_rate
+            shape: "{value: float, numerator: int, denominator: int, numerator_definition: str, denominator_definition: str, denominator_option: str}"
+      - id: fraud_prevalence
+        description: Share of claims carrying the synthetic fraud label over a stated denominator.
+        default_selected: false
+        params:
+          denominator:
+            description: Which claims form the denominator of the fraud-label prevalence.
+            options: [all_claims, adjudicated_claims]
+            default: all_claims
+        produces:
+          - key: fraud_prevalence
+            shape: "{value: float, numerator: int, denominator: int, denominator_option: str}"
+      - id: financial_summary
+        description: Count, sum, mean and optionally median/p90/p99 for selected amount columns.
+        default_selected: true
+        params:
+          amount_columns:
+            description: Which amount columns to summarise.
+            multi: true
+            options: [billed_amount, allowed_amount, paid_amount, member_oop, cob_amount]
+            default: [paid_amount]
+          statistics:
+            description: Whether to report only sum and mean or also the median, 90th and 99th percentiles.
+            options: [sum_mean, sum_mean_quantiles]
+            default: sum_mean
+        produces:
+          - key: financial_summary
+            shape: "{column: {n: int, sum: float, mean: float, median?: float, p90?: float, p99?: float}}"
+        artifacts: [financial_summary.csv]
+      - id: monthly_trend
+        description: Monthly series of claim counts and/or paid totals keyed on a chosen date column.
+        default_selected: true
+        params:
+          date_column:
+            description: Which date column defines the month of each claim.
+            options: [service_date_from, service_date_to, adjudication_date]
+            default: adjudication_date
+          metrics:
+            description: Which monthly series to produce.
+            multi: true
+            options: [claim_count, paid_amount_sum]
+            default: [claim_count]
+        produces:
+          - key: monthly_trend
+            shape: "{date_column: str, n_months: int, first_month: 'YYYY-MM', last_month: 'YYYY-MM', unparseable_dates: int, series: {metric: {'YYYY-MM': value}}}"
+        artifacts: [monthly_claim_volume.png, monthly_trend.csv]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T3
+  - task_id: T3
+    title: Provider and network patterns
+    objective: >-
+      Compare claim count, total and mean paid amount, denial rate and fraud-label rate across provider
+      specialties and across network status, each as its own comparison, using the claim-level specialty and
+      network fields on the medical claims. Show the size of every group and flag groups too small to support a
+      stable rate (fewer than 30 claims). Keep the denial-rate denominator consistent with the portfolio
+      description (claims whose adjudication has concluded) and show numerator and denominator for every rate.
+      Rank the ten rendering providers with the most claims, with their specialty and network status from the
+      provider directory, and verify the join to the provider directory (cardinality and unmatched keys) before
+      relying on it. Present differences between groups as associations, not causes, and state that the data is
+      synthetic.
+    tags: [providers, network, specialty, group_comparison, small_groups, rates, denominators, joins, cardinality]
+    input_tables: [medical_claims, providers]
+    golden_file: goldens/T3_provider_network_metrics.json
+    required_artifacts: [group_comparison.csv, group_comparison.png, provider_ranking.csv, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: join_check
+        description: Cardinality, unmatched keys and row counts for selected cross-table key pairs.
+        default_selected: false
+        params:
+          pairs:
+            description: Which left.key->right.key relationships to verify.
+            multi: true
+            options: [medical_claims.member_id->members.member_id, medical_claims.rendering_npi->providers.provider_npi,
+                      medical_claims.billing_npi->providers.provider_npi, pharmacy_claims.member_id->members.member_id,
+                      pharmacy_claims.pharmacy_npi->providers.provider_npi, adherence.member_id->members.member_id]
+            default: []
+        produces:
+          - key: join_check
+            shape: "{pair: {cardinality: str, rows_left: int, rows_after_inner_join: int, unmatched_left: int, unmatched_left_denominator: int, right_key_unique: bool}}"
+      - id: provider_join
+        description: Join medical claims to the provider directory on a chosen provider key and record the row-count change.
+        default_selected: false
+        params:
+          provider_key:
+            description: Which claim-level provider id to join on.
+            options: [rendering_npi, billing_npi]
+            default: rendering_npi
+          how:
+            description: Whether to keep only matched claims or all claims.
+            options: [inner, left]
+            default: inner
+          validate:
+            description: Whether to assert a many-to-one relationship during the merge.
+            options: [none, many_to_one]
+            default: none
+        produces:
+          - key: provider_join
+            shape: "{provider_key: str, how: str, validate: str, rows_before: int, rows_after: int, unmatched: int, providers_matched: int}"
+      - id: group_comparison
+        description: Per-group counts, paid totals, denial and fraud rates with small-group flags for chosen grouping columns.
+        default_selected: true
+        params:
+          group_by:
+            description: Which claim-level columns (or their combination) define the groups.
+            multi: true
+            options: [provider_specialty, network_status, provider_specialty+network_status]
+            default: [provider_specialty]
+          metrics:
+            description: Which per-group metrics to compute.
+            multi: true
+            options: [claim_count, paid_amount_sum, paid_amount_mean, denial_rate, fraud_rate]
+            default: [claim_count, paid_amount_sum]
+          denominator:
+            description: Which claims in each group form the denial-rate denominator (fraud rate always uses all claims in the group).
+            options: [all_claims, adjudicated_claims]
+            default: all_claims
+          min_group_size:
+            description: Groups with fewer claims than this are flagged as small (0 never flags).
+            options: [0, 30, 50, 100]
+            default: 0
+        produces:
+          - key: group_comparison
+            shape: "{min_group_size: int, denominator_option: str, groups: {group_by_key: {group_value: {n: int, claim_count?: int, paid_amount_sum?: float, paid_amount_mean?: float, denial_rate?: {value, numerator, denominator}, fraud_rate?: {value, numerator, denominator}, small_group_flag: bool}}}} (composite values formatted '<specialty>|<network_status>')"
+        artifacts: [group_comparison.csv, group_comparison.png]
+      - id: provider_ranking
+        description: Top rendering providers by a chosen metric, joined to the provider directory for specialty and network status.
+        default_selected: false
+        params:
+          metric:
+            description: Which metric ranks the providers.
+            options: [claim_count, paid_amount_sum, denial_rate]
+            default: claim_count
+          top_n:
+            description: How many providers to list.
+            options: [5, 10, 20]
+            default: 10
+          min_claims:
+            description: Minimum claims a provider needs to be eligible for the ranking.
+            options: [0, 30]
+            default: 0
+        produces:
+          - key: provider_ranking
+            shape: "{metric: str, top_n: int, min_claims: int, rows: [{provider_npi: str, specialty: str, network_status: str, n: int, value: float}]}"
+        artifacts: [provider_ranking.csv]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T4
+  - task_id: T4
+    title: Denial analysis
+    objective: >-
+      Analyse denials in the medical claims. Rank the denial reason codes found on denied claims and give each
+      code's share of denials (the shares should add up to one). Quantify missing denial codes: how many claims
+      lack a code overall, how many denied claims lack one, and how the missing codes distribute across claim
+      statuses. Compare denial rates across claim type, provider specialty, network status, place of service and
+      authorization requirement, each with its numerator and denominator, computed among claims whose
+      adjudication has concluded, flagging segments with fewer than 30 claims as unstable. Every rate in the
+      report must show its denominator; state that the data is synthetic and that small segments are unstable.
+    tags: [denials, denial_codes, rates, denominators, segments, small_groups, missingness]
+    input_tables: [medical_claims]
+    golden_file: goldens/T4_denial_analysis_metrics.json
+    required_artifacts: [denial_code_ranking.csv, denial_rates_by_segment.csv, denial_rate_by_segment.png, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: denial_code_ranking
+        description: Frequency ranking of denial codes with shares over a chosen scope and a quantification of missing codes.
+        default_selected: true
+        params:
+          scope:
+            description: Which claims form the base for each code's share (denied claims only, or all claims).
+            options: [denied_claims, all_claims]
+            default: all_claims
+          quantify_missing:
+            description: How to quantify missing denial codes (not at all, overall and among denied, or additionally by claim status).
+            options: [none, overall, by_status]
+            default: overall
+        produces:
+          - key: denial_code_ranking
+            shape: "{scope: str, codes: [{code: str, n: int, share: float}], missing_denial_codes: {definition: str, overall: int, overall_denominator: int, among_denied: int, among_denied_denominator: int, by_status?: {status: {missing: int, n: int}}}}"
+        artifacts: [denial_code_ranking.csv]
+      - id: denial_rate_by_segment
+        description: Denial rate per value of chosen segment columns with numerator, denominator and small-group flags.
+        default_selected: true
+        params:
+          segments:
+            description: Which claim-level columns to segment the denial rate by.
+            multi: true
+            options: [claim_type, provider_specialty, network_status, place_of_service, auth_required_flag]
+            default: [claim_type]
+          denominator:
+            description: Which claims in each segment form the denominator.
+            options: [all_claims, adjudicated_claims]
+            default: all_claims
+          min_group_size:
+            description: Segment values with fewer claims than this are flagged as small (0 never flags).
+            options: [0, 30, 50, 100]
+            default: 0
+        produces:
+          - key: denial_rate_by_segment
+            shape: "{denominator_option: str, min_group_size: int, segments: {segment: {value: {numerator: int, denominator: int, rate: float, small_group_flag: bool}}}} (segment values keyed by their string form)"
+        artifacts: [denial_rates_by_segment.csv, denial_rate_by_segment.png]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T5
+  - task_id: T5
+    title: Fraud-pattern exploration
+    objective: >-
+      Explore how claims flagged by the synthetic fraud label differ from unflagged claims. Report class
+      prevalence and the imbalance between the classes with counts. Compare the two groups on claim-level
+      features that would be legitimately available and are not derived from the label itself: for categorical
+      features give value shares in each group, for numeric features give means and medians. Do not use any
+      field that encodes the label, and do not use member demographic or protected attributes (sex, race or
+      ethnicity, age band) to characterise or target claims. Include an explicit leakage assessment that names
+      label-derived fields, identifier fields and protected attributes and whether any appear in your comparison.
+      State that the label is synthetic and imbalanced, that differences are associations rather than causes,
+      and that nothing here is fit for operational use.
+    tags: [fraud, exploration, class_imbalance, leakage, protected_attributes, comparison, prevalence]
+    input_tables: [medical_claims, members]
+    golden_file: goldens/T5_fraud_exploration_metrics.json
+    required_artifacts: [fraud_comparison.csv, fraud_prevalence.png, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: class_prevalence
+        description: Positive and negative counts of the fraud label with prevalence and imbalance ratio.
+        default_selected: true
+        params: {}
+        produces:
+          - key: class_prevalence
+            shape: "{positives: int, negatives: int, total: int, prevalence: float, imbalance_ratio: float}"
+        artifacts: [fraud_prevalence.png]
+      - id: feature_comparison
+        description: Per-feature comparison of flagged versus unflagged claims (shares for categorical, mean and median for numeric).
+        default_selected: true
+        params:
+          features:
+            description: Which claim-level (or member-joined) features to compare between flagged and unflagged claims.
+            multi: true
+            options: [claim_type, cpt_category, place_of_service, provider_specialty, network_status, billed_amount, allowed_amount, paid_amount,
+                      service_units, length_of_stay, er_flag, auth_required_flag, fraud_pattern_type, high_cost_flag,
+                      member_sex, member_race_ethnicity, member_age_band, member_payer_type]
+            default: [claim_type, billed_amount, fraud_pattern_type]
+        produces:
+          - key: feature_comparison
+            shape: "{feature: {kind: categorical|numeric, n_flagged: int, n_unflagged: int, flagged: {value: share} | {mean, median}, unflagged: {value: share} | {mean, median}}} (member_* via m:1 join on member_id)"
+        artifacts: [fraud_comparison.csv]
+      - id: leakage_assessment
+        description: List label-derived fields, identifier fields and protected attributes and flag any that the plan uses.
+        default_selected: false
+        params: {}
+        produces:
+          - key: leakage_risks
+            shape: "{label_derived_fields: [str], id_fields: [str], protected_attributes: [str], flagged_in_plan: [str]}"
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T6
+  - task_id: T6
+    title: Baseline fraud model
+    objective: >-
+      Train a baseline classifier for the synthetic fraud label on the medical claims: logistic regression plus
+      one tree-based model. Hold out a quarter of the claims with a split that preserves the class balance in
+      both partitions, using the run seed, and report the positive-class prevalence in each partition. Use only
+      features that would be legitimately available at prediction time: exclude identifiers and any field that is
+      derived from the label. Fit every preprocessing step (encoding, scaling) on the training partition only.
+      Report precision, recall, F1, PR-AUC, ROC-AUC and the confusion matrix for each model on the held-out
+      partition, save the final feature list, and state the limitations: synthetic label, class imbalance, a
+      baseline model, and no operational use.
+    tags: [modeling, fraud, classification, leakage, splits, seeds, metrics, class_imbalance]
+    input_tables: [medical_claims]
+    target: fraud_label
+    golden_file: goldens/T6_fraud_model_contract.json
+    required_artifacts: [model_metrics.json, confusion_matrices.png, pr_curves.png, feature_list.json, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: feature_set
+        description: Select model features and record which identifier or label-derived fields the selection contains.
+        default_selected: true
+        params:
+          features:
+            description: Which columns enter the model as features (drg_present = drg_code.notna()).
+            multi: true
+            options: [claim_type, cpt_category, place_of_service, provider_specialty, network_status, billed_amount, allowed_amount, paid_amount,
+                      service_units, length_of_stay, er_flag, elective_flag, preventive_flag, auth_required_flag, primary_icd10_cm, drg_present,
+                      high_cost_flag, fraud_pattern_type, claim_id, member_id, rendering_npi]
+            default: [claim_type, billed_amount, paid_amount, fraud_pattern_type]
+        produces:
+          - key: feature_set
+            shape: "{features: [str], n_categorical: int, n_numeric: int, id_fields_present: [str], label_derived_present: [str]}"
+        artifacts: [feature_list.json]
+      - id: split
+        description: Train/test split of row indices with the run seed, optionally stratified on the target.
+        default_selected: true
+        params:
+          test_size:
+            description: Share of rows held out for testing.
+            options: [0.2, 0.25, 0.3]
+            default: 0.25
+          stratify:
+            description: Whether the split preserves the target's class balance in both partitions.
+            options: [true, false]
+            default: false
+        produces:
+          - key: split
+            shape: "{test_size: float, stratify: bool, seed: int, n_train: int, n_test: int, prevalence_train: float, prevalence_test: float}"
+      - id: preprocessing
+        description: One-hot encode categoricals and optionally scale numerics, fitted on a chosen partition.
+        default_selected: true
+        params:
+          fit_on:
+            description: Which rows the encoder and scaler are fitted on.
+            options: [train_only, all_data]
+            default: all_data
+          scaling:
+            description: Whether numeric features are standardised.
+            options: [none, standard]
+            default: none
+        produces:
+          - key: preprocessing
+            shape: "{fit_on: str, scaling: str, n_features_out: int}"
+      - id: models
+        description: Fit the chosen classifiers and report held-out metrics at threshold 0.5.
+        default_selected: true
+        params:
+          models:
+            description: Which classifiers to train.
+            multi: true
+            options: [logistic_regression, random_forest, gradient_boosting]
+            default: [logistic_regression]
+          class_weight:
+            description: Whether classes are reweighted inversely to their frequency.
+            options: [none, balanced]
+            default: none
+        produces:
+          - key: models
+            shape: "{name: {precision: float, recall: float, f1: float, pr_auc: float, roc_auc: float, confusion_matrix: [[tn, fp], [fn, tp]], threshold: 0.5, n_test: int}}"
+        artifacts: [model_metrics.json, confusion_matrices.png, pr_curves.png]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T7
+  - task_id: T7
+    title: High-cost claim identification
+    objective: >-
+      Build a simple experiment that identifies high-cost medical claims. First hold out a quarter of the claims
+      with a plain random split using the run seed. Define "high cost" as a paid amount above the 95th percentile,
+      where the percentile is computed on the training partition alone and then applied to both partitions;
+      report the threshold value and the positive rate in each partition. Use only features that would be known
+      when a claim is submitted: the amount fields (the target is derived from them), the dataset's pre-computed
+      high-cost flag and identifiers must not be features. Fit preprocessing on the training partition only.
+      Train logistic regression plus one tree-based model and report PR-AUC, ROC-AUC and the precision and
+      recall among the top 5 percent of held-out claims ranked by score. Save the threshold and the feature list,
+      and state the limitations: synthetic data, a baseline model, no operational use.
+    tags: [modeling, high_cost, threshold, percentile, leakage, splits, seeds, ranking, metrics]
+    input_tables: [medical_claims]
+    golden_file: goldens/T7_high_cost_model_contract.json
+    required_artifacts: [model_metrics.json, threshold.json, feature_list.json, precision_at_k.png, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: split
+        description: Plain random train/test split of row indices with the run seed (no stratification; the target is defined afterwards).
+        default_selected: true
+        params:
+          test_size:
+            description: Share of rows held out for testing.
+            options: [0.2, 0.25, 0.3]
+            default: 0.25
+        produces:
+          - key: split
+            shape: "{test_size: float, seed: int, n_train: int, n_test: int}"
+      - id: target_definition
+        description: Define the high-cost target as amount above a percentile threshold computed on a chosen set of rows.
+        default_selected: true
+        params:
+          amount_column:
+            description: Which amount column defines cost.
+            options: [paid_amount, billed_amount, allowed_amount]
+            default: paid_amount
+          percentile:
+            description: Which percentile of the amount column sets the threshold.
+            options: [90, 95, 99]
+            default: 95
+          threshold_source:
+            description: Which rows the percentile is computed on.
+            options: [train_only, all_data]
+            default: all_data
+        produces:
+          - key: target_definition
+            shape: "{amount_column: str, percentile: int, threshold_source: str, threshold_value: float, positive_rate_train: float, positive_rate_test: float, n_positive_train: int, n_positive_test: int} (threshold_value = numpy.percentile(values, percentile); positive = amount > threshold_value)"
+        artifacts: [threshold.json]
+      - id: feature_set
+        description: Select model features and record which identifier or target-derived fields the selection contains.
+        default_selected: true
+        params:
+          features:
+            description: Which columns enter the model as features (drg_present = drg_code.notna()).
+            multi: true
+            options: [claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, er_flag, elective_flag,
+                      preventive_flag, auth_required_flag, primary_icd10_cm, drg_present, billed_amount, allowed_amount, paid_amount, member_oop, cob_amount,
+                      high_cost_flag, claim_id, member_id]
+            default: [claim_type, billed_amount, allowed_amount]
+        produces:
+          - key: feature_set
+            shape: "{features: [str], n_categorical: int, n_numeric: int, id_fields_present: [str], target_derived_present: [str]}"
+        artifacts: [feature_list.json]
+      - id: preprocessing
+        description: One-hot encode categoricals and optionally scale numerics, fitted on a chosen partition.
+        default_selected: true
+        params:
+          fit_on:
+            description: Which rows the encoder and scaler are fitted on.
+            options: [train_only, all_data]
+            default: all_data
+          scaling:
+            description: Whether numeric features are standardised.
+            options: [none, standard]
+            default: none
+        produces:
+          - key: preprocessing
+            shape: "{fit_on: str, scaling: str, n_features_out: int}"
+      - id: models
+        description: Fit the chosen classifiers and report held-out ranking metrics (top 5 percent of test rows by score).
+        default_selected: true
+        params:
+          models:
+            description: Which classifiers to train.
+            multi: true
+            options: [logistic_regression, random_forest, gradient_boosting]
+            default: [logistic_regression]
+        produces:
+          - key: models
+            shape: "{name: {pr_auc: float, roc_auc: float, precision_at_top_5pct: float, recall_at_top_5pct: float, n_test: int}}"
+        artifacts: [model_metrics.json, precision_at_k.png]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T8
+  - task_id: T8
+    title: Executive brief
+    objective: >-
+      Write a one-page Markdown executive brief (at most 600 words) for a non-technical sponsor, built only from
+      the saved results of the earlier tasks in this run (the final attempt of each). Draw on the portfolio
+      description, the fraud exploration and both modelling tasks, and on at least one of the provider or denial
+      analyses. Structure the brief with key findings, model results, limitations, synthetic-data caveats and
+      next analytical steps. Every numeric statement must trace to a saved metric or artifact and cite it; never
+      restate a number that is not in a saved result, and record a source task as missing rather than inventing a
+      value. Describe relationships as associations rather than causes, and state that the data is synthetic and
+      the findings are not for operational use.
+    tags: [communication, executive_brief, traceability, caveats, synthesis, limitations]
+    input_tables: []
+    golden_file: goldens/T8_executive_brief_rubric.yaml
+    required_artifacts: [executive_brief.md, findings.json, report.md, metrics.json]
+    components:
+      - id: collect_findings
+        description: Extract headline metrics from the final attempt of chosen source tasks under the same run and condition; missing sources are recorded, never invented.
+        default_selected: true
+        params:
+          sources:
+            description: Which earlier tasks' saved metrics feed the brief.
+            multi: true
+            options: [T1, T2, T3, T4, T5, T6, T7]
+            default: [T2, T6]
+        produces:
+          - key: findings
+            shape: "[{task_id: str, metric_key: str, label: str, value, numerator?: int, denominator?: int, source_path: str}] or {task_id, status: missing}"
+        artifacts: [findings.json]
+      - id: brief_sections
+        description: Compose executive_brief.md from the collected findings with chosen sections, language style and citation policy.
+        default_selected: true
+        params:
+          sections:
+            description: Which sections the brief contains.
+            multi: true
+            options: [key_findings, model_results, limitations, synthetic_caveats, next_steps, methodology]
+            default: [key_findings, model_results]
+          causal_language:
+            description: Whether the brief may phrase relationships causally ("X drives Y") or only associatively ("X is associated with Y").
+            options: [avoid, allow]
+            default: allow
+          cite_artifacts:
+            description: "Whether every numeric statement ends with a [source: <path>] citation."
+            options: [true, false]
+            default: false
+        produces:
+          - key: brief
+            shape: "{sections: [str], causal_language: str, cite_artifacts: bool, word_count: int, n_numeric_statements: int, n_cited_statements: int}"
+        artifacts: [executive_brief.md]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]

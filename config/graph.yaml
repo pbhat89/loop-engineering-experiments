@@ -1,10 +1,10 @@
-# Documentation mirror of the compiled LangGraph (src/claims_graph.py) — owner: A1.
-# tests/test_graph_routes.py asserts, for each condition, that build_claims_skill_graph(condition).get_graph()
-# has exactly the node set below and that its edge set equals `edges` ∪ {(source, target) for every
-# conditional_edges target}. LangGraph's START/END appear as "__start__" / "__end__".
-# Routing logic is documented in docs/plan.md §6–§7; this file never drives execution.
+# Documentation mirror of the compiled LangGraph in src/claims_graph.py (v2, lead-corrected).
+# One graph serves every condition; routing functions read state["condition"] and the `next_route`
+# decision recorded by evaluate_output / validate_skill. tests/test_graph_routes.py asserts that
+# `nodes`, `edges` and `per_condition` below equal src.claims_graph.designed_topology() and that the
+# edge set equals the compiled graph's edges. This file never drives execution.
 
-graph_version: "1"
+graph_version: "2"
 
 nodes:
   - load_context
@@ -23,91 +23,69 @@ nodes:
 # Nodes that call provider.decide() and therefore interrupt in manual mode
 llm_decision_nodes: [plan_task, revise_plan, reflect_on_feedback, propose_skill, revise_skill_proposal]
 
+# Union of static and conditional edges (label = routing condition; empty = static edge)
+edges:
+  - {source: START, target: load_context, label: ""}
+  - {source: load_context, target: retrieve_skills, label: "skill_learning | foundational_only"}
+  - {source: load_context, target: plan_task, label: "baseline | reflection_only"}
+  - {source: retrieve_skills, target: plan_task, label: ""}
+  - {source: plan_task, target: execute_task, label: ""}
+  - {source: execute_task, target: evaluate_output, label: ""}
+  - {source: evaluate_output, target: finalize_task, label: "completed"}
+  - {source: evaluate_output, target: revise_plan, label: "retry (baseline)"}
+  - {source: evaluate_output, target: reflect_on_feedback, label: "retry (reflection_only, skill_learning) | learn (skill_learning)"}
+  - {source: reflect_on_feedback, target: revise_plan, label: "retry"}
+  - {source: reflect_on_feedback, target: propose_skill, label: "learn"}
+  - {source: revise_plan, target: execute_task, label: ""}
+  - {source: propose_skill, target: validate_skill, label: ""}
+  - {source: validate_skill, target: persist_skill, label: "accepted"}
+  - {source: validate_skill, target: revise_skill_proposal, label: "retry_revision"}
+  - {source: validate_skill, target: finalize_task, label: "rejected"}
+  - {source: revise_skill_proposal, target: validate_skill, label: ""}
+  - {source: persist_skill, target: finalize_task, label: ""}
+  - {source: finalize_task, target: END, label: ""}
+
 routers:
+  route_after_load:
+    source: load_context
+    targets: [retrieve_skills, plan_task]
+    rule: "retrieve_skills when condition in {skill_learning, foundational_only}; otherwise plan_task"
   route_after_evaluation:
     source: evaluate_output
-    labels: [completed, retry, learn]
-    rule: "retry if not evaluation.passed and retry_count < max_retries; otherwise learn (skill_learning) or completed (baseline, reflection_only)"
+    targets: [finalize_task, revise_plan, reflect_on_feedback]
+    rule: >-
+      evaluate_output stores next_route: 'retry' when not passed and retry_count < max_retries and operator budget remains;
+      otherwise 'learn' (skill_learning) or 'completed' (baseline, reflection_only, foundational_only).
+      retry -> revise_plan for baseline, reflect_on_feedback for every other condition; learn -> reflect_on_feedback; completed -> finalize_task
   route_after_reflection:
     source: reflect_on_feedback
-    labels: [retry, learn]
-    rule: "retry if not evaluation.passed and retry_count < max_retries; otherwise learn (skill_learning only; reflection_only uses a static edge)"
-  route_after_proposal:
-    source: propose_skill
-    labels: [validate, skip]
-    rule: "skip when skill_proposal is null (no lesson reusable in >= 2 remaining tasks, or operator cap reached)"
+    targets: [revise_plan, propose_skill]
+    rule: "next_route == 'retry' -> revise_plan; otherwise propose_skill (learn path, skill_learning only)"
   route_after_validation:
     source: validate_skill
-    labels: [accepted, rejected, retry_revision]
-    rule: "skill_validation.decision; retry_revision is offered at most once per task"
+    targets: [persist_skill, revise_skill_proposal, finalize_task]
+    rule: >-
+      next_route = validation decision. A null proposal is validated as 'rejected'. 'retry_revision' is offered at most once per task
+      and only while operator budget remains; afterwards it becomes 'rejected'.
 
-conditions:
-  baseline:
-    entry: load_context
-    nodes: [load_context, plan_task, execute_task, evaluate_output, revise_plan, finalize_task]
-    edges:
-      - [__start__, load_context]
-      - [load_context, plan_task]
-      - [plan_task, execute_task]
-      - [execute_task, evaluate_output]
-      - [revise_plan, execute_task]
-      - [finalize_task, __end__]
-    conditional_edges:
-      - router: route_after_evaluation
-        source: evaluate_output
-        targets: {completed: finalize_task, retry: revise_plan}
+# Nodes reachable per condition (the traversable subset of the single graph)
+per_condition:
+  baseline: [load_context, plan_task, execute_task, evaluate_output, revise_plan, finalize_task]
+  reflection_only: [load_context, plan_task, execute_task, evaluate_output, reflect_on_feedback, revise_plan, finalize_task]
+  skill_learning: [load_context, retrieve_skills, plan_task, execute_task, evaluate_output, reflect_on_feedback, revise_plan,
+                   propose_skill, validate_skill, revise_skill_proposal, persist_skill, finalize_task]
+  foundational_only: [load_context, retrieve_skills, plan_task, execute_task, evaluate_output, reflect_on_feedback, revise_plan, finalize_task]
 
-  reflection_only:
-    entry: load_context
-    nodes: [load_context, plan_task, execute_task, evaluate_output, reflect_on_feedback, revise_plan, finalize_task]
-    edges:
-      - [__start__, load_context]
-      - [load_context, plan_task]
-      - [plan_task, execute_task]
-      - [execute_task, evaluate_output]
-      - [reflect_on_feedback, revise_plan]
-      - [revise_plan, execute_task]
-      - [finalize_task, __end__]
-    conditional_edges:
-      - router: route_after_evaluation
-        source: evaluate_output
-        targets: {completed: finalize_task, retry: reflect_on_feedback}
-
-  skill_learning:
-    entry: load_context
-    nodes: [load_context, retrieve_skills, plan_task, execute_task, evaluate_output, reflect_on_feedback, revise_plan,
-            propose_skill, validate_skill, revise_skill_proposal, persist_skill, finalize_task]
-    edges:
-      - [__start__, load_context]
-      - [load_context, retrieve_skills]
-      - [retrieve_skills, plan_task]
-      - [plan_task, execute_task]
-      - [execute_task, evaluate_output]
-      - [revise_plan, execute_task]
-      - [revise_skill_proposal, validate_skill]
-      - [persist_skill, finalize_task]
-      - [finalize_task, __end__]
-    conditional_edges:
-      - router: route_after_evaluation
-        source: evaluate_output
-        targets: {retry: reflect_on_feedback, learn: reflect_on_feedback}
-      - router: route_after_reflection
-        source: reflect_on_feedback
-        targets: {retry: revise_plan, learn: propose_skill}
-      - router: route_after_proposal
-        source: propose_skill
-        targets: {validate: validate_skill, skip: finalize_task}
-      - router: route_after_validation
-        source: validate_skill
-        targets: {accepted: persist_skill, rejected: finalize_task, retry_revision: revise_skill_proposal}
-
-# Retry / termination rules (brief Addendum B; docs/plan.md §7). Values duplicated from experiment.yaml are asserted equal by test.
+# Retry / termination rules (brief Addendum B; docs/plan.md). Values duplicated from experiment.yaml are asserted equal by test.
 termination:
   pass_rule: "all critical checks pass and score_total >= pass_threshold -> finalize_task immediately (stop_reason: passed)"
   max_retries: 2
   retry_exhausted_rule: "retry_count == max_retries and not passed -> finalize (stop_reason: retry_budget_exhausted); skill_learning still reflects and may propose"
-  max_operator_steps_per_condition: 40
-  operator_cap_rule: "when operator_steps_used >= cap no request is issued: plan_task uses catalogue defaults, revise_plan keeps the prior plan, reflect_on_feedback is empty, propose_skill returns null; routing unchanged; stop_reason: operator_cap"
+  max_operator_steps_per_condition: 64
+  operator_cap_rule: >-
+    when operator_steps_used >= cap no request is issued: plan_task uses catalogue defaults, revise_plan keeps the prior plan,
+    reflect_on_feedback is empty, propose_skill returns null, and no further retries are routed (a retry needs an operator);
+    stop_reason: operator_cap
   max_operator_validation_rerequests_per_node: 2
   max_skill_proposal_revisions: 1
   skill_proposal_min_applicable_remaining_tasks: 2
