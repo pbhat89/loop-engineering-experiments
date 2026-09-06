@@ -73,7 +73,7 @@ tasks:
             shape: {value: float, numerator: int, denominator: int, numerator_definition: str, denominator_definition: str}
 ```
 
-Rules: component ids are snake_case; shared components across tasks are allowed (`load_tables`, `join_check`, `write_report`, `save_metrics_json`, …); every metric key referenced by a golden or a rubric check must appear in some component's `produces`; the catalogue must offer genuinely different analytical choices (denominators, date columns, exclusion lists, threshold sources, small-group thresholds, caveat sets).
+Rules: component ids are snake_case; shared components across tasks are allowed (`load_tables`, `join_check`, `write_report`, …); every metric key referenced by a golden or a rubric check must appear in some component's `produces`; the catalogue must offer genuinely different analytical choices (denominators, date columns, exclusion lists, threshold sources, small-group thresholds, caveat sets). List-valued params declare `multi: true` and take a list whose items are all in `options`; option values are matched by string form (`"30"` matches `30`). **The concrete catalogue for T1–T8 (ids, options, defaults, metric shapes, artifact names, golden conventions) is fixed in `docs/LEAD_CATALOGUE_SKELETON.md`.**
 
 ## 4. Plan (operator response; L0 `PlanResponse`)
 

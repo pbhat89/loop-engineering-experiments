@@ -1,0 +1,190 @@
+{
+  "bytes": 10610,
+  "candidate_keys": [
+    "provider_npi"
+  ],
+  "columns": [
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 150,
+      "name": "provider_npi",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "1103747954",
+        "1108115157",
+        "1109850785"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 4,
+      "name": "provider_type",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "Ancillary",
+        "Hospital/Facility",
+        "PCP"
+      ],
+      "value_counts": {
+        "Ancillary": 22,
+        "Hospital/Facility": 50,
+        "PCP": 31,
+        "Specialist": 47
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 25,
+      "name": "specialty",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "ASC",
+        "Cardiology",
+        "Clinical Laboratory"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 8,
+      "name": "nucc_taxonomy",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "207P00000X",
+        "207Q00000X",
+        "207R00000X"
+      ],
+      "value_counts": {
+        "207P00000X": 111,
+        "207Q00000X": 7,
+        "207R00000X": 8,
+        "207RC0000X": 2,
+        "207X00000X": 8,
+        "225100000X": 4,
+        "282N00000X": 7,
+        "291U00000X": 3
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 10,
+      "name": "state",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "CA",
+        "FL",
+        "GA"
+      ],
+      "value_counts": {
+        "CA": 27,
+        "FL": 19,
+        "GA": 14,
+        "IL": 10,
+        "MI": 9,
+        "NC": 15,
+        "NY": 15,
+        "OH": 10,
+        "PA": 10,
+        "TX": 21
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "network_status",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "In-Network",
+        "Out-of-Network"
+      ],
+      "value_counts": {
+        "In-Network": 126,
+        "Out-of-Network": 24
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 149,
+      "name": "group_id",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "GRP1129",
+        "GRP1219",
+        "GRP1350"
+      ]
+    }
+  ],
+  "composite_keys": [],
+  "constant_columns": [],
+  "date_columns": [],
+  "date_ranges": {},
+  "date_unparseable": {},
+  "domain_checks": {
+    "group_id_duplicate_values": [
+      "GRP4198"
+    ]
+  },
+  "key_checks": [
+    {
+      "columns": [
+        "provider_npi"
+      ],
+      "distinct_keys": 150,
+      "duplicate_key_rows": 0,
+      "extra_rows_beyond_distinct": 0,
+      "is_unique": true,
+      "null_key_rows": 0,
+      "present": true,
+      "rows": 150
+    },
+    {
+      "columns": [
+        "group_id"
+      ],
+      "distinct_keys": 149,
+      "duplicate_key_rows": 2,
+      "extra_rows_beyond_distinct": 1,
+      "is_unique": false,
+      "null_key_rows": 0,
+      "present": true,
+      "rows": 150
+    }
+  ],
+  "missingness": {
+    "all_null_columns": [],
+    "columns_with_nulls": {},
+    "null_cells": 0,
+    "null_fraction": 0.0,
+    "total_cells": 1050
+  },
+  "n_columns": 7,
+  "path": "data/raw/providers.csv",
+  "rows": 150,
+  "sha256": "8a3a41e69ce6bf343066df4a883a52ac8b76d3ae1f935930e5b800dfac9b2551",
+  "string_columns_forced": [
+    "provider_npi",
+    "group_id",
+    "nucc_taxonomy"
+  ],
+  "table": "providers"
+}

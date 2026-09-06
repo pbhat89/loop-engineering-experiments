@@ -1,0 +1,750 @@
+{
+  "bytes": 4335821,
+  "candidate_keys": [
+    "rx_claim_id"
+  ],
+  "columns": [
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 18310,
+      "name": "rx_claim_id",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "RX0000000001",
+        "RX0000000002",
+        "RX0000000003"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 500,
+      "name": "member_id",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "MBR00000001",
+        "MBR00000002",
+        "MBR00000003"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 1095,
+      "name": "fill_date",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "2021-01-01",
+        "2021-01-02",
+        "2021-01-03"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 1098,
+      "name": "paid_date",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "2021-01-02",
+        "2021-01-03",
+        "2021-01-04"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 18310,
+      "name": "pharmacy_npi",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "1100010588",
+        "1100224376",
+        "1100234662"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 18310,
+      "name": "prescriber_npi",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "1100039488",
+        "1100050952",
+        "1100096032"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 7804,
+      "name": "plan_id",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "PLN1000",
+        "PLN1001",
+        "PLN1002"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 18121,
+      "name": "bin_number",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "100117",
+        "100193",
+        "100283"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 899,
+      "name": "pcn_code",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "PCN100",
+        "PCN101",
+        "PCN102"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 50,
+      "name": "ndc_11",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "00002321302",
+        "00002773559",
+        "00006034431"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 50,
+      "name": "drug_name_generic",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "Adalimumab 40mg",
+        "Albuterol 90mcg inhaler",
+        "Alprazolam 0.5mg"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 50,
+      "name": "drug_name_brand",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "Adderall",
+        "Aldactone",
+        "Ambien"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 37,
+      "name": "therapeutic_class",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "ADHD Agents",
+        "Ace Inhibitors",
+        "Angiotensin Receptor Blockers"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 29,
+      "name": "atc_code",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "A02B",
+        "A10A",
+        "A10B"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 4,
+      "name": "formulary_tier",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 4,
+        "mean": 1.6466,
+        "min": 1,
+        "sum": 30149.0
+      },
+      "sample_values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "value_counts": {
+        "1": 10580,
+        "2": 5488,
+        "3": 375,
+        "4": 1867
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 4,
+      "name": "days_supply",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 90,
+        "mean": 45.6217,
+        "min": 7,
+        "sum": 835334.0
+      },
+      "sample_values": [
+        "7",
+        "30",
+        "60"
+      ],
+      "value_counts": {
+        "30": 10130,
+        "60": 1840,
+        "7": 1802,
+        "90": 4538
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 38,
+      "name": "quantity_dispensed",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 98,
+        "mean": 45.1087,
+        "min": 6,
+        "sum": 825940.0
+      },
+      "sample_values": [
+        "6",
+        "7",
+        "27"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 12,
+      "name": "refill_number",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 11,
+        "mean": 5.4757,
+        "min": 0,
+        "sum": 100260.0
+      },
+      "sample_values": [
+        "0",
+        "1",
+        "2"
+      ],
+      "value_counts": {
+        "0": 1533,
+        "1": 1546,
+        "10": 1488,
+        "11": 1541,
+        "2": 1564,
+        "3": 1520,
+        "4": 1519,
+        "5": 1555,
+        "6": 1504,
+        "7": 1532,
+        "8": 1476,
+        "9": 1532
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 4,
+      "name": "pharmacy_type",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "LTC",
+        "Mail Order",
+        "Retail"
+      ],
+      "value_counts": {
+        "LTC": 370,
+        "Mail Order": 4090,
+        "Retail": 12383,
+        "Specialty": 1467
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 4,
+      "name": "dispense_as_written_code",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "0",
+        "1",
+        "2"
+      ],
+      "value_counts": {
+        "0": 15611,
+        "1": 915,
+        "2": 855,
+        "3": 929
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "specialty_rx_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.102,
+        "min": 0,
+        "sum": 1867.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 16443,
+        "1": 1867
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "compounded_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0191,
+        "min": 0,
+        "sum": 349.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 17961,
+        "1": 349
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 116,
+      "name": "ingredient_cost",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 25500.0,
+        "mean": 687.3897,
+        "min": 1.75,
+        "sum": 12586105.18
+      },
+      "sample_values": [
+        "1.75",
+        "1.87",
+        "1.98"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 2162,
+      "name": "dispensing_fee",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 49.95,
+        "mean": 8.5018,
+        "min": 1.5,
+        "sum": 155667.64
+      },
+      "sample_values": [
+        "1.5",
+        "1.51",
+        "1.52"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 10866,
+      "name": "gross_amount_due",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 25531.74,
+        "mean": 695.8915,
+        "min": 3.38,
+        "sum": 12741772.55
+      },
+      "sample_values": [
+        "3.38",
+        "3.44",
+        "3.52"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 44,
+      "name": "copay_amount",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 155.0,
+        "mean": 30.1062,
+        "min": 0.0,
+        "sum": 551244.0
+      },
+      "sample_values": [
+        "0.0",
+        "1.0",
+        "2.0"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 10440,
+      "name": "plan_paid",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 25386.74,
+        "mean": 639.4386,
+        "min": 0.0,
+        "sum": 11708120.18
+      },
+      "sample_values": [
+        "0.0",
+        "0.02",
+        "0.04"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 4495,
+      "name": "dir_fee_amount",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1737.0,
+        "mean": 32.6287,
+        "min": 0.0,
+        "sum": 597432.21
+      },
+      "sample_values": [
+        "0.0",
+        "0.12",
+        "0.13"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 32,
+      "name": "awp_per_unit",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 340.0,
+        "mean": 18.6126,
+        "min": 0.3,
+        "sum": 340797.54
+      },
+      "sample_values": [
+        "0.3",
+        "0.32",
+        "0.34"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 32,
+      "name": "nadac_per_unit",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 240.8333,
+        "mean": 13.184,
+        "min": 0.2125,
+        "sum": 241398.28
+      },
+      "sample_values": [
+        "0.2125",
+        "0.2267",
+        "0.2408"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "early_refill_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0709,
+        "min": 0,
+        "sum": 1298.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 17012,
+        "1": 1298
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "fraud_label_rx",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0355,
+        "min": 0,
+        "sum": 650.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 17660,
+        "1": 650
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "diversion_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0154,
+        "min": 0,
+        "sum": 282.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 18028,
+        "1": 282
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": true,
+      "n_unique": 1,
+      "name": "controlled_substance_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 0,
+        "mean": 0.0,
+        "min": 0,
+        "sum": 0.0
+      },
+      "sample_values": [
+        "0"
+      ],
+      "value_counts": {
+        "0": 18310
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 1171,
+      "name": "end_date",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "2021-01-08",
+        "2021-01-09",
+        "2021-01-10"
+      ]
+    }
+  ],
+  "composite_keys": [],
+  "constant_columns": [
+    "controlled_substance_flag"
+  ],
+  "date_columns": [
+    "fill_date",
+    "paid_date",
+    "end_date"
+  ],
+  "date_ranges": {
+    "end_date": [
+      "2021-01-08",
+      "2024-03-30"
+    ],
+    "fill_date": [
+      "2021-01-01",
+      "2023-12-31"
+    ],
+    "paid_date": [
+      "2021-01-02",
+      "2024-01-04"
+    ]
+  },
+  "date_unparseable": {
+    "end_date": 0,
+    "fill_date": 0,
+    "paid_date": 0
+  },
+  "domain_checks": {
+    "date_order_violations": {
+      "end_before_fill": 0,
+      "paid_before_fill": 0
+    },
+    "diversion_flag_prevalence": 0.015401,
+    "early_refill_flag_prevalence": 0.07089,
+    "end_date_equals_fill_plus_days_supply_fraction": 1.0,
+    "fraud_label_rx_prevalence": 0.0355,
+    "pharmacy_npi_distinct_equals_rows": true,
+    "prescriber_npi_distinct_equals_rows": true
+  },
+  "key_checks": [
+    {
+      "columns": [
+        "rx_claim_id"
+      ],
+      "distinct_keys": 18310,
+      "duplicate_key_rows": 0,
+      "extra_rows_beyond_distinct": 0,
+      "is_unique": true,
+      "null_key_rows": 0,
+      "present": true,
+      "rows": 18310
+    },
+    {
+      "columns": [
+        "member_id"
+      ],
+      "distinct_keys": 500,
+      "duplicate_key_rows": 18310,
+      "extra_rows_beyond_distinct": 17810,
+      "is_unique": false,
+      "null_key_rows": 0,
+      "present": true,
+      "rows": 18310
+    }
+  ],
+  "missingness": {
+    "all_null_columns": [],
+    "columns_with_nulls": {},
+    "null_cells": 0,
+    "null_fraction": 0.0,
+    "total_cells": 640850
+  },
+  "n_columns": 35,
+  "path": "data/raw/pharmacy_claims.csv",
+  "rows": 18310,
+  "sha256": "7341275cee178873267ee608bb1a5df28386fbe5b72ee39fa7b25dffdccc92c6",
+  "string_columns_forced": [
+    "rx_claim_id",
+    "member_id",
+    "pharmacy_npi",
+    "prescriber_npi",
+    "plan_id",
+    "bin_number",
+    "pcn_code",
+    "ndc_11",
+    "atc_code",
+    "dispense_as_written_code"
+  ],
+  "table": "pharmacy_claims"
+}

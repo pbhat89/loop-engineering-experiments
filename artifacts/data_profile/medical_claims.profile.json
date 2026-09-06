@@ -1,0 +1,1225 @@
+{
+  "bytes": 3525830,
+  "candidate_keys": [
+    "claim_id"
+  ],
+  "columns": [
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 12845,
+      "name": "claim_id",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "CLM0000000001",
+        "CLM0000000002",
+        "CLM0000000003"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 500,
+      "name": "member_id",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "MBR00000001",
+        "MBR00000002",
+        "MBR00000003"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 3,
+      "name": "claim_type",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "Institutional-IP",
+        "Institutional-OP",
+        "Professional"
+      ],
+      "value_counts": {
+        "Institutional-IP": 1931,
+        "Institutional-OP": 3873,
+        "Professional": 7041
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 1095,
+      "name": "service_date_from",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "2021-01-01",
+        "2021-01-02",
+        "2021-01-03"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 1101,
+      "name": "service_date_to",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "2021-01-01",
+        "2021-01-02",
+        "2021-01-03"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 1128,
+      "name": "adjudication_date",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "2021-01-08",
+        "2021-01-09",
+        "2021-01-10"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 6790,
+      "name": "plan_id",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "PLN1003",
+        "PLN1005",
+        "PLN1006"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 150,
+      "name": "rendering_npi",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "1103747954",
+        "1108115157",
+        "1109850785"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 150,
+      "name": "billing_npi",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "1103747954",
+        "1108115157",
+        "1109850785"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 25,
+      "name": "provider_specialty",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "ASC",
+        "Cardiology",
+        "Clinical Laboratory"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "network_status",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "In-Network",
+        "Out-of-Network"
+      ],
+      "value_counts": {
+        "In-Network": 10788,
+        "Out-of-Network": 2057
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 50,
+      "name": "primary_icd10_cm",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "B97.89",
+        "C50.912",
+        "E11.40"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 50,
+      "name": "dx2",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "B97.89",
+        "C50.912",
+        "E11.40"
+      ]
+    },
+    {
+      "all_null": true,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 0,
+      "name": "dx3",
+      "null_count": 12845,
+      "null_fraction": 1.0,
+      "sample_values": []
+    },
+    {
+      "all_null": true,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 0,
+      "name": "dx4",
+      "null_count": 12845,
+      "null_fraction": 1.0,
+      "sample_values": []
+    },
+    {
+      "all_null": true,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 0,
+      "name": "dx5",
+      "null_count": 12845,
+      "null_fraction": 1.0,
+      "sample_values": []
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 13,
+      "name": "drg_code",
+      "null_count": 10914,
+      "null_fraction": 0.849669,
+      "sample_values": [
+        "194",
+        "195",
+        "196"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 1,
+      "name": "drg_type",
+      "null_count": 10914,
+      "null_fraction": 0.849669,
+      "sample_values": [
+        "MS-DRG"
+      ],
+      "value_counts": {
+        "<null>": 10914,
+        "MS-DRG": 1931
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 24,
+      "name": "mdc_code",
+      "null_count": 10914,
+      "null_fraction": 0.849669,
+      "sample_values": [
+        "1",
+        "10",
+        "11"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 22,
+      "name": "length_of_stay",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 22,
+        "mean": 0.7482,
+        "min": 0,
+        "sum": 9610.0
+      },
+      "sample_values": [
+        "0",
+        "1",
+        "2"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 4,
+      "name": "poa_flag",
+      "null_count": 10914,
+      "null_fraction": 0.849669,
+      "sample_values": [
+        "N",
+        "U",
+        "W"
+      ],
+      "value_counts": {
+        "<null>": 10914,
+        "N": 195,
+        "U": 47,
+        "W": 42,
+        "Y": 1647
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 50,
+      "name": "cpt_code",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "23472",
+        "27130",
+        "27447"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 5,
+      "name": "cpt_category",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "E&M",
+        "Medicine",
+        "Pathology/Lab"
+      ],
+      "value_counts": {
+        "E&M": 3871,
+        "Medicine": 1922,
+        "Pathology/Lab": 1839,
+        "Radiology": 1983,
+        "Surgery": 3230
+      }
+    },
+    {
+      "all_null": true,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 0,
+      "name": "modifier1",
+      "null_count": 12845,
+      "null_fraction": 1.0,
+      "sample_values": []
+    },
+    {
+      "all_null": true,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 0,
+      "name": "modifier2",
+      "null_count": 12845,
+      "null_fraction": 1.0,
+      "sample_values": []
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 14,
+      "name": "revenue_code",
+      "null_count": 7041,
+      "null_fraction": 0.548151,
+      "sample_values": [
+        "0120",
+        "0200",
+        "0270"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 11,
+      "name": "place_of_service",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "11",
+        "12",
+        "20"
+      ],
+      "value_counts": {
+        "11": 2775,
+        "12": 311,
+        "20": 366,
+        "21": 2535,
+        "22": 5145,
+        "23": 543,
+        "31": 213,
+        "49": 354,
+        "50": 213,
+        "65": 125,
+        "81": 265
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 11,
+      "name": "pos_description",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "Emergency Room",
+        "End-Stage Renal Disease",
+        "Federally Qualified Health Center"
+      ],
+      "value_counts": {
+        "Emergency Room": 543,
+        "End-Stage Renal Disease": 125,
+        "Federally Qualified Health Center": 213,
+        "Home": 311,
+        "Independent Clinic": 354,
+        "Independent Laboratory": 265,
+        "Inpatient Hospital": 2535,
+        "Office": 2775,
+        "Outpatient Hospital": 5145,
+        "Skilled Nursing Facility": 213,
+        "Urgent Care": 366
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 3,
+      "name": "service_units",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 3,
+        "mean": 2.0046,
+        "min": 1,
+        "sum": 25749.0
+      },
+      "sample_values": [
+        "1",
+        "2",
+        "3"
+      ],
+      "value_counts": {
+        "1": 4240,
+        "2": 4306,
+        "3": 4299
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 12239,
+      "name": "billed_amount",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 29580.55,
+        "mean": 1654.6679,
+        "min": 21.6,
+        "sum": 21254208.81
+      },
+      "sample_values": [
+        "21.6",
+        "21.7",
+        "21.71"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 11819,
+      "name": "allowed_amount",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 24692.53,
+        "mean": 947.857,
+        "min": 7.61,
+        "sum": 12175223.45
+      },
+      "sample_values": [
+        "7.61",
+        "7.94",
+        "7.95"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 8732,
+      "name": "paid_amount",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 24677.53,
+        "mean": 761.6517,
+        "min": 0.0,
+        "sum": 9783415.77
+      },
+      "sample_values": [
+        "0.0",
+        "0.01",
+        "0.03"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 4772,
+      "name": "member_deductible",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 499.08,
+        "mean": 65.7137,
+        "min": 0.0,
+        "sum": 844092.9
+      },
+      "sample_values": [
+        "0.0",
+        "0.01",
+        "0.03"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 6,
+      "name": "member_copay",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 75.0,
+        "mean": 19.6796,
+        "min": 0.0,
+        "sum": 252785.0
+      },
+      "sample_values": [
+        "0.0",
+        "15.0",
+        "25.0"
+      ],
+      "value_counts": {
+        "0.0": 6534,
+        "15.0": 1244,
+        "25.0": 1297,
+        "35.0": 1240,
+        "50.0": 1258,
+        "75.0": 1272
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 2610,
+      "name": "member_coinsurance",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 3506.9,
+        "mean": 27.7986,
+        "min": 0.0,
+        "sum": 357072.43
+      },
+      "sample_values": [
+        "0.0",
+        "0.01",
+        "0.02"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 6714,
+      "name": "member_oop",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 3876.29,
+        "mean": 113.1919,
+        "min": 0.0,
+        "sum": 1453950.33
+      },
+      "sample_values": [
+        "0.0",
+        "0.03",
+        "0.04"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "float64",
+      "is_constant": false,
+      "n_unique": 129,
+      "name": "cob_amount",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1622.42,
+        "mean": 1.2533,
+        "min": 0.0,
+        "sum": 16098.54
+      },
+      "sample_values": [
+        "0.0",
+        "0.92",
+        "1.18"
+      ]
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 4,
+      "name": "claim_status",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "sample_values": [
+        "Adjusted",
+        "Denied",
+        "Paid"
+      ],
+      "value_counts": {
+        "Adjusted": 542,
+        "Denied": 1286,
+        "Paid": 10511,
+        "Pended": 506
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 10,
+      "name": "denial_code_carc",
+      "null_count": 11559,
+      "null_fraction": 0.899883,
+      "sample_values": [
+        "CO-11",
+        "CO-119",
+        "CO-15"
+      ],
+      "value_counts": {
+        "<null>": 11559,
+        "CO-11": 147,
+        "CO-119": 51,
+        "CO-15": 241,
+        "CO-18": 138,
+        "CO-27": 115,
+        "CO-29": 82,
+        "CO-4": 206,
+        "CO-50": 87,
+        "CO-97": 99,
+        "PR-1": 120
+      }
+    },
+    {
+      "all_null": true,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 0,
+      "name": "denial_reason_desc",
+      "null_count": 12845,
+      "null_fraction": 1.0,
+      "sample_values": []
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "auth_required_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.1467,
+        "min": 0,
+        "sum": 1885.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 10960,
+        "1": 1885
+      }
+    },
+    {
+      "all_null": true,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 0,
+      "name": "auth_number",
+      "null_count": 12845,
+      "null_fraction": 1.0,
+      "sample_values": []
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "er_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0423,
+        "min": 0,
+        "sum": 543.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12302,
+        "1": 543
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "preventive_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0857,
+        "min": 0,
+        "sum": 1101.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 11744,
+        "1": 1101
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "elective_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.2406,
+        "min": 0,
+        "sum": 3091.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 9754,
+        "1": 3091
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "high_cost_flag",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0234,
+        "min": 0,
+        "sum": 300.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12545,
+        "1": 300
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "readmission_flag_30d",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0165,
+        "min": 0,
+        "sum": 212.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12633,
+        "1": 212
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "fraud_label",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0504,
+        "min": 0,
+        "sum": 647.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12198,
+        "1": 647
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "str",
+      "is_constant": false,
+      "n_unique": 5,
+      "name": "fraud_pattern_type",
+      "null_count": 12198,
+      "null_fraction": 0.94963,
+      "sample_values": [
+        "Duplicate",
+        "Identity_Theft",
+        "Phantom"
+      ],
+      "value_counts": {
+        "<null>": 12198,
+        "Duplicate": 126,
+        "Identity_Theft": 56,
+        "Phantom": 138,
+        "Unbundling": 134,
+        "Upcoding": 193
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "hedis_bcs",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0155,
+        "min": 0,
+        "sum": 199.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12646,
+        "1": 199
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "hedis_col",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0499,
+        "min": 0,
+        "sum": 641.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12204,
+        "1": 641
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "hedis_cdc_a1c",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0142,
+        "min": 0,
+        "sum": 182.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12663,
+        "1": 182
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "hedis_awv",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0142,
+        "min": 0,
+        "sum": 182.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12663,
+        "1": 182
+      }
+    },
+    {
+      "all_null": false,
+      "dtype": "int64",
+      "is_constant": false,
+      "n_unique": 2,
+      "name": "hedis_depression",
+      "null_count": 0,
+      "null_fraction": 0.0,
+      "numeric_summary": {
+        "max": 1,
+        "mean": 0.0158,
+        "min": 0,
+        "sum": 203.0
+      },
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "value_counts": {
+        "0": 12642,
+        "1": 203
+      }
+    }
+  ],
+  "composite_keys": [],
+  "constant_columns": [],
+  "date_columns": [
+    "service_date_from",
+    "service_date_to",
+    "adjudication_date"
+  ],
+  "date_ranges": {
+    "adjudication_date": [
+      "2021-01-08",
+      "2024-02-11"
+    ],
+    "service_date_from": [
+      "2021-01-01",
+      "2023-12-31"
+    ],
+    "service_date_to": [
+      "2021-01-01",
+      "2024-01-09"
+    ]
+  },
+  "date_unparseable": {
+    "adjudication_date": 0,
+    "service_date_from": 0,
+    "service_date_to": 0
+  },
+  "domain_checks": {
+    "amount_order_violations": {
+      "allowed_gt_billed": 0,
+      "negative_amounts": 0,
+      "paid_gt_allowed": 0
+    },
+    "date_order_violations": {
+      "adjudication_before_service_from": 0,
+      "adjudication_before_service_to": 36,
+      "service_to_before_from": 0
+    },
+    "denial_code_by_claim_status": {
+      "Adjusted": {
+        "missing_denial_code": 542,
+        "rows": 542,
+        "with_denial_code": 0
+      },
+      "Denied": {
+        "missing_denial_code": 0,
+        "rows": 1286,
+        "with_denial_code": 1286
+      },
+      "Paid": {
+        "missing_denial_code": 10511,
+        "rows": 10511,
+        "with_denial_code": 0
+      },
+      "Pended": {
+        "missing_denial_code": 506,
+        "rows": 506,
+        "with_denial_code": 0
+      }
+    },
+    "denial_code_counts": {
+      "CO-11": 147,
+      "CO-119": 51,
+      "CO-15": 241,
+      "CO-18": 138,
+      "CO-27": 115,
+      "CO-29": 82,
+      "CO-4": 206,
+      "CO-50": 87,
+      "CO-97": 99,
+      "PR-1": 120
+    },
+    "denial_code_missing_total": 11559,
+    "drg_code_present_by_claim_type": {
+      "Institutional-IP": {
+        "rows": 1931,
+        "with_drg": 1931
+      },
+      "Institutional-OP": {
+        "rows": 3873,
+        "with_drg": 0
+      },
+      "Professional": {
+        "rows": 7041,
+        "with_drg": 0
+      }
+    },
+    "fraud_label_prevalence": 0.05037,
+    "fraud_pattern_by_label": {
+      "0": {
+        "rows": 12198,
+        "with_pattern": 0,
+        "without_pattern": 12198
+      },
+      "1": {
+        "rows": 647,
+        "with_pattern": 647,
+        "without_pattern": 0
+      }
+    },
+    "fraud_pattern_type_present_iff_fraud_label_1": true,
+    "high_cost_flag_prevalence": 0.023355,
+    "high_cost_flag_separability": {
+      "allowed_amount": {
+        "flag0_max": 6147.36,
+        "flag1_min": 3960.63,
+        "perfectly_separable": false
+      },
+      "billed_amount": {
+        "flag0_max": 7688.2,
+        "flag1_min": 10299.58,
+        "perfectly_separable": true
+      },
+      "paid_amount": {
+        "flag0_max": 5988.45,
+        "flag1_min": 0.0,
+        "perfectly_separable": false
+      }
+    },
+    "paid_amount_by_claim_status": {
+      "Adjusted": {
+        "paid_max": 20087.31,
+        "paid_sum": 525744.59,
+        "rows": 542,
+        "rows_paid_gt_0": 430
+      },
+      "Denied": {
+        "paid_max": 0.0,
+        "paid_sum": 0.0,
+        "rows": 1286,
+        "rows_paid_gt_0": 0
+      },
+      "Paid": {
+        "paid_max": 24677.53,
+        "paid_sum": 8850958.52,
+        "rows": 10511,
+        "rows_paid_gt_0": 8283
+      },
+      "Pended": {
+        "paid_max": 13135.26,
+        "paid_sum": 406712.66,
+        "rows": 506,
+        "rows_paid_gt_0": 404
+      }
+    },
+    "rendering_npi_equals_billing_npi_fraction": 1.0
+  },
+  "key_checks": [
+    {
+      "columns": [
+        "claim_id"
+      ],
+      "distinct_keys": 12845,
+      "duplicate_key_rows": 0,
+      "extra_rows_beyond_distinct": 0,
+      "is_unique": true,
+      "null_key_rows": 0,
+      "present": true,
+      "rows": 12845
+    },
+    {
+      "columns": [
+        "member_id"
+      ],
+      "distinct_keys": 500,
+      "duplicate_key_rows": 12845,
+      "extra_rows_beyond_distinct": 12345,
+      "is_unique": false,
+      "null_key_rows": 0,
+      "present": true,
+      "rows": 12845
+    }
+  ],
+  "missingness": {
+    "all_null_columns": [
+      "dx3",
+      "dx4",
+      "dx5",
+      "modifier1",
+      "modifier2",
+      "denial_reason_desc",
+      "auth_number"
+    ],
+    "columns_with_nulls": {
+      "auth_number": 12845,
+      "denial_code_carc": 11559,
+      "denial_reason_desc": 12845,
+      "drg_code": 10914,
+      "drg_type": 10914,
+      "dx3": 12845,
+      "dx4": 12845,
+      "dx5": 12845,
+      "fraud_pattern_type": 12198,
+      "mdc_code": 10914,
+      "modifier1": 12845,
+      "modifier2": 12845,
+      "poa_flag": 10914,
+      "revenue_code": 7041
+    },
+    "null_cells": 164369,
+    "null_fraction": 0.236969,
+    "total_cells": 693630
+  },
+  "n_columns": 54,
+  "path": "data/raw/medical_claims.csv",
+  "rows": 12845,
+  "sha256": "96ede50f98bbcdc82d0bb251945d794d934c55376cc1a0c45bbf35590578f41d",
+  "string_columns_forced": [
+    "claim_id",
+    "member_id",
+    "plan_id",
+    "rendering_npi",
+    "billing_npi",
+    "primary_icd10_cm",
+    "dx2",
+    "dx3",
+    "dx4",
+    "dx5",
+    "drg_code",
+    "drg_type",
+    "mdc_code",
+    "poa_flag",
+    "cpt_code",
+    "modifier1",
+    "modifier2",
+    "revenue_code",
+    "place_of_service",
+    "denial_code_carc",
+    "denial_reason_desc",
+    "auth_number"
+  ],
+  "table": "medical_claims"
+}
