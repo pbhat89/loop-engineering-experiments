@@ -1,0 +1,25 @@
+# Environments and secrets
+.venv/
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Data: raw/processed files are re-created by src/download_data.py (manifest is committed)
+data/raw/*.csv
+data/processed/*.csv
+data/processed/*.parquet
+
+# Binary model artifacts
+artifacts/models/*.pkl
+artifacts/models/*.joblib
+
+# OS
+.DS_Store
+Thumbs.db

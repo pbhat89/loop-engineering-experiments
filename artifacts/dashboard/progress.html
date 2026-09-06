@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="refresh" content="30">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>claims-skill-loop &middot; progress</title>
+<style>
+:root { --bg:#f7f7f5; --card:#ffffff; --ink:#1f2328; --ink2:#57606a; --muted:#8b949e; --line:#e4e6ea;
+        --track:#e9ebee; --fill:#3b6ea5; --good:#2f7d4f; --warn:#b26a00; --bad:#b3261e; --info:#3b6ea5; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; }
+main { max-width:1180px; margin:0 auto; padding:24px 20px 48px; }
+h1 { font-size:20px; margin:0 0 4px; font-weight:650; }
+h2 { font-size:15px; margin:28px 0 10px; font-weight:650; color:var(--ink); }
+.sub { color:var(--ink2); font-size:13px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; }
+.grid { display:grid; gap:12px; }
+.tiles { grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+.tile .k { color:var(--ink2); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+.tile .v { font-size:24px; font-weight:650; margin-top:2px; font-variant-numeric:tabular-nums; }
+.hero { display:flex; gap:28px; align-items:flex-start; flex-wrap:wrap; }
+.hero .big { font-size:44px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+.bar { height:8px; background:var(--track); border-radius:4px; overflow:hidden; min-width:120px; }
+.bar .fill { height:100%; background:var(--fill); border-radius:4px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+th { text-align:left; color:var(--ink2); font-weight:600; border-bottom:1px solid var(--line); padding:8px 8px; white-space:nowrap; }
+td { border-bottom:1px solid var(--line); padding:8px 8px; vertical-align:top; }
+tr:last-child td { border-bottom:none; }
+td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; }
+.muted { color:var(--muted); }
+.st { white-space:nowrap; font-weight:600; }
+.st-running { color:var(--info); } .st-blocked { color:var(--warn); } .st-failed { color:var(--bad); }
+.st-done { color:var(--good); } .st-review { color:var(--ink); } .st-queued { color:var(--muted); }
+.warn { color:var(--warn); }
+.wrap { overflow-x:auto; }
+footer { margin-top:32px; color:var(--muted); font-size:12px; }
+code { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; background:#f0f1f3; padding:1px 4px; border-radius:3px; }
+</style></head>
+<body><main>
+<h1>claims-skill-loop &mdash; build &amp; experiment progress</h1>
+<div class="sub">Generated 2026-09-06T13:06:06+00:00 &middot; auto-refreshes every 30 s &middot; tracker updated 2026-09-06T13:06:06+00:00</div>
+
+<h2>Overall completion</h2>
+
+<div class="card hero">
+  <div>
+    <div class="sub">Overall completion (weighted work units)</div>
+    <div class="big">3.4%</div>
+    <div style="margin-top:8px;width:320px"><div class="bar" role="progressbar" aria-valuenow="3" aria-valuemin="0" aria-valuemax="100" title="2 of 58 units"><div class="fill" style="width:3.4%"></div></div></div>
+    <div class="sub" style="margin-top:6px">2 of 58 units complete
+      &middot; 0 units blocked
+      &middot; acceptance gates: <strong>not yet passed</strong>
+      (100% is reserved until they pass)</div>
+  </div>
+  <div>
+    <div class="sub">ETA</div>
+    <div style="font-size:18px;font-weight:650;margin-top:6px">rough ETA ≈ 1.4 min</div>
+    <div class="sub" style="margin-top:6px">computed 2026-09-06T13:06:06+00:00
+      &middot; median 1.5 s/unit
+      over 2 completed units</div>
+    <div class="sub muted" style="margin-top:4px;max-width:420px">Rough ETA = remaining weighted units x median observed seconds per completed unit; not a commitment.</div>
+  </div>
+</div>
+
+<h2>Agent workload</h2>
+<div class="grid tiles"><div class="tile"><div class="k"> configured</div><div class="v">7</div></div><div class="tile"><div class="k">○ queued</div><div class="v">6</div></div><div class="tile"><div class="k">◐ running</div><div class="v">1</div></div><div class="tile"><div class="k">■ blocked</div><div class="v">0</div></div><div class="tile"><div class="k">◆ review</div><div class="v">0</div></div><div class="tile"><div class="k">● done</div><div class="v">0</div></div><div class="tile"><div class="k">✕ failed</div><div class="v">0</div></div></div>
+<div style="height:12px"></div>
+
+<div class="card wrap"><table>
+<thead><tr><th>Agent</th><th>Role</th><th>Status</th><th>Current work</th><th>Latest artifact</th>
+<th class="num">Elapsed</th><th>Progress</th><th>ETA</th><th>Blocked by</th><th>Note</th></tr></thead>
+<tbody><tr><td class='mono'>L0</td><td>Lead: integration, LangGraph core, provider, operator orchestration, acceptance</td><td><span class="st st-running">◐ running</span></td><td>Phase 0: scaffold, tracker, dashboard v1, agent definitions</td><td class='mono'>artifacts/dashboard/progress.html</td><td class='num'>3s</td><td><div class="bar" role="progressbar" aria-valuenow="17" aria-valuemin="0" aria-valuemax="100" title="2/12"><div class="fill" style="width:16.7%"></div></div><div class='sub' style='margin-top:3px'>2/12 units &middot; 16.7%</div></td><td>rough ETA ≈ 0.2 min</td><td>—</td><td class='sub'>tracker + dashboard v1 live</td></tr><tr><td class='mono'>A1</td><td>SDD architect</td><td><span class="st st-queued">○ queued</span></td><td>—</td><td class='mono'>—</td><td class='num'>—</td><td><div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" title="0/8"><div class="fill" style="width:0.0%"></div></div><div class='sub' style='margin-top:3px'>0/8 units &middot; 0%</div></td><td>rough ETA ≈ 0.2 min</td><td>—</td><td class='sub'></td></tr><tr><td class='mono'>A2</td><td>Data steward</td><td><span class="st st-queued">○ queued</span></td><td>—</td><td class='mono'>—</td><td class='num'>—</td><td><div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" title="0/5"><div class="fill" style="width:0.0%"></div></div><div class='sub' style='margin-top:3px'>0/5 units &middot; 0%</div></td><td>rough ETA ≈ 0.1 min</td><td>—</td><td class='sub'></td></tr><tr><td class='mono'>A3</td><td>Evaluation engineer: tasks, rubric, goldens, evaluator</td><td><span class="st st-queued">○ queued</span></td><td>—</td><td class='mono'>—</td><td class='num'>—</td><td><div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" title="0/10"><div class="fill" style="width:0.0%"></div></div><div class='sub' style='margin-top:3px'>0/10 units &middot; 0%</div></td><td>rough ETA ≈ 0.2 min</td><td>—</td><td class='sub'></td></tr><tr><td class='mono'>A4</td><td>Skill-system engineer</td><td><span class="st st-queued">○ queued</span></td><td>—</td><td class='mono'>—</td><td class='num'>—</td><td><div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" title="0/7"><div class="fill" style="width:0.0%"></div></div><div class='sub' style='margin-top:3px'>0/7 units &middot; 0%</div></td><td>rough ETA ≈ 0.2 min</td><td>—</td><td class='sub'></td></tr><tr><td class='mono'>A5</td><td>Observability engineer</td><td><span class="st st-queued">○ queued</span></td><td>—</td><td class='mono'>—</td><td class='num'>—</td><td><div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" title="0/8"><div class="fill" style="width:0.0%"></div></div><div class='sub' style='margin-top:3px'>0/8 units &middot; 0%</div></td><td>rough ETA ≈ 0.2 min</td><td>—</td><td class='sub'></td></tr><tr><td class='mono'>A6</td><td>Analysis engineer: deterministic executor T1-T8</td><td><span class="st st-queued">○ queued</span></td><td>—</td><td class='mono'>—</td><td class='num'>—</td><td><div class="bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" title="0/8"><div class="fill" style="width:0.0%"></div></div><div class='sub' style='margin-top:3px'>0/8 units &middot; 0%</div></td><td>rough ETA ≈ 0.2 min</td><td>—</td><td class='sub'></td></tr></tbody></table></div>
+
+<h2>Blocked work</h2>
+<div class="card muted">No blocked work.</div>
+
+<h2>Experiment status</h2>
+<div class="card muted">No experiment runs yet. This section fills from <code>logs/experiment_events.jsonl</code> once baseline / reflection-only / skill-learning conditions run.</div>
+
+<h2>Recent agent events</h2>
+
+<div class="card wrap"><table>
+<thead><tr><th>Time (UTC)</th><th>Agent</th><th>Event</th><th>Status</th><th>Task</th><th>Detail</th></tr></thead>
+<tbody><tr><td class='mono'>2026-09-06T13:06:06+00:00</td><td class='mono'>L0</td><td>complete_unit</td><td><span class="st st-running">◐ running</span></td><td>Phase 0: scaffold, tracker, dashboard v1, agent definitions</td><td class='sub'>artifacts/dashboard/progress.html</td></tr><tr><td class='mono'>2026-09-06T13:06:05+00:00</td><td class='mono'>L0</td><td>complete_unit</td><td><span class="st st-running">◐ running</span></td><td>Phase 0: scaffold, tracker, dashboard v1, agent definitions</td><td class='sub'>pyproject.toml</td></tr><tr><td class='mono'>2026-09-06T13:06:03+00:00</td><td class='mono'>L0</td><td>start</td><td><span class="st st-running">◐ running</span></td><td>Phase 0: scaffold, tracker, dashboard v1, agent definitions</td><td class='sub'>Phase 0: scaffold, tracker, dashboard v1, agent definitions</td></tr><tr><td class='mono'>2026-09-06T13:06:02+00:00</td><td class='mono'>A6</td><td>register</td><td><span class="st st-queued">○ queued</span></td><td></td><td class='sub'></td></tr><tr><td class='mono'>2026-09-06T13:06:01+00:00</td><td class='mono'>A5</td><td>register</td><td><span class="st st-queued">○ queued</span></td><td></td><td class='sub'></td></tr><tr><td class='mono'>2026-09-06T13:06:00+00:00</td><td class='mono'>A4</td><td>register</td><td><span class="st st-queued">○ queued</span></td><td></td><td class='sub'></td></tr><tr><td class='mono'>2026-09-06T13:05:59+00:00</td><td class='mono'>A3</td><td>register</td><td><span class="st st-queued">○ queued</span></td><td></td><td class='sub'></td></tr><tr><td class='mono'>2026-09-06T13:05:57+00:00</td><td class='mono'>A2</td><td>register</td><td><span class="st st-queued">○ queued</span></td><td></td><td class='sub'></td></tr><tr><td class='mono'>2026-09-06T13:05:56+00:00</td><td class='mono'>A1</td><td>register</td><td><span class="st st-queued">○ queued</span></td><td></td><td class='sub'></td></tr><tr><td class='mono'>2026-09-06T13:05:55+00:00</td><td class='mono'>L0</td><td>register</td><td><span class="st st-queued">○ queued</span></td><td></td><td class='sub'></td></tr></tbody></table></div>
+
+<footer>Sources: <code>logs/agent_status.json</code>, <code>logs/agent_events.jsonl</code>, <code>logs/experiment_events.jsonl</code>.
+Educational demonstration on synthetic healthcare claims data; nothing here is medical, actuarial, or operational evidence.</footer>
+</main></body></html>

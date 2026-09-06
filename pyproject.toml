@@ -1,0 +1,33 @@
+[project]
+name = "claims-skill-loop"
+version = "0.1.0"
+description = "Educational LangGraph experiment: a claims-analysis agent that learns versioned Markdown skills from evaluator feedback (synthetic data only)"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "MIT" }
+dependencies = [
+  "langgraph>=1.2,<2",
+  "langchain-core>=1.6,<2",
+  "pandas>=2.2,<4",
+  "scikit-learn>=1.6,<2",
+  "matplotlib>=3.9,<4",
+  "pyyaml>=6.0,<7",
+  "pydantic>=2.9,<3",
+  "networkx>=3.3,<4",
+  "huggingface-hub>=0.30,<2",
+  "langgraph-checkpoint-sqlite>=3.1.1",
+]
+
+[project.optional-dependencies]
+# Live LLM modes are optional extras; the baseline installs and runs without them.
+anthropic = ["langchain-anthropic>=1.7,<2"]
+viz = ["pyvis>=0.3.2,<0.4"]
+dev = ["pytest>=8,<10"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
