@@ -1,0 +1,72 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "schema_summary",
+      "params": {}
+    },
+    {
+      "component": "missingness",
+      "params": {
+        "scope": "all_columns"
+      }
+    },
+    {
+      "component": "duplicate_check",
+      "params": {
+        "keys": [
+          "medical_claims.claim_id",
+          "pharmacy_claims.rx_claim_id",
+          "members.member_id",
+          "providers.provider_npi",
+          "adherence.member_id+therapeutic_class"
+        ]
+      }
+    },
+    {
+      "component": "date_ranges",
+      "params": {
+        "columns": [
+          "medical_claims.service_date_from",
+          "medical_claims.service_date_to",
+          "medical_claims.adjudication_date",
+          "pharmacy_claims.fill_date",
+          "pharmacy_claims.paid_date",
+          "members.enrollment_start",
+          "members.enrollment_end"
+        ],
+        "consistency_checks": true
+      }
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.member_id->members.member_id",
+          "medical_claims.rendering_npi->providers.provider_npi",
+          "medical_claims.billing_npi->providers.provider_npi",
+          "pharmacy_claims.member_id->members.member_id",
+          "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+          "adherence.member_id->members.member_id"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "sample_preview",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The prior plan remains appropriate and complete within catalogue constraints. The self-review correctly noted that pharmacy_claims.prescriber_npi→providers.provider_npi should be assessed for comprehensive provider linkage validation; however, this pair is not available in the join_check component catalogue. The plan retains all 6 available join pairs, which include pharmacy_claims.pharmacy_npi→providers.provider_npi. This pair documents the critical finding: 0% match rate with 18,310 unmatched pharmacy claims (100% of pharmacy records), indicating a fundamental data quality blocker. The write_report configuration with cite_artifacts=true and show_denominators=true ensures join failures are surfaced with full statistical context. The all-column missingness scope and date consistency checks provide complete data quality visibility for sponsor decision-making.",
+  "changes_summary": "No plan revisions. Finding T1-self-a1-1 cannot be addressed because pharmacy_claims.prescriber_npi→providers.provider_npi is not a valid catalogue option for join_check; the 6-pair configuration exhausts available pharmacy relationship tests. Finding T1-self-a1-2 is already addressed: write_report cite_artifacts=true makes join failures prominently visible with denominators, ensuring sponsor sees the pharmacy provider linkage gap as a critical blocker."
+}

@@ -1,0 +1,44 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": [
+          "T2",
+          "T4",
+          "T7"
+        ]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": [
+          "key_findings",
+          "model_results",
+          "limitations",
+          "synthetic_caveats",
+          "next_steps"
+        ],
+        "causal_language": "allow",
+        "cite_artifacts": false
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "association_not_causation",
+          "model_limitations"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The revised plan incorporates the self-review finding that synthetic_caveats must be added to the brief to explicitly document the scope limitation: the unavailability of T6 (provider and network comparison) analysis. This section will allow the head of claims to understand which analyses comprise the brief (T2 portfolio description, T4 denial patterns, T7 high-cost model) and which planned analyses are absent, maintaining transparency about the work's boundaries. The section ordering (key_findings → model_results → limitations → synthetic_caveats → next_steps) places scope documentation before recommendations, ensuring the audience understands constraints before considering action items.",
+  "changes_summary": "Added synthetic_caveats to brief_sections parameter to address self-review finding: the sections list now includes synthetic_caveats (was [key_findings, model_results, limitations, next_steps], now [key_findings, model_results, limitations, synthetic_caveats, next_steps]) to transparently document that T6 provider/network analysis is not included in this brief."
+}

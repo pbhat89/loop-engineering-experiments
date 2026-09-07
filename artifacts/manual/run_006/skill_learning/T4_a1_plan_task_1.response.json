@@ -1,0 +1,32 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims",
+        "quantify_missing": "overall"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": ["claim_type", "provider_specialty", "network_status", "place_of_service", "auth_required_flag"],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["descriptive_only", "small_groups"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": ["evolved_run_006_002"],
+  "rationale": "Task requires comprehensive analysis of denial codes and rates across five claim-level segments. The retrieved skill 'denial_rate_denominator_standardization' directly applies to denial_rate_by_segment: it specifies that denial rates must use adjudicated_claims as the denominator (excluding Pended claims) to accurately represent denial outcomes and ensure reproducibility. Implemented this by setting denominator='adjudicated_claims' and enabling show_denominators=true to explicitly report both numerator and denominator counts as the skill requires. For denial_code_ranking, used scope='denied_claims' to focus on code frequencies within the denied population (aligning with task's question 'what share of denials does each account for?'), with overall missing code quantification to address 'how many claims carry no denial code at all?' Included all five segment dimensions specified in the task objective. Set min_group_size=30 to flag groups below statistical discipline thresholds (task tags small_groups). Caveats selected for descriptive-only analysis and small group awareness."
+}

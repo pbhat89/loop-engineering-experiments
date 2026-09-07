@@ -1,0 +1,32 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "all_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": ["claim_type", "provider_specialty", "network_status", "place_of_service", "auth_required_flag"],
+        "denominator": "all_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "descriptive_only", "small_groups"],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan covers all four default-selected components to satisfy T4's denial analysis requirements. denial_code_ranking uses 'all_claims' scope to show codes as proportions across all claims, and 'by_status' quantify_missing to address the task question about claims with no denial code. denial_rate_by_segment includes all five requested segments (claim_type, provider_specialty, network_status, place_of_service, auth_required_flag) with min_group_size=30 to flag small groups appropriately. write_report parameters incorporate prior feedback from T2: 'synthetic_data' caveat addresses the transparency issue identified in T2 feedback, and show_denominators=true ensures rates display numerator/denominator for credibility. Additional caveats 'descriptive_only' and 'small_groups' are appropriate given the observational nature and multi-segment analysis."
+}

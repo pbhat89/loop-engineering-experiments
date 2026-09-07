@@ -1,0 +1,64 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.rendering_npi->providers.provider_npi"
+        ]
+      }
+    },
+    {
+      "component": "provider_join",
+      "params": {
+        "provider_key": "rendering_npi",
+        "how": "inner",
+        "validate": "many_to_one"
+      }
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty",
+          "network_status",
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The previous execution produced correct artifacts but failed evaluation on three checks: (1) missing join_check for rendering_npi cardinality verification, (2) show_denominators set to false instead of true, and (3) missing small_groups caveat. This revision adds the join_check step upfront to verify the many_to_one relationship before using provider attributes, sets show_denominators to true to display every rate with its denominator for transparency, and adds the small_groups caveat to communicate that group-level rates are statistically unstable below the min_group_size threshold. All other components and parameters are preserved.",
+  "changes_summary": "Added join_check component to verify medical_claims.rendering_npi->providers.provider_npi cardinality before joining. Updated write_report: set show_denominators from false to true to print every rate as numerator/denominator, and added 'small_groups' to caveats list. These changes address all three evaluation failures while maintaining the complete analysis intent."
+}

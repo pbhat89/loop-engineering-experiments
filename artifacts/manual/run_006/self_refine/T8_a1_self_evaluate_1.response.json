@@ -1,0 +1,11 @@
+{
+  "verdict": "revise",
+  "findings": [
+    {
+      "issue": "T6 (high-cost model) is marked missing, but the task explicitly requires covering 'the high-cost model' and the plan requests it as a source. The brief includes a 'model_results' section that cannot be meaningfully covered without this data, making the output incomplete against task requirements.",
+      "severity": "high",
+      "suggested_change": "Remove T6 from `collect_findings.sources` parameter and remove 'model_results' from `brief_sections.sections` parameter; the brief can remain valid as analysis of denial patterns and provider comparison only."
+    }
+  ],
+  "summary": "The brief cannot meet task requirements without T6 high-cost model data. Recommend narrowing scope to available sources (T1-T3) by removing the model_results section."
+}

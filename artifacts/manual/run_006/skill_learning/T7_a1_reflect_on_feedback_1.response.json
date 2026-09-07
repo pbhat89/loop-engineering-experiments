@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T7-threshold_source",
+      "correction": "Change target_definition.threshold_source from 'all_data' to 'train_only'. The 95th-percentile threshold must be computed only on the training partition to prevent leaking the test set's distribution into the target definition."
+    },
+    {
+      "feedback_id": "T7-no_target_leakage",
+      "correction": "Remove 'billed_amount' and 'allowed_amount' from feature_set.features. These are post-submission amount fields and constitute target leakage. Use only claim-arrival-time features: claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, er_flag, elective_flag, preventive_flag, auth_required_flag, primary_icd10_cm, drg_present."
+    },
+    {
+      "feedback_id": "T7-fit_on_train_only",
+      "correction": "Change preprocessing.fit_on from 'all_data' to 'train_only'. The encoder and scaler must be fitted exclusively on the training partition, then applied to test data, to prevent leaking training statistics into test-set preprocessing."
+    }
+  ],
+  "reusable_lessons": []
+}

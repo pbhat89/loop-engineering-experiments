@@ -1,0 +1,44 @@
+segment,value,numerator,denominator,rate,small_group_flag
+claim_type,Institutional-IP,174,1931,0.09010875194199897,False
+claim_type,Institutional-OP,419,3873,0.10818486961012136,False
+claim_type,Professional,693,7041,0.09842351938645079,False
+provider_specialty,ASC,93,966,0.09627329192546584,False
+provider_specialty,Cardiology,20,157,0.12738853503184713,False
+provider_specialty,Clinical Laboratory,25,254,0.0984251968503937,False
+provider_specialty,Critical Access Hospital,137,1225,0.11183673469387755,False
+provider_specialty,DME Supplier,80,841,0.09512485136741974,False
+provider_specialty,Diagnostic Radiology,4,71,0.056338028169014086,False
+provider_specialty,Endocrinology,55,509,0.10805500982318271,False
+provider_specialty,Family Medicine,57,586,0.09726962457337884,False
+provider_specialty,Gastroenterology,23,200,0.115,False
+provider_specialty,General Acute Care Hospital,53,619,0.08562197092084006,False
+provider_specialty,Geriatrics,48,515,0.09320388349514563,False
+provider_specialty,Home Health,29,358,0.08100558659217877,False
+provider_specialty,Internal Medicine,68,636,0.1069182389937107,False
+provider_specialty,Nephrology,46,493,0.09330628803245436,False
+provider_specialty,Neurology,18,271,0.06642066420664207,False
+provider_specialty,OB/GYN,30,363,0.08264462809917356,False
+provider_specialty,Oncology,47,405,0.11604938271604938,False
+provider_specialty,Orthopedic Surgery,79,685,0.11532846715328467,False
+provider_specialty,Outpatient Clinic,36,481,0.07484407484407485,False
+provider_specialty,Pediatrics,53,499,0.1062124248496994,False
+provider_specialty,Physical Therapy,50,399,0.12531328320802004,False
+provider_specialty,Psychiatry,21,191,0.1099476439790576,False
+provider_specialty,Pulmonology,47,543,0.0865561694290976,False
+provider_specialty,SNF,103,964,0.10684647302904564,False
+provider_specialty,Urology,64,614,0.10423452768729642,False
+network_status,In-Network,1095,10788,0.10150166852057842,False
+network_status,Out-of-Network,191,2057,0.09285367039377734,False
+place_of_service,11,272,2775,0.09801801801801802,False
+place_of_service,12,44,311,0.1414790996784566,False
+place_of_service,20,31,366,0.08469945355191257,False
+place_of_service,21,227,2535,0.08954635108481263,False
+place_of_service,22,545,5145,0.10592808551992225,False
+place_of_service,23,57,543,0.10497237569060773,False
+place_of_service,31,18,213,0.08450704225352113,False
+place_of_service,49,31,354,0.08757062146892655,False
+place_of_service,50,22,213,0.10328638497652583,False
+place_of_service,65,12,125,0.096,False
+place_of_service,81,27,265,0.1018867924528302,False
+auth_required_flag,0,1112,10960,0.10145985401459855,False
+auth_required_flag,1,174,1885,0.09230769230769231,False

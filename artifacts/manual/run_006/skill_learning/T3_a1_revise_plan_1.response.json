@@ -1,0 +1,51 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty",
+          "network_status",
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_006_002",
+    "evolved_run_006_001"
+  ],
+  "rationale": "The prior plan grouped claims only by the combined dimension (provider_specialty+network_status), but the task objective requires comparisons across provider specialties and network status separately as well. The failed checks for missing group_comparison.groups.network_status and group_comparison.groups.provider_specialty indicate these individual groupings were required. The revised plan expands the group_by parameter to include all three perspectives: provider_specialty alone, network_status alone, and their combination. This produces the complete set of required metrics—claim counts, paid amounts, denial rates over adjudicated claims (per the denial_rate_denominator_standardization skill), fraud rates, and small-group flags at min_group_size=30—addressing all failed correctness checks. The synthetic_data and small_groups caveats remain in the report per the evolved skills.",
+  "changes_summary": "Expanded group_comparison group_by parameter from ['provider_specialty+network_status'] to ['provider_specialty', 'network_status', 'provider_specialty+network_status']. This addresses the failed correctness checks for missing group metrics by producing per-specialty and per-network-status comparison groups alongside the combined perspective, enabling the task to deliver all required group-level analysis."
+}

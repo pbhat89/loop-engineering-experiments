@@ -1,7 +1,7 @@
 {
-  "frozen_at": "2026-09-07T09:17:42+00:00",
+  "frozen_at": "2026-09-07T15:37:00+00:00",
   "files": {
-    "config/tasks.yaml": "bfd9574a91ec4b60b7fa337625472eedd80a3ee8599ae46a92f141e4605738e4",
+    "config/tasks.yaml": "cd1b323d84a33d363aab6e3c46a31ec9471ede5b3fd0a6b15309a8d73396736a",
     "config/rubric.yaml": "2fb390b456a5698837043d36d87fcc694cda669b6c603848842255c6f5ddcef9",
     "goldens/T1_data_contract.json": "0a97629031c3fa4868a22540132fa5c967ae3fa974fae32a674fc3ce02d27feb",
     "goldens/T2_portfolio_metrics.json": "bf292137aeb635253994095c87c1bc7888a53e354534495e07ae4abb4602ee30",
@@ -17,5 +17,5 @@
     "data/raw/pharmacy_claims.csv": "7341275cee178873267ee608bb1a5df28386fbe5b72ee39fa7b25dffdccc92c6",
     "data/raw/providers.csv": "8a3a41e69ce6bf343066df4a883a52ac8b76d3ae1f935930e5b800dfac9b2551"
   },
-  "freeze_sha256": "64b7292e8214f61f265868ed64689b474ff83494e14e11bbc67a21ec9fdd1f55"
+  "freeze_sha256": "59fb61d35fe828be678abff1a9e4d1c87ebaf5582398f1aee424ea88b4ab8a6f"
 }

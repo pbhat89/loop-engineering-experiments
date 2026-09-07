@@ -1,0 +1,73 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 95,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "gradient_boosting"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "class_imbalance",
+          "model_limitations",
+          "synthetic_data"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Revised plan addresses critical feedback. Primary change: removed billed_amount and allowed_amount from feature_set to eliminate target leakage. These post-submission amount fields were causing unrealistically high model performance (ROC-AUC 0.997), violating the requirement to use only submission-time features available before claim adjudication. Retained 13 submission-time features covering claim type, location, provider, service details, and diagnoses. Added 'synthetic_data' caveat to properly disclose data provenance in the report, addressing communication requirement.",
+  "changes_summary": "Removed billed_amount and allowed_amount from feature_set to prevent target leakage; added synthetic_data caveat to write_report."
+}

@@ -1,0 +1,49 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": [
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7"
+        ]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": [
+          "key_findings",
+          "model_results",
+          "limitations",
+          "synthetic_caveats",
+          "next_steps"
+        ],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "model_limitations",
+          "association_not_causation"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_006_001"
+  ],
+  "rationale": "T8 requires executive brief synthesizing key findings, model results, limitations, and next steps from the complete analysis run. Collecting findings from all prior tasks (T1-T7) ensures comprehensive coverage. Brief sections include all required elements plus synthetic_caveats to communicate data source. All numeric statements are cited for traceability. Report includes synthetic_data caveat per evolved_run_006_001 skill to ensure stakeholders understand findings derive from synthetic data; model_limitations and association_not_causation caveats provide proper context. The critical correction to the prior plan: causal_language set to 'avoid' (not 'allow') because a descriptive study of synthetic data does not support causal claims. This ensures the executive brief uses only associative language (e.g., 'is associated with' instead of 'drives') and conforms to statistical discipline requirements.",
+  "changes_summary": "Changed brief_sections causal_language parameter from 'allow' to 'avoid'. Rationale: the prior plan generated causal phrasing ('drives') inappropriate for a descriptive analysis of synthetic data. The brief must describe relationships associatively only. This correction addresses both evaluation findings: it implements the required parameter value and ensures the actual brief text will exclude causal language."
+}

@@ -1,0 +1,24 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T4-missing_codes_by_status",
+      "correction": "In denial_code_ranking, change quantify_missing from 'overall' to 'by_status' to break down missing denial codes across claim status categories (Adjusted, Denied, Paid, Pended)."
+    },
+    {
+      "feedback_id": "T4-caveat_synthetic",
+      "correction": "In write_report, add 'synthetic_data' to caveats list to disclose that the analysis uses synthetic data."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "Always include the 'synthetic_data' caveat in reports when working with synthetic or simulated data to ensure transparency about data nature and limitations for stakeholder interpretation.",
+      "applicable_task_ids": [
+        "T7",
+        "T8"
+      ],
+      "source_feedback_ids": [
+        "T4-caveat_synthetic"
+      ]
+    }
+  ]
+}

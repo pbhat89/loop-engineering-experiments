@@ -1,0 +1,11 @@
+{
+  "verdict": "revise",
+  "findings": [
+    {
+      "issue": "The executive brief contains 8 numeric statements without any source citations (cite_artifacts is false). For an executive brief to the head of claims, traceability and credibility of key metrics—denial rates, fraud prevalence, model performance scores—require source citations [source: path].",
+      "severity": "high",
+      "suggested_change": "Set brief_sections cite_artifacts parameter to true to include artifact citations for all numeric statements."
+    }
+  ],
+  "summary": "The prior revision successfully added synthetic_caveats to document scope limitations. However, numeric findings lack source traceability, which is essential for executive-level credibility."
+}

@@ -1,0 +1,162 @@
+{
+  "task_id": "T7",
+  "run_id": "run_006",
+  "condition": "self_refine_memory",
+  "attempt": 2,
+  "seed": 42,
+  "generated_at": "2026-09-07T16:05:55+00:00",
+  "plan_sha256": "340962376ad26a7338f471f1421a8a01a339371f0d4d624bdb13b0c07164000f",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25
+        }
+      },
+      {
+        "component": "target_definition",
+        "params": {
+          "amount_column": "paid_amount",
+          "percentile": 95,
+          "threshold_source": "train_only"
+        }
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "elective_flag",
+            "preventive_flag",
+            "auth_required_flag",
+            "primary_icd10_cm",
+            "drg_present"
+          ]
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "train_only",
+          "scaling": "standard"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression",
+            "random_forest"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "class_imbalance",
+            "model_limitations"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Revised plan eliminates feature and data leakage identified in self-review. Removed billed_amount and allowed_amount from feature_set—these are determined during claim adjudication, not available when a claim arrives, and their inclusion inflates model performance unrealistically. Changed target_definition threshold_source to 'train_only' to compute the 95th percentile on training data only, maintaining clean train/test separation. Changed preprocessing fit_on to 'train_only' to prevent leaking test-set information through encoder and scaler fitting. These corrections ensure the model reflects realistic production performance when applied to incoming claims at adjudication time. All other components retain their prior configuration to satisfy the task objective.",
+    "changes_summary": "Addressed three leakage findings: (1) Removed billed_amount and allowed_amount from features—adjudication-stage amounts unavailable at claim intake violate the task requirement ('when a claim comes in'). (2) Changed target_definition threshold_source from 'all_data' to 'train_only'—compute 95th percentile on training rows only for proper train/test separation. (3) Changed preprocessing fit_on from 'all_data' to 'train_only'—fit encoder and scaler on training data only to prevent test-set information leakage and metric bias."
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "split": {
+    "test_size": 0.25,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212
+  },
+  "target_definition": {
+    "amount_column": "paid_amount",
+    "percentile": 95,
+    "threshold_source": "train_only",
+    "threshold_value": 3198.9879999999994,
+    "positive_rate_train": 0.05003633343714315,
+    "positive_rate_test": 0.046699875466998754,
+    "n_positive_train": 482,
+    "n_positive_test": 150
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "network_status",
+      "service_units",
+      "length_of_stay",
+      "er_flag",
+      "elective_flag",
+      "preventive_flag",
+      "auth_required_flag",
+      "primary_icd10_cm",
+      "drg_present"
+    ],
+    "n_categorical": 6,
+    "n_numeric": 7,
+    "id_fields_present": [],
+    "target_derived_present": []
+  },
+  "preprocessing": {
+    "fit_on": "train_only",
+    "scaling": "standard",
+    "n_features_out": 103
+  },
+  "models": {
+    "logistic_regression": {
+      "pr_auc": 0.2232961168354745,
+      "roc_auc": 0.9060450685826257,
+      "precision_at_top_5pct": 0.22981366459627328,
+      "recall_at_top_5pct": 0.24666666666666667,
+      "n_test": 3212
+    },
+    "random_forest": {
+      "pr_auc": 0.19709528908642782,
+      "roc_auc": 0.8873241889832353,
+      "precision_at_top_5pct": 0.2236024844720497,
+      "recall_at_top_5pct": 0.24,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "class_imbalance",
+      "model_limitations"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

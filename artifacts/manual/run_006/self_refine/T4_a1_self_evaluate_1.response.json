@@ -1,0 +1,10 @@
+{
+  "verdict": "revise",
+  "findings": [
+    {
+      "issue": "The denial_code_ranking scope is set to 'all_claims', which makes the top code (CO-15) appear as only 1.88% of claims. This obscures the answer to 'which denial codes are most common?' and 'what share of denials does each account for?' which should show the distribution of codes among the 1,286 denied claims where codes exist (CO-15 = 18.76% of denials).",
+      "severity": "high",
+      "suggested_change": "denial_code_ranking: change scope parameter from 'all_claims' to 'denied_claims'"
+    }
+  ]
+}

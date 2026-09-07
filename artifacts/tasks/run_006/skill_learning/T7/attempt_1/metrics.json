@@ -1,0 +1,167 @@
+{
+  "task_id": "T7",
+  "run_id": "run_006",
+  "condition": "skill_learning",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-07T16:17:28+00:00",
+  "plan_sha256": "937969aa7877d59af66d625a65c40d6ea542e0d2719e7f51393d93e346262ff5",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25
+        }
+      },
+      {
+        "component": "target_definition",
+        "params": {
+          "amount_column": "paid_amount",
+          "percentile": 95,
+          "threshold_source": "all_data"
+        }
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "elective_flag",
+            "preventive_flag",
+            "auth_required_flag",
+            "primary_icd10_cm",
+            "drg_present",
+            "billed_amount",
+            "allowed_amount"
+          ]
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "all_data",
+          "scaling": "standard"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression",
+            "random_forest"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data"
+          ],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [
+      "evolved_run_006_001"
+    ],
+    "rationale": "Task T7 requires an early-warning model to predict high-cost claims at arrival. Split fraction 0.25 per objective. Target defined as paid_amount above 95th percentile using all_data to capture true population threshold. Features selected for availability at claim arrival: claim/service metadata, clinical indicators (diagnosis, place_of_service, length_of_stay, er/elective/preventive flags), billed and allowed amounts (available pre-payment), excluding paid_amount (prediction target) and high_cost_flag (target leakage). Standard scaling supports both logistic regression and random_forest. Retrieved synthetic_data skill applied to write_report caveats; denial rate skill not applicable.",
+    "changes_summary": null
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "split": {
+    "test_size": 0.25,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212
+  },
+  "target_definition": {
+    "amount_column": "paid_amount",
+    "percentile": 95,
+    "threshold_source": "all_data",
+    "threshold_value": 3161.9339999999993,
+    "positive_rate_train": 0.05117824146164227,
+    "positive_rate_test": 0.046699875466998754,
+    "n_positive_train": 493,
+    "n_positive_test": 150
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "network_status",
+      "service_units",
+      "length_of_stay",
+      "er_flag",
+      "elective_flag",
+      "preventive_flag",
+      "auth_required_flag",
+      "primary_icd10_cm",
+      "drg_present",
+      "billed_amount",
+      "allowed_amount"
+    ],
+    "n_categorical": 6,
+    "n_numeric": 9,
+    "id_fields_present": [],
+    "target_derived_present": [
+      "billed_amount",
+      "allowed_amount"
+    ]
+  },
+  "preprocessing": {
+    "fit_on": "all_data",
+    "scaling": "standard",
+    "n_features_out": 105
+  },
+  "models": {
+    "logistic_regression": {
+      "pr_auc": 0.9195202655112007,
+      "roc_auc": 0.996596995427825,
+      "precision_at_top_5pct": 0.8385093167701864,
+      "recall_at_top_5pct": 0.9,
+      "n_test": 3212
+    },
+    "random_forest": {
+      "pr_auc": 0.923894732829866,
+      "roc_auc": 0.997229479642935,
+      "precision_at_top_5pct": 0.8571428571428571,
+      "recall_at_top_5pct": 0.92,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data"
+    ],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "task_id": "T2",
+    "metric_key": "denial_rate",
+    "label": "Denial rate (denominator: adjudicated_claims)",
+    "value": 0.10422238430991167,
+    "source_path": "artifacts/tasks/run_006/reflection_only/T2/attempt_2/metrics.json#denial_rate",
+    "numerator": 1286,
+    "denominator": 12339
+  },
+  {
+    "task_id": "T2",
+    "metric_key": "claim_volume.total_claims",
+    "label": "Total medical claims",
+    "value": 12845,
+    "source_path": "artifacts/tasks/run_006/reflection_only/T2/attempt_2/metrics.json#claim_volume.total_claims"
+  },
+  {
+    "task_id": "T2",
+    "metric_key": "financial_summary.paid_amount.sum",
+    "label": "Total paid amount",
+    "value": 9783415.77,
+    "source_path": "artifacts/tasks/run_006/reflection_only/T2/attempt_2/metrics.json#financial_summary.paid_amount.sum"
+  },
+  {
+    "task_id": "T2",
+    "metric_key": "fraud_prevalence",
+    "label": "Fraud prevalence (denominator: all_claims)",
+    "value": 0.050369793694044374,
+    "source_path": "artifacts/tasks/run_006/reflection_only/T2/attempt_2/metrics.json#fraud_prevalence",
+    "numerator": 647,
+    "denominator": 12845
+  },
+  {
+    "task_id": "T3",
+    "metric_key": "group_comparison.groups.network_status.In-Network.denial_rate",
+    "label": "Denial rate, network_status = In-Network",
+    "value": 0.1055930568948891,
+    "source_path": "artifacts/tasks/run_006/reflection_only/T3/attempt_3/metrics.json#group_comparison.groups.network_status.In-Network.denial_rate",
+    "numerator": 1095,
+    "denominator": 10370
+  },
+  {
+    "task_id": "T3",
+    "metric_key": "group_comparison.groups.network_status.Out-of-Network.denial_rate",
+    "label": "Denial rate, network_status = Out-of-Network",
+    "value": 0.09700355510411376,
+    "source_path": "artifacts/tasks/run_006/reflection_only/T3/attempt_3/metrics.json#group_comparison.groups.network_status.Out-of-Network.denial_rate",
+    "numerator": 191,
+    "denominator": 1969
+  },
+  {
+    "task_id": "T4",
+    "metric_key": "denial_code_ranking.codes[0]",
+    "label": "Top denial code CO-15 (scope: denied_claims)",
+    "value": 0.187402799377916,
+    "source_path": "artifacts/tasks/run_006/reflection_only/T4/attempt_2/metrics.json#denial_code_ranking.codes[0]",
+    "numerator": 241,
+    "denominator": 1286
+  },
+  {
+    "task_id": "T6",
+    "status": "missing"
+  }
+]

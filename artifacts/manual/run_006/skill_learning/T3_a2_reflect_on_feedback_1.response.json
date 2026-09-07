@@ -1,0 +1,13 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T3-join_check_rendering_npi",
+      "correction": "Add a join_check step for medical_claims.rendering_npi -> providers.provider_npi with pairs parameter to verify many-to-one cardinality and 0 unmatched claims before using provider attributes."
+    },
+    {
+      "feedback_id": "T3-caveat_association",
+      "correction": "Add association_not_causation to the write_report caveats parameter to clarify that observed group differences represent associations, not causal effects."
+    }
+  ],
+  "reusable_lessons": []
+}

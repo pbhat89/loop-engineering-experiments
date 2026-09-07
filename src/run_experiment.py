@@ -185,6 +185,7 @@ def build_services(config: RunConfig):
     """Wire the real modules. Imported lazily so this module loads even while other agents' modules are in progress."""
     from src.evaluator import evaluate
     from src.experiment_logger import ExperimentLogger
+    from src.feedback_memory import FeedbackMemory
     from src.graph_nodes import Services
     from src.skill_store import SkillStore
     from src.skill_validator import validate as validate_skill
@@ -207,6 +208,7 @@ def build_services(config: RunConfig):
         task_titles={tid: spec.get("title", "") for tid, spec in tasks.items()},
         feedback_max_items=config.feedback_max_items,
         reveal_fixes=config.reveal_fixes,
+        memory_factory=lambda run_id, condition: FeedbackMemory(ARTIFACTS_DIR / "memory", run_id, condition),
     )
 
 

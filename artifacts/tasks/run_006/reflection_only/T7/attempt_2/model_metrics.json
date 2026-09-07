@@ -1,0 +1,18 @@
+{
+  "logistic_regression": {
+    "pr_auc": 0.2219195502046744,
+    "roc_auc": 0.9061299804049642,
+    "precision_at_top_5pct": 0.2360248447204969,
+    "recall_at_top_5pct": 0.25333333333333335,
+    "n_test": 3212
+  },
+  "random_forest": {
+    "pr_auc": 0.20443791822056023,
+    "roc_auc": 0.8921369475288482,
+    "precision_at_top_5pct": 0.21739130434782608,
+    "recall_at_top_5pct": 0.23333333333333334,
+    "n_test": 3212
+  },
+  "top_k": 161,
+  "top_fraction": 0.05
+}

@@ -1,0 +1,839 @@
+{
+  "request_id": "run_006:self_refine_memory:T3:a1:self_evaluate:1",
+  "run_id": "run_006",
+  "condition": "self_refine_memory",
+  "task_id": "T3",
+  "attempt": 1,
+  "node": "self_evaluate",
+  "seq": 1,
+  "created_at": "2026-09-07T15:58:02+00:00",
+  "instructions": "You executed the plan below and produced the report and metrics shown. No external reviewer is available: review your own output against the brief and good analytical practice. Return verdict 'accept' if the output is ready to hand to the sponsor, or 'revise' with at most three findings (most important first), each naming the catalogue component/parameter change that would address it. Attempts are limited; do not revise for cosmetic reasons.",
+  "payload": {
+    "task_id": "T3",
+    "condition": "self_refine_memory",
+    "task_spec": {
+      "task_id": "T3",
+      "title": "Provider and network patterns",
+      "objective": "Network management wants to know where the money and the denials go. Compare volume, paid amounts, denial rate and fraud-flag rate across provider specialties and between in-network and out-of-network claims. List the ten rendering providers with the most claims, with their specialty and network status taken from the provider directory. Produce the standard artifacts (group comparison table and chart, provider ranking table, report).",
+      "tags": [
+        "providers",
+        "network",
+        "specialty",
+        "group_comparison",
+        "small_groups",
+        "rates",
+        "denominators",
+        "joins",
+        "cardinality"
+      ],
+      "input_tables": [
+        "medical_claims",
+        "providers"
+      ],
+      "required_artifacts": [
+        "group_comparison.csv",
+        "group_comparison.png",
+        "provider_ranking.csv",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "join_check",
+        "description": "Cardinality, unmatched keys and row counts for selected cross-table key pairs.",
+        "default_selected": false,
+        "params": {
+          "pairs": {
+            "description": "Which left.key->right.key relationships to verify.",
+            "multi": true,
+            "options": [
+              "medical_claims.member_id->members.member_id",
+              "medical_claims.rendering_npi->providers.provider_npi",
+              "medical_claims.billing_npi->providers.provider_npi",
+              "pharmacy_claims.member_id->members.member_id",
+              "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+              "adherence.member_id->members.member_id"
+            ],
+            "default": []
+          }
+        },
+        "produces": [
+          {
+            "key": "join_check",
+            "shape": "{pair: {cardinality: str, rows_left: int, rows_after_inner_join: int, unmatched_left: int, unmatched_left_denominator: int, right_key_unique: bool}}"
+          }
+        ]
+      },
+      {
+        "id": "provider_join",
+        "description": "Join medical claims to the provider directory on a chosen provider key and record the row-count change.",
+        "default_selected": false,
+        "params": {
+          "provider_key": {
+            "description": "Which claim-level provider id to join on.",
+            "options": [
+              "rendering_npi",
+              "billing_npi"
+            ],
+            "default": "rendering_npi"
+          },
+          "how": {
+            "description": "Whether to keep only matched claims or all claims.",
+            "options": [
+              "inner",
+              "left"
+            ],
+            "default": "inner"
+          },
+          "validate": {
+            "description": "Whether to assert a many-to-one relationship during the merge.",
+            "options": [
+              "none",
+              "many_to_one"
+            ],
+            "default": "none"
+          }
+        },
+        "produces": [
+          {
+            "key": "provider_join",
+            "shape": "{provider_key: str, how: str, validate: str, rows_before: int, rows_after: int, unmatched: int, providers_matched: int}"
+          }
+        ]
+      },
+      {
+        "id": "group_comparison",
+        "description": "Per-group counts, paid totals, denial and fraud rates with small-group flags for chosen grouping columns.",
+        "default_selected": true,
+        "params": {
+          "group_by": {
+            "description": "Which claim-level columns (or their combination) define the groups.",
+            "multi": true,
+            "options": [
+              "provider_specialty",
+              "network_status",
+              "provider_specialty+network_status"
+            ],
+            "default": [
+              "provider_specialty"
+            ]
+          },
+          "metrics": {
+            "description": "Which per-group metrics to compute.",
+            "multi": true,
+            "options": [
+              "claim_count",
+              "paid_amount_sum",
+              "paid_amount_mean",
+              "denial_rate",
+              "fraud_rate"
+            ],
+            "default": [
+              "claim_count",
+              "paid_amount_sum"
+            ]
+          },
+          "denominator": {
+            "description": "Which claims in each group form the denial-rate denominator (fraud rate always uses all claims in the group).",
+            "options": [
+              "all_claims",
+              "adjudicated_claims"
+            ],
+            "default": "all_claims"
+          },
+          "min_group_size": {
+            "description": "Groups with fewer claims than this are flagged as small (0 never flags).",
+            "options": [
+              0,
+              30,
+              50,
+              100
+            ],
+            "default": 0
+          }
+        },
+        "produces": [
+          {
+            "key": "group_comparison",
+            "shape": "{min_group_size: int, denominator_option: str, groups: {group_by_key: {group_value: {n: int, claim_count?: int, paid_amount_sum?: float, paid_amount_mean?: float, denial_rate?: {value, numerator, denominator}, fraud_rate?: {value, numerator, denominator}, small_group_flag: bool}}}} (composite values formatted '<specialty>|<network_status>')"
+          }
+        ],
+        "artifacts": [
+          "group_comparison.csv",
+          "group_comparison.png"
+        ]
+      },
+      {
+        "id": "provider_ranking",
+        "description": "Top rendering providers by a chosen metric, joined to the provider directory for specialty and network status.",
+        "default_selected": false,
+        "params": {
+          "metric": {
+            "description": "Which metric ranks the providers.",
+            "options": [
+              "claim_count",
+              "paid_amount_sum",
+              "denial_rate"
+            ],
+            "default": "claim_count"
+          },
+          "top_n": {
+            "description": "How many providers to list.",
+            "options": [
+              5,
+              10,
+              20
+            ],
+            "default": 10
+          },
+          "min_claims": {
+            "description": "Minimum claims a provider needs to be eligible for the ranking.",
+            "options": [
+              0,
+              30
+            ],
+            "default": 0
+          }
+        },
+        "produces": [
+          {
+            "key": "provider_ranking",
+            "shape": "{metric: str, top_n: int, min_claims: int, rows: [{provider_npi: str, specialty: str, network_status: str, n: int, value: float}]}"
+          }
+        ],
+        "artifacts": [
+          "provider_ranking.csv"
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        },
+        "providers": {
+          "rows": 150,
+          "columns": [
+            {
+              "name": "provider_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "nucc_taxonomy",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "group_id",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "provider_npi"
+          ],
+          "date_columns": [],
+          "date_ranges": {}
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T7",
+      "T8"
+    ],
+    "remaining_tasks": [
+      {
+        "task_id": "T7",
+        "title": "High-cost claim identification"
+      },
+      {
+        "task_id": "T8",
+        "title": "Executive brief"
+      }
+    ],
+    "plan": {
+      "steps": [
+        {
+          "component": "load_tables",
+          "params": {}
+        },
+        {
+          "component": "join_check",
+          "params": {
+            "pairs": [
+              "medical_claims.rendering_npi->providers.provider_npi"
+            ]
+          }
+        },
+        {
+          "component": "provider_join",
+          "params": {
+            "provider_key": "rendering_npi",
+            "how": "inner",
+            "validate": "many_to_one"
+          }
+        },
+        {
+          "component": "group_comparison",
+          "params": {
+            "group_by": [
+              "provider_specialty+network_status"
+            ],
+            "metrics": [
+              "claim_count",
+              "paid_amount_sum",
+              "paid_amount_mean",
+              "denial_rate",
+              "fraud_rate"
+            ],
+            "denominator": "all_claims",
+            "min_group_size": 30
+          }
+        },
+        {
+          "component": "provider_ranking",
+          "params": {
+            "metric": "claim_count",
+            "top_n": 10,
+            "min_claims": 0
+          }
+        },
+        {
+          "component": "write_report",
+          "params": {
+            "caveats": [
+              "synthetic_data"
+            ],
+            "show_denominators": true,
+            "cite_artifacts": true
+          }
+        }
+      ],
+      "skills_applied": [],
+      "rationale": "Plan directly addresses task objectives: group_comparison cross-tabulates provider_specialty and network_status to compare volume (claim_count), paid amounts (sum and mean), denial rate, and fraud_rate across both dimensions. provider_ranking selects the ten rendering providers with most claims. All required artifacts produced. Includes synthetic_data caveat per prior feedback (T2), shows denominators for rate transparency (T2 lesson), and avoids unnecessary small_groups caveat (T4 lesson) by setting min_group_size=30 without including the caveat unless groups are actually flagged as small.",
+      "changes_summary": null
+    },
+    "execution_summary": {
+      "status": "ok",
+      "components_executed": [
+        "load_tables",
+        "join_check",
+        "provider_join",
+        "group_comparison",
+        "provider_ranking",
+        "write_report"
+      ],
+      "components_failed": [],
+      "errors": [],
+      "artifacts": [
+        "group_comparison.csv",
+        "group_comparison.png",
+        "provider_ranking.csv",
+        "report.md",
+        "metrics.json"
+      ],
+      "metric_keys": [
+        "group_comparison",
+        "join_check",
+        "plan",
+        "provider_join",
+        "provider_ranking",
+        "report",
+        "tables"
+      ]
+    },
+    "output": {
+      "report_md": "# T3 — Provider and network patterns\n\n## Summary\n\nTask T3 (Provider and network patterns) for run `run_006` / condition `self_refine_memory`, attempt 1: status **ok**; 6 component(s) executed, 0 failed, 0 error(s) recorded.\nTables: medical_claims (12845 rows), providers (150 rows).\n\n## Results\n\n### load_tables\n\n- medical_claims: 12845 rows, 54 columns [source: metrics.json#tables]\n- providers: 150 rows, 7 columns [source: metrics.json#tables]\n\n### join_check\n\n- medical_claims.rendering_npi->providers.provider_npi: many_to_one, unmatched left rows: 0 / 12845 = 0.000000 [source: metrics.json#join_check]\n\n### provider_join\n\n- rendering_npi -> providers.provider_npi (inner, validate=many_to_one): rows before -> after 12845 -> 12845; unmatched claims: 0 / 12845 = 0.000000 [source: metrics.json#provider_join]\n- Distinct providers matched: 150 [source: metrics.json#provider_join.providers_matched]\n\n### group_comparison\n\n- provider_specialty+network_status: groups 41, flagged small (n < 30): 0 [source: metrics.json#group_comparison.groups]\n- provider_specialty+network_status = ASC|In-Network (n=799): denial rate [all_claims]: 73 / 799 = 0.091364 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = ASC|In-Network: fraud rate: 41 / 799 = 0.051314 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = ASC|In-Network: paid_amount sum: 644206.180000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = ASC|Out-of-Network (n=167): denial rate [all_claims]: 20 / 167 = 0.119760 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = ASC|Out-of-Network: fraud rate: 10 / 167 = 0.059880 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = ASC|Out-of-Network: paid_amount sum: 131742.670000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = Cardiology|In-Network (n=157): denial rate [all_claims]: 20 / 157 = 0.127389 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Cardiology|In-Network: fraud rate: 9 / 157 = 0.057325 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Cardiology|In-Network: paid_amount sum: 93897.520000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = Clinical Laboratory|In-Network (n=164): denial rate [all_claims]: 17 / 164 = 0.103659 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Clinical Laboratory|In-Network: fraud rate: 12 / 164 = 0.073171 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Clinical Laboratory|In-Network: paid_amount sum: 105964.550000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = Clinical Laboratory|Out-of-Network (n=90): denial rate [all_claims]: 8 / 90 = 0.088889 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Clinical Laboratory|Out-of-Network: fraud rate: 4 / 90 = 0.044444 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Clinical Laboratory|Out-of-Network: paid_amount sum: 62435.520000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = Critical Access Hospital|In-Network (n=944): denial rate [all_claims]: 115 / 944 = 0.121822 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Critical Access Hospital|In-Network: fraud rate: 37 / 944 = 0.039195 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Critical Access Hospital|In-Network: paid_amount sum: 648344.440000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = Critical Access Hospital|Out-of-Network (n=281): denial rate [all_claims]: 22 / 281 = 0.078292 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Critical Access Hospital|Out-of-Network: fraud rate: 17 / 281 = 0.060498 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Critical Access Hospital|Out-of-Network: paid_amount sum: 249992.920000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = DME Supplier|In-Network (n=841): denial rate [all_claims]: 80 / 841 = 0.095125 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = DME Supplier|In-Network: fraud rate: 38 / 841 = 0.045184 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = DME Supplier|In-Network: paid_amount sum: 634611.680000 [source: artifacts/tasks/run_006/self_refine_memory/T3/attempt_1/group_comparison.csv]\n- provider_specialty+network_status = Diagnostic Radiology|Out-of-Network (n=71): denial rate [all_claims]: 4 / 71 = 0.056338 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status = Diagnostic Radiology|Out-of-Network: fraud rate: 5 / 71 = 0.070423 [source: metrics.json#group_comparison.groups.provider_specialty+network_status]\n- provider_specialty+network_status \n... [truncated, 21006 more characters]",
+      "metrics_json": "{\n \"task_id\": \"T3\",\n \"run_id\": \"run_006\",\n \"condition\": \"self_refine_memory\",\n \"attempt\": 1,\n \"seed\": 42,\n \"generated_at\": \"2026-09-07T15:58:01+00:00\",\n \"plan_sha256\": \"7588a8557251d482b0c006ac09aaab8f8931e255044c47f4526a5857e9ba14bd\",\n \"tables\": {\n  \"medical_claims\": {\n   \"rows\": 12845,\n   \"columns\": 54\n  },\n  \"providers\": {\n   \"rows\": 150,\n   \"columns\": 7\n  }\n },\n \"join_check\": {\n  \"medical_claims.rendering_npi->providers.provider_npi\": {\n   \"cardinality\": \"many_to_one\",\n   \"rows_left\": 12845,\n   \"rows_after_inner_join\": 12845,\n   \"unmatched_left\": 0,\n   \"unmatched_left_denominator\": 12845,\n   \"right_key_unique\": true\n  }\n },\n \"provider_join\": {\n  \"provider_key\": \"rendering_npi\",\n  \"how\": \"inner\",\n  \"validate\": \"many_to_one\",\n  \"rows_before\": 12845,\n  \"rows_after\": 12845,\n  \"unmatched\": 0,\n  \"providers_matched\": 150\n },\n \"group_comparison\": {\n  \"min_group_size\": 30,\n  \"denominator_option\": \"all_claims\",\n  \"groups\": {\n   \"provider_specialty+network_status\": {\n    \"ASC|In-Network\": {\n     \"n\": 799,\n     \"claim_count\": 799,\n     \"paid_amount_sum\": 644206.1799999999,\n     \"paid_amount_mean\": 806.2655569461826,\n     \"denial_rate\": {\n      \"value\": 0.09136420525657071,\n      \"numerator\": 73,\n      \"denominator\": 799\n     },\n     \"fraud_rate\": {\n      \"value\": 0.05131414267834793,\n      \"numerator\": 41,\n      \"denominator\": 799\n     },\n     \"small_group_flag\": false\n    },\n    \"ASC|Out-of-Network\": {\n     \"n\": 167,\n     \"claim_count\": 167,\n     \"paid_amount_sum\": 131742.67,\n     \"paid_amount_mean\": 788.878263473054,\n     \"denial_rate\": {\n      \"value\": 0.11976047904191617,\n      \"numerator\": 20,\n      \"denominator\": 167\n     },\n     \"fraud_rate\": {\n      \"value\": 0.059880239520958084,\n      \"numerator\": 10,\n      \"denominator\": 167\n     },\n     \"small_group_flag\": false\n    },\n    \"Cardiology|In-Network\": {\n     \"n\": 157,\n     \"claim_count\": 157,\n     \"paid_amount_sum\": 93897.51999999999,\n     \"paid_amount_mean\": 598.0733757961783,\n     \"denial_rate\": {\n      \"value\": 0.12738853503184713,\n      \"numerator\": 20,\n      \"denominator\": 157\n     },\n     \"fraud_rate\": {\n      \"value\": 0.05732484076433121,\n      \"numerator\": 9,\n      \"denominator\": 157\n     },\n     \"small_group_flag\": false\n    },\n    \"Clinical Laboratory|In-Network\": {\n     \"n\": 164,\n     \"claim_count\": 164,\n     \"paid_amount_sum\": 105964.55,\n     \"paid_amount_mean\": 646.1253048780488,\n     \"denial_rate\": {\n      \"value\": 0.10365853658536585,\n      \"numerator\": 17,\n      \"denominator\": 164\n     },\n     \"fraud_rate\": {\n      \"value\": 0.07317073170731707,\n      \"numerator\": 12,\n      \"denominator\": 164\n     },\n     \"small_group_flag\": false\n    },\n    \"Clinical Laboratory|Out-of-Network\": {\n     \"n\": 90,\n     \"claim_count\": 90,\n     \"paid_amount_sum\": 62435.520000000004,\n     \"paid_amount_mean\": 693.7280000000001,\n     \"denial_rate\": {\n      \"value\": 0.08888888888888889,\n      \"numerator\": 8,\n      \"denominator\": 90\n     },\n     \"fraud_rate\": {\n      \"value\": 0.044444444444444446,\n      \"numerator\": 4,\n      \"denominator\": 90\n     },\n     \"small_group_flag\": false\n    },\n    \"Critical Access Hospital|In-Network\": {\n     \"n\": 944,\n     \"claim_count\": 944,\n     \"paid_amount_sum\": 648344.4400000001,\n     \"paid_amount_mean\": 686.8055508474577,\n     \"denial_rate\": {\n      \"value\": 0.12182203389830508,\n      \"numerator\": 115,\n      \"denominator\": 944\n     },\n     \"fraud_rate\": {\n      \"value\": 0.03919491525423729,\n      \"numerator\": 37,\n      \"denominator\": 944\n     },\n     \"small_group_flag\": false\n    },\n    \"Critical Access Hospital|Out-of-Network\": {\n     \"n\": 281,\n     \"claim_count\": 281,\n     \"paid_amount_sum\": 249992.92,\n     \"paid_amount_mean\": 889.6545195729537,\n     \"denial_rate\": {\n      \"value\": 0.07829181494661921,\n      \"numerator\": 22,\n      \"denominator\": 281\n     },\n     \"fraud_rate\": {\n      \"value\": 0.060498220640569395,\n      \"numerator\": 17,\n      \"denominator\": 281\n     },\n     \"small_group_flag\": false\n    },\n    \"DME Supplier|In-Network\": {\n     \"n\": 841,\n     \"claim_count\": 841,\n     \"paid_amount_sum\": 634611.68,\n     \"paid_amount_mean\": 754.5917717003567,\n     \"denial_rate\": {\n      \"value\": 0.09512485136741974,\n      \"numerator\": 80,\n      \"denominator\": 841\n     },\n     \"fraud_rate\": {\n      \"value\": 0.04518430439952437,\n      \"numerator\": 38,\n      \"denominator\": 841\n     },\n     \"small_group_flag\": false\n    },\n    \"Diagnostic Radiology|Out-of-Network\": {\n     \"n\": 71,\n     \"claim_count\": 71,\n     \"paid_amount_sum\": 66168.88,\n     \"paid_amount_mean\": 931.9560563380282,\n     \"denial_rate\": {\n      \"value\": 0.056338028169014086,\n      \"numerator\": 4,\n      \"denominator\": 71\n     },\n     \"fraud_rate\": {\n      \"value\": 0.07042253521126761,\n      \"numerator\": 5,\n      \"denominator\": 71\n     },\n     \"small_group_flag\": false\n    },\n    \"Endocrinology|In-Network\": {\n     \"n\": 418,\n     \"claim_count\": 418,\n     \"paid_amount_sum\": 343979.67000000004,\n     \"paid_amount_mean\": 822.9178708133973,\n     \"denial_rate\": {\n      \"value\": 0.11722488038277512,\n      \"numerator\": 49,\n      \"denominator\": 418\n     },\n     \"fraud_rate\": {\n      \"value\": 0.0430622009569378,\n      \"numerator\": 18,\n      \"denominator\": 418\n     },\n     \"small_group_flag\": false\n    },\n    \"Endocrinology|Out-of-Network\": {\n     \"n\": 91,\n     \"claim_count\": 91,\n     \"paid_amount_sum\": 75020.75000000001,\n     \"paid_amount_mean\": 824.4038461538463,\n     \"denial_rate\": {\n      \"value\": 0.06593406593406594,\n      \"numerator\": 6,\n      \"denominator\": 91\n     },\n     \"fraud_rate\": {\n      \"value\": 0.04395604395604396,\n      \"numerator\": 4,\n      \"denominator\": 91\n     },\n     \"small_group_flag\": false\n    },\n    \"Family Medicine|In-Network\": {\n     \"n\": 421,\n     \"claim_count\": 421,\n     \"paid_amount_sum\": 353444.66000000003,\n     \"paid_amount_mean\": 839.5360095011878,\n     \"denial_rate\": {\n      \"value\": 0.09263657957244656,\n      \"numerator\": 39,\n      \"denominator\": 421\n     },\n     \"fraud_rate\": {\n      \"value\": 0.047505938242280284,\n      \"numerator\": 20\n... [truncated, 13984 more characters]"
+    },
+    "attempt": 1,
+    "attempts_remaining": 4,
+    "previous_self_reviews": []
+  },
+  "response_schema": {
+    "$defs": {
+      "SelfFinding": {
+        "properties": {
+          "issue": {
+            "description": "What is wrong or missing in the output, in one or two sentences.",
+            "minLength": 3,
+            "title": "Issue",
+            "type": "string"
+          },
+          "severity": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "suggested_change": {
+            "default": "",
+            "description": "Which catalogue component/parameter change would address it.",
+            "title": "Suggested Change",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue"
+        ],
+        "title": "SelfFinding",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``self_evaluate`` (self_refine only): the operator reviews its own output without any external feedback.",
+    "properties": {
+      "verdict": {
+        "enum": [
+          "accept",
+          "revise"
+        ],
+        "title": "Verdict",
+        "type": "string"
+      },
+      "findings": {
+        "description": "At most the three most important problems.",
+        "items": {
+          "$ref": "#/$defs/SelfFinding"
+        },
+        "title": "Findings",
+        "type": "array"
+      },
+      "summary": {
+        "default": "",
+        "title": "Summary",
+        "type": "string"
+      }
+    },
+    "required": [
+      "verdict"
+    ],
+    "title": "SelfEvaluationResponse",
+    "type": "object"
+  }
+}

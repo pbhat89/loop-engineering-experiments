@@ -1,0 +1,21 @@
+{
+  "verdict": "revise",
+  "findings": [
+    {
+      "issue": "Feature leakage: billed_amount and allowed_amount are determined during claim adjudication, not available when a claim arrives. Including them inflates model performance unrealistically and violates the task objective ('when a claim comes in').",
+      "severity": "high",
+      "suggested_change": "feature_set: remove billed_amount and allowed_amount from the features parameter to use only early-available claim characteristics."
+    },
+    {
+      "issue": "Threshold computed on all_data (including test rows). The 95th percentile should be computed on training data only to maintain clean train/test separation.",
+      "severity": "medium",
+      "suggested_change": "target_definition: change threshold_source parameter from 'all_data' to 'train_only'."
+    },
+    {
+      "issue": "Preprocessing fit on all_data. The encoder and scaler were fit on both train and test rows, leaking test-set information and potentially biasing metrics optimistically.",
+      "severity": "medium",
+      "suggested_change": "preprocessing: change fit_on parameter from 'all_data' to 'train_only' to fit only on training data."
+    }
+  ],
+  "summary": "Feature leakage with adjudication-stage amount fields inflates performance. Remove these fields and apply standard train/test separation for threshold and preprocessing to ensure production-valid results."
+}

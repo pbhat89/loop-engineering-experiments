@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 95,
+        "threshold_source": "all_data"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present",
+          "billed_amount",
+          "allowed_amount"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "all_data",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_006_001"
+  ],
+  "rationale": "Task T7 requires an early-warning model to predict high-cost claims at arrival. Split fraction 0.25 per objective. Target defined as paid_amount above 95th percentile using all_data to capture true population threshold. Features selected for availability at claim arrival: claim/service metadata, clinical indicators (diagnosis, place_of_service, length_of_stay, er/elective/preventive flags), billed and allowed amounts (available pre-payment), excluding paid_amount (prediction target) and high_cost_flag (target leakage). Standard scaling supports both logistic regression and random_forest. Retrieved synthetic_data skill applied to write_report caveats; denial rate skill not applicable."
+}

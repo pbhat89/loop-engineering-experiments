@@ -1,10 +1,10 @@
-# Documentation mirror of the compiled LangGraph in src/claims_graph.py (v3, experiment 3).
+# Documentation mirror of the compiled LangGraph in src/claims_graph.py (v4, experiment 4).
 # One graph serves every condition; routing functions read state["condition"] and the `next_route`
 # decision recorded by evaluate_output / self_evaluate / validate_skill. tests/test_graph_routes.py asserts
 # that `nodes`, `edges` and `per_condition` below equal src.claims_graph.designed_topology() and that the
 # edge set equals the compiled graph's edges. This file never drives execution.
 
-graph_version: "3"
+graph_version: "4"
 
 nodes:
   - load_context
@@ -28,14 +28,14 @@ llm_decision_nodes: [plan_task, revise_plan, reflect_on_feedback, propose_skill,
 edges:
   - {source: START, target: load_context, label: ""}
   - {source: load_context, target: retrieve_skills, label: "skill_learning | foundational_only"}
-  - {source: load_context, target: plan_task, label: "baseline | reflection_only"}
+  - {source: load_context, target: plan_task, label: "baseline | reflection_only | feedback_memory | self_refine | self_refine_memory"}
   - {source: retrieve_skills, target: plan_task, label: ""}
   - {source: plan_task, target: execute_task, label: ""}
   - {source: execute_task, target: evaluate_output, label: ""}
   - {source: evaluate_output, target: finalize_task, label: "completed"}
   - {source: evaluate_output, target: revise_plan, label: "retry (baseline)"}
-  - {source: evaluate_output, target: reflect_on_feedback, label: "retry (reflection_only, skill_learning) | learn (skill_learning)"}
-  - {source: evaluate_output, target: self_evaluate, label: "self_evaluate (self_refine)"}
+  - {source: evaluate_output, target: reflect_on_feedback, label: "retry (reflection_only, feedback_memory, skill_learning) | learn (skill_learning)"}
+  - {source: evaluate_output, target: self_evaluate, label: "self_evaluate (self_refine, self_refine_memory)"}
   - {source: self_evaluate, target: revise_plan, label: "retry (operator verdict: revise)"}
   - {source: self_evaluate, target: finalize_task, label: "completed (operator verdict: accept)"}
   - {source: reflect_on_feedback, target: revise_plan, label: "retry"}
@@ -59,8 +59,9 @@ routers:
     targets: [finalize_task, revise_plan, reflect_on_feedback, self_evaluate]
     rule: >-
       evaluate_output stores next_route: 'retry' when not passed and retry_count < max_retries and operator budget remains;
-      otherwise 'learn' (skill_learning) or 'completed' (baseline, reflection_only, foundational_only).
-      self_refine ignores the verdict for routing: 'self_evaluate' while attempts remain, else 'completed'.
+      otherwise 'learn' (skill_learning) or 'completed' (baseline, reflection_only, feedback_memory, foundational_only).
+      the self-review arms (self_refine, self_refine_memory) ignore the verdict for routing: 'self_evaluate' while
+      attempts remain, else 'completed'.
       retry -> revise_plan for baseline, reflect_on_feedback for every other condition; learn -> reflect_on_feedback;
       self_evaluate -> self_evaluate; completed -> finalize_task
   route_after_self_evaluation:
@@ -86,19 +87,34 @@ per_condition:
                    propose_skill, validate_skill, revise_skill_proposal, persist_skill, finalize_task]
   foundational_only: [load_context, retrieve_skills, plan_task, execute_task, evaluate_output, reflect_on_feedback, revise_plan, finalize_task]
   self_refine: [load_context, plan_task, execute_task, evaluate_output, self_evaluate, revise_plan, finalize_task]
+  feedback_memory: [load_context, plan_task, execute_task, evaluate_output, reflect_on_feedback, revise_plan, finalize_task]
+  self_refine_memory: [load_context, plan_task, execute_task, evaluate_output, self_evaluate, revise_plan, finalize_task]
+
+# Raw cross-task memory (experiment 4, decision D-22). Two arms only; no extra nodes, no extra routes.
+memory:
+  arms:
+    feedback_memory: "reflection_only plus a verbatim log of the checker findings the operator was shown (evaluation.feedback_shown, all attempts)"
+    self_refine_memory: "self_refine plus a verbatim log of the operator's own review findings (self_evaluation_history[*].findings, with each review's verdict and summary); it still never sees the evaluator"
+  file: "artifacts/memory/<run_id>/<condition>.jsonl"
+  written_by: finalize_task           # skill event `memory_written`
+  recalled_by: load_context           # skill event `memory_retrieved`; state key `past_feedback`
+  shown_in: [plan_task, revise_plan]  # payload keys `past_feedback` and `past_feedback_note`
+  recall_order: "most recent first, records from other tasks only"
+  recall_limit: 30
+  distillation: none                  # appended verbatim, never filtered for relevance, never turned into a skill
 
 # What the operator is shown per attempt (experiment 3, decision D-21; values duplicated from experiment.yaml)
 feedback:
   feedback_max_items: 3            # the three most severe failed checks (critical first, then rubric weight); the rest is a count
   reveal_fixes: false              # the literal component/parameter fix (`related_components`) is withheld from the operator
-  self_refine_sees_evaluator: false
+  self_refine_sees_evaluator: false     # applies to self_refine and self_refine_memory alike
 
 # Retry / termination rules (brief Addendum B; docs/plan.md). Values duplicated from experiment.yaml are asserted equal by test.
 termination:
   pass_rule: "all critical checks pass and score_total >= pass_threshold -> finalize_task immediately (stop_reason: passed)"
   max_retries: 4
   retry_exhausted_rule: "retry_count == max_retries and not passed -> finalize (stop_reason: retry_budget_exhausted); skill_learning still reflects and may propose"
-  self_refine_stop_rule: "the operator's own verdict ends the loop (stop_reason: self_accepted) or the attempt cap does; the frozen evaluator's pass/fail is recorded but never routes"
+  self_refine_stop_rule: "in self_refine and self_refine_memory the operator's own verdict ends the loop (stop_reason: self_accepted) or the attempt cap does; the frozen evaluator's pass/fail is recorded but never routes"
   max_operator_steps_per_condition: 64
   operator_cap_rule: >-
     when operator_steps_used >= cap no request is issued: plan_task uses catalogue defaults, revise_plan keeps the prior plan,

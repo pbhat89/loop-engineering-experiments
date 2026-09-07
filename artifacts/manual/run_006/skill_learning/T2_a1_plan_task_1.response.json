@@ -1,0 +1,50 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": ["claim_status"],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": ["billed_amount", "allowed_amount", "paid_amount"],
+        "statistics": "sum_mean"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "adjudication_date",
+        "metrics": ["claim_count"]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "descriptive_only"],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This plan provides a complete portfolio view: load_tables initializes the analysis; claim_volume by claim_status with figure=true produces the required status distribution chart; denial_rate and fraud_prevalence answer the key rate questions; financial_summary on billed, allowed, and paid amounts addresses the financial picture; monthly_trend tracks how claim volume moved over time; write_report compiles findings with synthetic data and descriptive-analysis caveats, citing artifacts throughout. All components use only catalogue options and will produce the six required artifacts."
+}

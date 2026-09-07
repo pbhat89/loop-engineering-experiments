@@ -1,0 +1,28 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": ["T1", "T2", "T3", "T6"]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps"],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "model_limitations", "association_not_causation"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Synthesizes all four required analyses: T1 (book description), T2 (denial analysis), T3 (provider/network comparison), T6 (high-cost model). Brief sections comprehensively cover findings, model performance, limitations, and next steps with conservative causal language and full citation for traceability. Report includes synthetic data, model limitations, and association-not-causation caveats; shows denominators for statistical discipline and cites artifacts for transparency."
+}

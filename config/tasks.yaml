@@ -1,16 +1,17 @@
 # Fixed task suite and plan-component catalogue (A3). Binding contract: docs/LEAD_CATALOGUE_SKELETON.md.
 # Component ids, parameter options, defaults and produced metric keys are frozen; objectives are the analyst
 # brief an operator sees. Defaults are the naive analyst choice and are never automatically the golden choice.
-# Experiment 3 (D-21): task_order is the four-task suite T2 -> T4 -> T3 -> T7 and the briefs of those four tasks are
+# Experiment 4 (D-22): task_order is the six-task suite T1 -> T2 -> T4 -> T3 -> T7 -> T8 and the briefs of all six are
 # *blinded* - written the way a business sponsor would ask, without the house conventions (denominators, small-group
 # thresholds, train-only fitting, required caveats) that the frozen rubric and goldens enforce. The loop has to learn
-# those from feedback. T1, T5, T6 and T8 keep their experiment-1/2 briefs and are not run.
+# those from feedback. T1 (reconnaissance) and T8 (executive brief) are blinded too, so the suite now opens and closes
+# on tasks whose conventions have to be learned. T5 and T6 keep their experiment-1/2 briefs and are not run.
 # Plan grammar: a param has options + default; `multi: true` params take a list whose items are all in options;
 # option values are matched by string form ("30" matches 30). Omitted params take defaults.
 # `produces` lists the metric keys the executor writes to metrics.json (shape documented as a string);
 # `artifacts` lists the side files a component writes into output_dir.
 suite_version: "1"
-task_order: [T2, T4, T3, T7]
+task_order: [T1, T2, T4, T3, T7, T8]
 
 shared_conventions:
   all_claims: every row of medical_claims
@@ -32,17 +33,11 @@ tasks:
   - task_id: T1
     title: Dataset reconnaissance
     objective: >-
-      Five synthetic files arrived from the HLT-008 sample: members, providers, medical claims, pharmacy claims and
-      an adherence table. Load each file separately and produce a data contract for every table (row count,
-      column names and types). Profile missingness across every column of every table and call out columns that
-      are entirely empty. Check whether the natural identifier of each table is actually a unique key, including
-      the composite member-plus-therapeutic-class key of the adherence table. Report the range of every date
-      column in the medical claims table and check whether the dates are ordered consistently (for example
-      adjudication happening before the service ended). Verify every cross-file relationship you would rely on
-      later: member ids from each claims table to the members table, the rendering and billing provider ids to
-      the provider directory, and whether pharmacy claims can be joined to the provider directory at all; report
-      cardinality, unmatched keys and row counts. Write a data-quality report that states the data is synthetic
-      and that any value samples shown are previews.
+      Five files have just arrived from the data vendor: members, providers, medical claims, pharmacy claims and a
+      medication-adherence table. Before anyone builds on them, tell us what is in each file, whether the
+      identifiers can be trusted, what period the dates cover, whether the files join to each other the way we
+      would expect, and anything that looks wrong. Produce the standard artifacts (data contract, missingness
+      table, report).
     tags: [data_contract, schema, keys, missingness, duplicates, dates, joins, cardinality, data_quality]
     input_tables: [members, providers, medical_claims, pharmacy_claims, adherence]
     golden_file: goldens/T1_data_contract.json
@@ -775,14 +770,11 @@ tasks:
   - task_id: T8
     title: Executive brief
     objective: >-
-      Write a one-page Markdown executive brief (at most 600 words) for a non-technical sponsor, built only from
-      the saved results of the earlier tasks in this run (the final attempt of each). Draw on the portfolio
-      description, the fraud exploration and both modelling tasks, and on at least one of the provider or denial
-      analyses. Structure the brief with key findings, model results, limitations, synthetic-data caveats and
-      next analytical steps. Every numeric statement must trace to a saved metric or artifact and cite it; never
-      restate a number that is not in a saved result, and record a source task as missing rather than inventing a
-      value. Describe relationships as associations rather than causes, and state that the data is synthetic and
-      the findings are not for operational use.
+      Write a one-page brief (no more than 600 words) for the head of claims summarising what this piece of work
+      found, using only the saved results of the earlier tasks in this run: the description of the book, the denial
+      analysis, the provider and network comparison and the high-cost model. Cover the key findings, how the model
+      performed, the limitations and what to do next. Produce the standard artifacts (executive brief, findings
+      table, report).
     tags: [communication, executive_brief, traceability, caveats, synthesis, limitations]
     input_tables: []
     golden_file: goldens/T8_executive_brief_rubric.yaml

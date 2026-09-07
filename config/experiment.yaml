@@ -1,19 +1,24 @@
-# Experiment configuration — claims-skill-loop (owner: A1; experiment 3 values set by the lead, decision D-21).
+# Experiment configuration — claims-skill-loop (owner: A1; experiment 4 values set by the lead, decision D-22).
 # Keys are those fixed in docs/LEAD_DESIGN_DECISIONS.md §12 plus the experiment-3 feedback/library knobs.
-# Every condition reads this same file; per-condition differences are routes only (config/graph.yaml).
+# Every condition reads this same file; per-condition differences are routes and memory only (config/graph.yaml).
 
 seed: 42
-conditions: [reflection_only, skill_learning, self_refine]   # experiment 3; baseline / foundational_only remain available
-task_order: [T2, T4, T3, T7]                                  # describe the book -> denials -> providers & network -> high-cost model
+# Experiment 4: five arms. feedback_memory = reflection_only + a raw log of the checker findings it was shown;
+# self_refine_memory = self_refine + a raw log of its own review findings (it still never sees the checker).
+# Both logs are appended verbatim after each task and shown in full before planning later ones - no distillation,
+# no relevance filtering, no skills. baseline / foundational_only remain available but are not run.
+conditions: [reflection_only, feedback_memory, skill_learning, self_refine, self_refine_memory]
+task_order: [T1, T2, T4, T3, T7, T8]    # reconnaissance -> describe the book -> denials -> providers & network -> high-cost model -> executive brief
 
-# Stopping rules (brief Addendum B, widened for experiment 3)
+# Stopping rules (brief Addendum B, widened for experiment 3 and unchanged in experiment 4)
 max_retries: 4                          # five attempts per task
 pass_threshold: 3.5                     # must equal config/rubric.yaml pass_threshold (asserted by test)
 max_operator_steps_per_condition: 64    # every operator request file written counts, re-requests included
 
-# What the operator is shown after each attempt (experiment 3)
+# What the operator is shown after each attempt (experiment 3; unchanged in experiment 4)
 feedback_max_items: 3                   # only the three most severe failed checks are reported; the rest is a count
 reveal_fixes: false                     # the literal component/parameter fix is withheld (manual mode only; fixtures always see it)
+# The memory arms additionally carry artifacts/memory/<run_id>/<condition>.jsonl into plan_task / revise_plan (D-22).
 
 # Skills
 foundational_skills: false              # start from an empty library: every retrieved skill was learned inside the run
@@ -31,7 +36,7 @@ freeze_manifest: config/freeze_manifest.json
 
 # Runtime (no model API calls in manual or stub mode)
 default_mode: manual                    # manual | stub | rule_learner | anthropic_api (anthropic_api is not used in this study)
-model_identifier: claude-haiku-4-5-20251001   # record-only in manual mode: the Claude Code subagent model acting as operator (experiment 3)
+model_identifier: claude-haiku-4-5-20251001   # record-only in manual mode: the Claude Code subagent model acting as operator (experiments 3-4)
 operator: claude-code-subagent          # stateless experiment-operator-blind subagent, one per request
 
 # Observability

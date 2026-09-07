@@ -7,38 +7,42 @@ Two operator definitions exist:
 | Definition | Used in | Model | Carries analytical conventions? |
 |---|---|---|---|
 | `.claude/agents/experiment-operator.md` | experiment 1 (`run_001`) | Claude Fable 5.1 (session model) | yes — a list of analytical standards (denominators, train-only fitting, leakage exclusions, caveats) |
-| `.claude/agents/experiment-operator-blind.md` | experiment 3 (`run_005`) | Claude Haiku 4.5 (`model: haiku`) | **no** — house rules must come from the request: feedback, retrieved skills, or its own review |
+| `.claude/agents/experiment-operator-blind.md` | experiments 3 (`run_005`) and 4 (`run_006`) | Claude Haiku 4.5 (`model: haiku`) | **no** — house rules must come from the request: feedback, retrieved skills, recorded past comments, or its own review |
 
-The second definition exists because the first, combined with briefs that stated the conventions, produced the experiment-1 ceiling (every task 4.00 first attempt, nothing to learn). Experiment 3 blinds the briefs (`config/tasks.yaml`, four tasks) *and* the operator, caps the feedback to the three most severe findings per attempt with the literal fix withheld, and allows five attempts (`config/experiment.yaml`, decision D-21).
+The second definition exists because the first, combined with briefs that stated the conventions, produced the experiment-1 ceiling (every task 4.00 first attempt, nothing to learn). Experiment 3 blinds the briefs *and* the operator, caps the feedback to the three most severe findings per attempt with the literal fix withheld, and allows five attempts (decision D-21).
+
+Experiment 4 (`run_006`, decision D-22) keeps all of that and changes two things: the suite is **six tasks** with T1 and T8 blinded as well, and there are **five arms** — the three from experiment 3 plus two *raw-memory* arms. A memory arm carries a plain log of past findings, appended verbatim after each task to `artifacts/memory/<run_id>/<condition>.jsonl` and shown in full (most recent first, at most 30 items) in the `past_feedback` key of later `plan_task` / `revise_plan` requests. Nothing is distilled, filtered for relevance or turned into a skill; the request itself says the comments come from earlier tasks and may or may not apply.
 
 ## Preconditions (Phase 1.5 gates)
 
 1. `goldens/` built by `src/build_goldens.py`, reviewed by the user via `artifacts/reports/golden_review.md`.
 2. `config/tasks.yaml` and `config/rubric.yaml` final.
-3. `uv run python -m src.run_experiment freeze` → `config/freeze_manifest.json` (hashes of data, goldens, tasks, rubric). Comparative runs refuse to start if any hash drifts. Experiment 3 freeze: `64b7292e8214…` (experiments 1–2: `1566c5698a50…`; the briefs of T2/T3/T4/T7 and the T7 ROC-AUC band changed, nothing else).
-4. A full `stub` run has passed end-to-end: `uv run python -m src.run_experiment run-stub --run-id stub_003 --conditions reflection_only,skill_learning,self_refine`.
+3. `uv run python -m src.run_experiment freeze` → `config/freeze_manifest.json` (hashes of data, goldens, tasks, rubric). Comparative runs refuse to start if any hash drifts. Experiment 4 freeze: `59fb61d35fe8…` (experiment 3: `64b7292e8214…`; experiments 1–2: `1566c5698a50…`). Only the T1 and T8 briefs and `task_order` changed between 3 and 4; goldens and rubric are untouched.
+4. A full `stub` run has passed end-to-end: `uv run python -m src.run_experiment run-stub --run-id stub_004 --conditions reflection_only,feedback_memory,skill_learning,self_refine,self_refine_memory` (experiment 4: `archive/experiment-4_stub_004_smoke/`).
 
 ## The loop
 
 ```bash
 # once per run
-uv run python -m src.run_experiment init --run-id run_005 --conditions reflection_only,skill_learning,self_refine --mode manual
+uv run python -m src.run_experiment init --run-id run_006 --conditions reflection_only,feedback_memory,skill_learning,self_refine,self_refine_memory --mode manual
 
 # repeat until every condition reports done
-uv run python -m src.run_experiment advance-all --run-id run_005     # resumes conditions whose response file exists, then prints pending requests
-#   OPERATOR NEEDED [reflection_only] -> artifacts/manual/run_005/reflection_only/T2_a1_plan_task_1.request.json
-#   OPERATOR NEEDED [skill_learning]  -> artifacts/manual/run_005/skill_learning/T2_a1_plan_task_1.request.json
-#   OPERATOR NEEDED [self_refine]     -> artifacts/manual/run_005/self_refine/T2_a1_plan_task_1.request.json
+uv run python -m src.run_experiment advance-all --run-id run_006     # resumes conditions whose response file exists, then prints pending requests
+#   OPERATOR NEEDED [reflection_only]    -> artifacts/manual/run_006/reflection_only/T1_a1_plan_task_1.request.json
+#   OPERATOR NEEDED [feedback_memory]    -> artifacts/manual/run_006/feedback_memory/T1_a1_plan_task_1.request.json
+#   OPERATOR NEEDED [skill_learning]     -> artifacts/manual/run_006/skill_learning/T1_a1_plan_task_1.request.json
+#   OPERATOR NEEDED [self_refine]        -> artifacts/manual/run_006/self_refine/T1_a1_plan_task_1.request.json
+#   OPERATOR NEEDED [self_refine_memory] -> artifacts/manual/run_006/self_refine_memory/T1_a1_plan_task_1.request.json
 # for each pending request: spawn one operator subagent (prompt below), which writes the matching .response.json
 # then advance-all again
-uv run python -m src.run_experiment status --run-id run_005            # per-condition tasks, scores, steps used, rough ETA
+uv run python -m src.run_experiment status --run-id run_006            # per-condition tasks, scores, steps used, rough ETA
 ```
 
 `logs/experiment_status.json` and `artifacts/dashboard/progress.html` update after every node; the dashboard shows the pending request per condition and how long it has waited.
 
-Conditions are independent threads: up to three operator subagents run at the same time (one per condition). A subagent never sees another condition's files.
+Conditions are independent threads: up to five operator subagents run at the same time (one per condition). A subagent never sees another condition's files, and never the other conditions' memory logs.
 
-## Operator subagent prompt (verbatim template, experiment 3)
+## Operator subagent prompt (verbatim template, experiments 3 and 4 — unchanged)
 
 Spawned with the Agent tool, `model: haiku`, one per request file:
 
@@ -53,23 +57,25 @@ Rules the lead follows:
 - The lead does not read request or response contents during the run except to confirm a file exists (to avoid steering later steps); the files are inspected only after all conditions finish.
 - If the session hits a rate limit mid-run, nothing is lost: checkpoints and request/response files are on disk; `advance-all` resumes after the reset.
 
-## What the operator is shown (experiment 3)
+## What the operator is shown (experiment 4, five arms)
 
-| Step | reflection_only | skill_learning | self_refine |
-|---|---|---|---|
-| `plan_task` | brief, catalogue, manifest summary | + retrieved skills (learned in this run only; the library starts empty) | brief, catalogue, manifest summary |
-| after `evaluate_output` | the 3 most severe failed checks (no literal fix) + scorecard + count of further failures | same | **nothing** — the operator reviews its own report and metrics (`self_evaluate`) and decides accept / revise |
-| `revise_plan` | prior plan, those 3 findings, its reflection | + retrieved skills | prior plan, its own findings |
-| after a pass | — | reflect over the whole task → propose ≤ 1 skill → validate → persist | — |
+| Arm | `plan_task` | after `evaluate_output` | `revise_plan` | `past_feedback` (cross-task memory) | after a pass |
+|---|---|---|---|---|---|
+| `reflection_only` | brief, catalogue, manifest summary | the 3 most severe failed checks (no literal fix) + scorecard + count of further failures | prior plan, those 3 findings, its reflection | — | — |
+| `feedback_memory` | same | same | same | **yes** — every checker finding it was shown on earlier tasks, verbatim, newest first, ≤ 30 | — |
+| `skill_learning` | + retrieved skills (learned in this run only; the library starts empty) | same | + retrieved skills | — (skills instead) | reflect over the whole task → propose ≤ 1 skill → validate → persist |
+| `self_refine` | brief, catalogue, manifest summary | **nothing** — the operator reviews its own report and metrics (`self_evaluate`) and decides accept / revise | prior plan, its own findings | — | — |
+| `self_refine_memory` | same | same (still nothing from the checker) | same | **yes** — its own review findings from earlier tasks, with each review's verdict and summary, newest first, ≤ 30 | — |
 
-The frozen evaluator scores every attempt of every condition identically; only what is *shown* differs.
+The frozen evaluator scores every attempt of every arm identically; only what is *shown* differs. The two memory logs live at `artifacts/memory/<run_id>/<condition>.jsonl`, one line per finding, written by `finalize_task` and read by `load_context`; they are committed with the run and archived by `scripts/archive_run.py`. `self_refine_memory` never sees a checker finding in its memory — only what it told itself.
 
 ## What gets recorded
 
 - `logs/graph_events.jsonl`: `operator_request` (request path), `operator_response` (response path, SHA-256), `operator_validation_error`, plus every node transition (for `self_evaluate`: the verdict next to the frozen score it did not see).
-- `logs/experiment_events.jsonl`: one `attempt` record per evaluation (`n_failed_checks`, `n_feedback_shown`, `critical_failures`, `skills_applied`) and one `done` record per task with `attempts_to_pass`, `score_by_attempt`, `self_declared_pass`, `stop_reason` (`passed` | `retry_budget_exhausted` | `self_accepted` | `operator_cap`), provider metadata and `freeze_sha256`.
+- `logs/experiment_events.jsonl`: one `attempt` record per evaluation (`n_failed_checks`, `n_feedback_shown`, `critical_failures`, `skills_applied`) and one `done` record per task with `attempts_to_pass`, `score_by_attempt`, `self_declared_pass`, `past_feedback_count`, `stop_reason` (`passed` | `retry_budget_exhausted` | `self_accepted` | `operator_cap`), provider metadata and `freeze_sha256`.
+- `logs/skill_events.jsonl`: for the memory arms, `memory_retrieved` (how many past comments were recalled before planning) and `memory_written` (how many findings the task added), alongside the skill lifecycle events.
 - `artifacts/manual/<run_id>/<condition>/*.request.json|*.response.json`: the complete operator transcript, committed with the run.
 
 ## Budget expectations (recorded, not promised)
 
-Per condition and task, five attempts at most: `plan_task` (1) + up to 4 × (`reflect_on_feedback` + `revise_plan`) for reflection_only / skill_learning, or 4 × (`self_evaluate` + `revise_plan`) for self_refine; skill_learning adds `reflect_on_feedback` + `propose_skill` (+ ≤ 1 `revise_skill_proposal`) after each task. Hard cap `max_operator_steps_per_condition = 64`. The realised counts appear in `experiment_status.json` and the write-up.
+Per condition and task, five attempts at most: `plan_task` (1) + up to 4 × (`reflect_on_feedback` + `revise_plan`) for reflection_only / feedback_memory / skill_learning, or 4 × (`self_evaluate` + `revise_plan`) for self_refine / self_refine_memory; skill_learning adds `reflect_on_feedback` + `propose_skill` (+ ≤ 1 `revise_skill_proposal`) after each task. The memory arms cost no extra operator steps — recall and write are pure file operations. Hard cap `max_operator_steps_per_condition = 64` (the fixture smoke run used 24–41 over six tasks). The realised counts appear in `experiment_status.json` and the write-up.

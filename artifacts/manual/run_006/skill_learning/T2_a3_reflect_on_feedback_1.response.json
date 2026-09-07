@@ -1,0 +1,20 @@
+{
+  "current_task_corrections": [],
+  "reusable_lessons": [
+    {
+      "lesson": "Compute denial rates using adjudicated_claims (Paid, Denied, Adjusted) as the denominator, explicitly excluding Pended claims. Record both numerator and denominator with their definitions to ensure statistical accuracy and meet the golden standard.",
+      "applicable_task_ids": ["T3", "T4"],
+      "source_feedback_ids": ["T2-denial_rate_value", "T2-denial_rate_denominator"]
+    },
+    {
+      "lesson": "Key monthly volume trends on service_date_from (when care began) rather than adjudication_date (when claims were processed), as adjudication dates lag service and introduce temporal inconsistencies.",
+      "applicable_task_ids": ["T3", "T4"],
+      "source_feedback_ids": ["T2-monthly_date_column"]
+    },
+    {
+      "lesson": "Display every calculated rate in reports as 'numerator / denominator = rate' format to ensure statistical transparency and meet reproducibility requirements for stakeholder review.",
+      "applicable_task_ids": ["T3", "T4"],
+      "source_feedback_ids": ["T2-show_denominators", "T2-denominator_format"]
+    }
+  ]
+}

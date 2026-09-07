@@ -1,0 +1,43 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "claim_type",
+          "provider_specialty",
+          "network_status",
+          "place_of_service",
+          "auth_required_flag"
+        ],
+        "denominator": "all_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "small_groups",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This plan addresses the denial analysis objective by ranking denial codes among denied claims only, which correctly answers which codes are most common and what share of denials each accounts for. The denial code ranking now shows CO-15 as 18.76% of denials rather than obscuring it as 1.88% of all claims. Quantify_missing remains by_status to illuminate the 91% null rate across claim statuses. Denial rates are segmented by all five requested dimensions with min_group_size=30 flagging small subgroups. Show_denominators=true and cite_artifacts=true maintain transparency.",
+  "changes_summary": "Changed denial_code_ranking scope from 'all_claims' to 'denied_claims' to directly answer which denial codes are most common and their share among denials. This fixes the analytical scope mismatch where codes appeared understated when divided by total claims (CO-15 = 1.88%) versus their true prevalence among the 1,286 denied claims with codes (CO-15 = 18.76%)."
+}

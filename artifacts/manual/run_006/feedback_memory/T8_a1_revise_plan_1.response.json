@@ -1,0 +1,46 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": [
+          "T2",
+          "T5",
+          "T6",
+          "T7"
+        ]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": [
+          "key_findings",
+          "model_results",
+          "limitations",
+          "next_steps"
+        ],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "sample_preview",
+          "association_not_causation",
+          "small_groups",
+          "model_limitations",
+          "no_operational_use"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Addressed all three critical feedback items from the prior evaluation. (1) Revised collect_findings sources from [T1, T3, T4, T7] to [T2, T5, T6, T7] to include portfolio findings (T2), fraud exploration (T5), and both model analyses (T6, T7), fixing the T8-core_sources completeness gap. (2) Set brief_sections cite_artifacts to true, enabling source citations on every numeric statement to satisfy T8-cite_artifacts and T8-all_numbers_cited reproducibility requirements. (3) Retained report structure with all required caveats (synthetic_data, sample_preview, association_not_causation, small_groups, model_limitations, no_operational_use) and show_denominators=true for transparency.",
+  "changes_summary": "Changed collect_findings sources to [T2, T5, T6, T7] to include portfolio (T2), fraud exploration (T5), and both model analyses (T6, T7). Set brief_sections cite_artifacts to true so all 11 numeric statements will carry [source: ...] citations."
+}

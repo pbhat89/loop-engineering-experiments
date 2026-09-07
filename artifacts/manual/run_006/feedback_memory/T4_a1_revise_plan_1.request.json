@@ -1,0 +1,1093 @@
+{
+  "request_id": "run_006:feedback_memory:T4:a1:revise_plan:1",
+  "run_id": "run_006",
+  "condition": "feedback_memory",
+  "task_id": "T4",
+  "attempt": 1,
+  "node": "revise_plan",
+  "seq": 1,
+  "created_at": "2026-09-07T15:52:41+00:00",
+  "instructions": "The previous plan was executed and evaluated; the evaluation summary, the feedback items and (when provided) a reflection are included. Return a complete revised plan - not a diff - that addresses the feedback, and summarise what changed in changes_summary.",
+  "payload": {
+    "task_id": "T4",
+    "condition": "feedback_memory",
+    "task_spec": {
+      "task_id": "T4",
+      "title": "Denial analysis",
+      "objective": "The denials team wants to know why claims are being denied and where. Which denial reason codes are most common and what share of denials does each account for? How many claims carry no denial code at all? How does the denial rate differ by claim type, provider specialty, network status, place of service and whether prior authorisation was required? Produce the standard artifacts (denial code ranking table, denial rate by segment table and chart, report).",
+      "tags": [
+        "denials",
+        "denial_codes",
+        "rates",
+        "denominators",
+        "segments",
+        "small_groups",
+        "missingness"
+      ],
+      "input_tables": [
+        "medical_claims"
+      ],
+      "required_artifacts": [
+        "denial_code_ranking.csv",
+        "denial_rates_by_segment.csv",
+        "denial_rate_by_segment.png",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "denial_code_ranking",
+        "description": "Frequency ranking of denial codes with shares over a chosen scope and a quantification of missing codes.",
+        "default_selected": true,
+        "params": {
+          "scope": {
+            "description": "Which claims form the base for each code's share (denied claims only, or all claims).",
+            "options": [
+              "denied_claims",
+              "all_claims"
+            ],
+            "default": "all_claims"
+          },
+          "quantify_missing": {
+            "description": "How to quantify missing denial codes (not at all, overall and among denied, or additionally by claim status).",
+            "options": [
+              "none",
+              "overall",
+              "by_status"
+            ],
+            "default": "overall"
+          }
+        },
+        "produces": [
+          {
+            "key": "denial_code_ranking",
+            "shape": "{scope: str, codes: [{code: str, n: int, share: float}], missing_denial_codes: {definition: str, overall: int, overall_denominator: int, among_denied: int, among_denied_denominator: int, by_status?: {status: {missing: int, n: int}}}}"
+          }
+        ],
+        "artifacts": [
+          "denial_code_ranking.csv"
+        ]
+      },
+      {
+        "id": "denial_rate_by_segment",
+        "description": "Denial rate per value of chosen segment columns with numerator, denominator and small-group flags.",
+        "default_selected": true,
+        "params": {
+          "segments": {
+            "description": "Which claim-level columns to segment the denial rate by.",
+            "multi": true,
+            "options": [
+              "claim_type",
+              "provider_specialty",
+              "network_status",
+              "place_of_service",
+              "auth_required_flag"
+            ],
+            "default": [
+              "claim_type"
+            ]
+          },
+          "denominator": {
+            "description": "Which claims in each segment form the denominator.",
+            "options": [
+              "all_claims",
+              "adjudicated_claims"
+            ],
+            "default": "all_claims"
+          },
+          "min_group_size": {
+            "description": "Segment values with fewer claims than this are flagged as small (0 never flags).",
+            "options": [
+              0,
+              30,
+              50,
+              100
+            ],
+            "default": 0
+          }
+        },
+        "produces": [
+          {
+            "key": "denial_rate_by_segment",
+            "shape": "{denominator_option: str, min_group_size: int, segments: {segment: {value: {numerator: int, denominator: int, rate: float, small_group_flag: bool}}}} (segment values keyed by their string form)"
+          }
+        ],
+        "artifacts": [
+          "denial_rates_by_segment.csv",
+          "denial_rate_by_segment.png"
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T3",
+      "T7",
+      "T8"
+    ],
+    "remaining_tasks": [
+      {
+        "task_id": "T3",
+        "title": "Provider and network patterns"
+      },
+      {
+        "task_id": "T7",
+        "title": "High-cost claim identification"
+      },
+      {
+        "task_id": "T8",
+        "title": "Executive brief"
+      }
+    ],
+    "past_feedback": [
+      {
+        "task_id": "T2",
+        "task_title": "Claims portfolio description",
+        "attempt": 2,
+        "source": "checker",
+        "severity": "low",
+        "criterion": "statistical_discipline",
+        "text": "Report distribution quantiles (median, p90, p99) alongside sums and means; amounts are skewed.",
+        "detail": "metric 'financial_summary.paid_amount.p90' missing",
+        "written_at": "2026-09-07T15:49:29+00:00"
+      },
+      {
+        "task_id": "T2",
+        "task_title": "Claims portfolio description",
+        "attempt": 1,
+        "source": "checker",
+        "severity": "medium",
+        "criterion": "correctness",
+        "text": "Key the monthly volume trend on service_date_from (when care began); adjudication dates lag service and 36 are inconsistent.",
+        "detail": "monthly_trend.date_column is 'adjudication_date', expected 'service_date_from'",
+        "written_at": "2026-09-07T15:49:29+00:00"
+      },
+      {
+        "task_id": "T2",
+        "task_title": "Claims portfolio description",
+        "attempt": 1,
+        "source": "checker",
+        "severity": "high",
+        "criterion": "statistical_discipline",
+        "text": "Use adjudicated claims as the denial-rate denominator and record the choice; including pending claims understates the rate.",
+        "detail": "denial_rate.denominator_option is 'all_claims', expected 'adjudicated_claims'",
+        "written_at": "2026-09-07T15:49:29+00:00"
+      },
+      {
+        "task_id": "T2",
+        "task_title": "Claims portfolio description",
+        "attempt": 1,
+        "source": "checker",
+        "severity": "high",
+        "criterion": "correctness",
+        "text": "Compute the denial rate over adjudicated claims (Paid, Denied, Adjusted; Pended claims are not yet decided) and state numerator and denominator.",
+        "detail": "|observed - expected| = 0.00410561 > tolerance 1e-06; golden definition: {\"denominator\": \"claim_status in {Paid, Denied, Adjusted} (Pended excluded)\", \"denominator_option\": \"adjudicated_claims\", \"denominator_value\": 12339, \"numerator\": \"cl…",
+        "written_at": "2026-09-07T15:49:29+00:00"
+      },
+      {
+        "task_id": "T1",
+        "task_title": "Dataset reconnaissance",
+        "attempt": 1,
+        "source": "checker",
+        "severity": "low",
+        "criterion": "communication",
+        "text": "State that value samples shown are previews, not findings (add the sample_preview caveat).",
+        "detail": "caveat 'sample_preview' neither listed in report.caveats nor phrased in the report text (keywords ['preview', 'sample values'])",
+        "written_at": "2026-09-07T15:44:15+00:00"
+      },
+      {
+        "task_id": "T1",
+        "task_title": "Dataset reconnaissance",
+        "attempt": 1,
+        "source": "checker",
+        "severity": "medium",
+        "criterion": "communication",
+        "text": "State in the report that the data is synthetic (add the synthetic_data caveat).",
+        "detail": "caveat 'synthetic_data' neither listed in report.caveats nor phrased in the report text (keywords ['synthetic', 'simulated'])",
+        "written_at": "2026-09-07T15:44:15+00:00"
+      }
+    ],
+    "past_feedback_note": "Comments recorded on earlier tasks in this run (checker findings for feedback_memory, your own reviews for self_refine_memory). They may or may not apply to this task.",
+    "prior_plan": {
+      "steps": [
+        {
+          "component": "load_tables",
+          "params": {}
+        },
+        {
+          "component": "denial_code_ranking",
+          "params": {
+            "scope": "all_claims",
+            "quantify_missing": "by_status"
+          }
+        },
+        {
+          "component": "denial_rate_by_segment",
+          "params": {
+            "segments": [
+              "claim_type",
+              "provider_specialty",
+              "network_status",
+              "place_of_service",
+              "auth_required_flag"
+            ],
+            "denominator": "adjudicated_claims",
+            "min_group_size": 30
+          }
+        },
+        {
+          "component": "write_report",
+          "params": {
+            "caveats": [
+              "synthetic_data",
+              "sample_preview"
+            ],
+            "show_denominators": true,
+            "cite_artifacts": false
+          }
+        }
+      ],
+      "skills_applied": [],
+      "rationale": "Plan uses all four catalogue components. denial_code_ranking uses scope=all_claims to quantify code prevalence across the full population, and quantify_missing=by_status to understand how missing codes distribute by claim status (informative since 90% of claims lack denial codes). denial_rate_by_segment includes all five segment dimensions from the task objective. Denominator is adjudicated_claims per high-severity T2 feedback: denial rates must exclude Pended claims. min_group_size=30 flags small groups per task tag. Report includes synthetic_data and sample_preview caveats per T1 feedback applying to this dataset, and show_denominators=true per T2 feedback requirement to state numerator and denominator.",
+      "changes_summary": null
+    },
+    "execution_summary": {
+      "status": "ok",
+      "components_executed": [
+        "load_tables",
+        "denial_code_ranking",
+        "denial_rate_by_segment",
+        "write_report"
+      ],
+      "components_failed": [],
+      "errors": [],
+      "artifacts": [
+        "denial_code_ranking.csv",
+        "denial_rates_by_segment.csv",
+        "denial_rate_by_segment.png",
+        "report.md",
+        "metrics.json"
+      ],
+      "metric_keys": [
+        "denial_code_ranking",
+        "denial_rate_by_segment",
+        "plan",
+        "report",
+        "tables"
+      ]
+    },
+    "attempt": 2,
+    "attempts_remaining": 3,
+    "evaluation_summary": {
+      "score_total": 3.19,
+      "scores": {
+        "correctness": 2.67,
+        "completeness": 4.0,
+        "reproducibility": 4.0,
+        "statistical_discipline": 2.86,
+        "communication": 2.4
+      },
+      "passed": false,
+      "failed_checks": [
+        {
+          "check_id": "T4.code_ranking",
+          "dimension": "correctness",
+          "critical": false,
+          "observed": [
+            {
+              "code": "CO-15",
+              "n": 241,
+              "share": 0.01876216426625146
+            },
+            {
+              "code": "CO-4",
+              "n": 206,
+              "share": 0.016037368625924486
+            },
+            {
+              "code": "CO-11",
+              "n": 147,
+              "share": 0.011444141689373298
+            },
+            {
+              "code": "CO-18",
+              "n": 138,
+              "share": 0.010743479953289217
+            },
+            {
+              "code": "PR-1",
+              "n": 120,
+              "share": 0.009342156481121059
+            },
+            {
+              "code": "CO-27",
+              "n": 115,
+              "share": 0.008952899961074349
+            },
+            {
+              "code": "CO-97",
+              "n": 99,
+              "share": 0.0077072790969248735
+            },
+            {
+              "code": "CO-50",
+              "n": 87,
+              "share": 0.0067730634488127675
+            },
+            {
+              "code": "CO-29",
+              "n": 82,
+              "share": 0.006383806928766057
+            },
+            {
+              "code": "CO-119",
+              "n": 51,
+              "share": 0.00397041650447645
+            }
+          ],
+          "expected": [
+            {
+              "code": "CO-15",
+              "n": 241,
+              "share": 0.187402799377916
+            },
+            {
+              "code": "CO-4",
+              "n": 206,
+              "share": 0.16018662519440124
+            },
+            {
+              "code": "CO-11",
+              "n": 147,
+              "share": 0.11430793157076205
+            },
+            {
+              "code": "CO-18",
+              "n": 138,
+              "share": 0.10730948678071539
+            },
+            {
+              "code": "PR-1",
+              "n": 120,
+              "share": 0.09331259720062209
+            },
+            {
+              "code": "CO-27",
+              "n": 115,
+              "share": 0.08942457231726283
+            },
+            {
+              "code": "CO-97",
+              "n": 99,
+              "share": 0.07698289269051321
+            },
+            {
+              "code": "CO-50",
+              "n": 87,
+              "share": 0.06765163297045101
+            },
+            {
+              "code": "CO-29",
+              "n": 82,
+              "share": 0.06376360808709176
+            },
+            {
+              "code": "CO-119",
+              "n": 51,
+              "share": 0.03965785381026438
+            }
+          ],
+          "detail": "value[0]: no matching element for {\"code\": \"CO-15\", \"n\": 241, \"share\": 0.187402799377916}; value[1]: no matching element for {\"code\": \"CO-4\", \"n\": 206, \"share\": 0.16018662519440124}; value[2]: no matching element for {\"code\": \"CO-11\", \"n\": 147, \"share\": 0.11430793157076205}; value[3]: no matching element for {\"code\": \"CO-18\", \"n\": 138, \"share\": 0.10730948678071539}; value[4]: no matching element for {\"code\": \"PR-1\", \"n\": 120, \"share\": 0.09331259720062209} (+5 more)"
+        },
+        {
+          "check_id": "T4.code_scope",
+          "dimension": "statistical_discipline",
+          "critical": false,
+          "observed": "all_claims",
+          "expected": "denied_claims",
+          "detail": "denial_code_ranking.scope is 'all_claims', expected 'denied_claims'"
+        },
+        {
+          "check_id": "T4.caveat_small_groups",
+          "dimension": "communication",
+          "critical": false,
+          "observed": {
+            "in_report_caveats": false,
+            "keywords_found": [],
+            "report_text_available": true
+          },
+          "expected": {
+            "caveat_id": "small_groups",
+            "any_of": [
+              "small group",
+              "small segment",
+              "unstable",
+              "fewer than"
+            ]
+          },
+          "detail": "caveat 'small_groups' neither listed in report.caveats nor phrased in the report text (keywords ['small group', 'small segment', 'unstable', 'fewer than'])"
+        }
+      ],
+      "n_failed_checks_total": 3,
+      "n_failed_checks_shown": 3
+    },
+    "feedback": [
+      {
+        "feedback_id": "T4-code_ranking",
+        "check_id": "T4.code_ranking",
+        "criterion": "correctness",
+        "issue_type": "wrong_denominator",
+        "severity": "medium",
+        "remediation": "Rank denial codes among denied claims so each code's share is its share of denials (shares sum to 1).",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": [
+          {
+            "code": "CO-15",
+            "n": 241,
+            "share": 0.01876216426625146
+          },
+          {
+            "code": "CO-4",
+            "n": 206,
+            "share": 0.016037368625924486
+          },
+          {
+            "code": "CO-11",
+            "n": 147,
+            "share": 0.011444141689373298
+          },
+          {
+            "code": "CO-18",
+            "n": 138,
+            "share": 0.010743479953289217
+          },
+          {
+            "code": "PR-1",
+            "n": 120,
+            "share": 0.009342156481121059
+          },
+          {
+            "code": "CO-27",
+            "n": 115,
+            "share": 0.008952899961074349
+          },
+          {
+            "code": "CO-97",
+            "n": 99,
+            "share": 0.0077072790969248735
+          },
+          {
+            "code": "CO-50",
+            "n": 87,
+            "share": 0.0067730634488127675
+          },
+          {
+            "code": "CO-29",
+            "n": 82,
+            "share": 0.006383806928766057
+          },
+          {
+            "code": "CO-119",
+            "n": 51,
+            "share": 0.00397041650447645
+          }
+        ],
+        "expected": [
+          {
+            "code": "CO-15",
+            "n": 241,
+            "share": 0.187402799377916
+          },
+          {
+            "code": "CO-4",
+            "n": 206,
+            "share": 0.16018662519440124
+          },
+          {
+            "code": "CO-11",
+            "n": 147,
+            "share": 0.11430793157076205
+          },
+          {
+            "code": "CO-18",
+            "n": 138,
+            "share": 0.10730948678071539
+          },
+          {
+            "code": "PR-1",
+            "n": 120,
+            "share": 0.09331259720062209
+          },
+          {
+            "code": "CO-27",
+            "n": 115,
+            "share": 0.08942457231726283
+          },
+          {
+            "code": "CO-97",
+            "n": 99,
+            "share": 0.07698289269051321
+          },
+          {
+            "code": "CO-50",
+            "n": 87,
+            "share": 0.06765163297045101
+          },
+          {
+            "code": "CO-29",
+            "n": 82,
+            "share": 0.06376360808709176
+          },
+          {
+            "code": "CO-119",
+            "n": 51,
+            "share": 0.03965785381026438
+          }
+        ],
+        "detail": "value[0]: no matching element for {\"code\": \"CO-15\", \"n\": 241, \"share\": 0.187402799377916}; value[1]: no matching element for {\"code\": \"CO-4\", \"n\": 206, \"share\": 0.16018662519440124}; value[2]: no matching element for {\"code\": \"CO-11\", \"n\": 147, \"share\": 0.11430793157076205}; value[3]: no matching element for {\"code\": \"CO-18\", \"n\": 138, \"share\": 0.10730948678071539}; value[4]: no matching element for {\"code\": \"PR-1\", \"n\": 120, \"share\": 0.09331259720062209} (+5 more)",
+        "weight": 3
+      },
+      {
+        "feedback_id": "T4-code_scope",
+        "check_id": "T4.code_scope",
+        "criterion": "statistical_discipline",
+        "issue_type": "wrong_denominator",
+        "severity": "medium",
+        "remediation": "Use denied claims as the scope of the denial-code shares; all-claims shares mix in claims that have no reason to carry a code.",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": "all_claims",
+        "expected": "denied_claims",
+        "detail": "denial_code_ranking.scope is 'all_claims', expected 'denied_claims'",
+        "weight": 2
+      },
+      {
+        "feedback_id": "T4-caveat_small_groups",
+        "check_id": "T4.caveat_small_groups",
+        "criterion": "communication",
+        "issue_type": "missing_caveat",
+        "severity": "medium",
+        "remediation": "State that rates for small segments are unstable (add the small_groups caveat).",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": {
+          "in_report_caveats": false,
+          "keywords_found": [],
+          "report_text_available": true
+        },
+        "expected": {
+          "caveat_id": "small_groups",
+          "any_of": [
+            "small group",
+            "small segment",
+            "unstable",
+            "fewer than"
+          ]
+        },
+        "detail": "caveat 'small_groups' neither listed in report.caveats nor phrased in the report text (keywords ['small group', 'small segment', 'unstable', 'fewer than'])",
+        "weight": 2
+      }
+    ],
+    "reflection": {
+      "reusable_lessons": [
+        {
+          "lesson": "When segmenting claims and using min_group_size > 0 to flag small groups, include the 'small_groups' caveat in the report's caveats list so readers understand that rates for small segments lack statistical stability and should be interpreted cautiously.",
+          "applicable_task_ids": [
+            "T3",
+            "T7"
+          ],
+          "source_feedback_ids": [
+            "T4-caveat_small_groups"
+          ]
+        }
+      ],
+      "current_task_corrections": [
+        {
+          "feedback_id": "T4-code_ranking",
+          "correction": "Change denial_code_ranking scope parameter from 'all_claims' to 'denied_claims' so code frequency shares sum to 1.0 and accurately represent each code's proportion of denied claims."
+        },
+        {
+          "feedback_id": "T4-code_scope",
+          "correction": "Change denial_code_ranking scope parameter from 'all_claims' to 'denied_claims' to exclude claims with no denial code attached, ensuring statistically sound share computation."
+        },
+        {
+          "feedback_id": "T4-caveat_small_groups",
+          "correction": "Add 'small_groups' to write_report component's caveats parameter to alert readers that segment rates with fewer than 30 claims are statistically unstable."
+        }
+      ]
+    }
+  },
+  "response_schema": {
+    "$defs": {
+      "PlanStep": {
+        "properties": {
+          "component": {
+            "description": "Component id from the task's catalogue.",
+            "title": "Component",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "Parameter values; only declared options are valid.",
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "component"
+        ],
+        "title": "PlanStep",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``plan_task`` and ``revise_plan``. A revised plan is a complete plan, not a diff.",
+    "properties": {
+      "steps": {
+        "items": {
+          "$ref": "#/$defs/PlanStep"
+        },
+        "minItems": 1,
+        "title": "Steps",
+        "type": "array"
+      },
+      "skills_applied": {
+        "description": "Skill ids the operator actually used.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Skills Applied",
+        "type": "array"
+      },
+      "rationale": {
+        "default": "",
+        "title": "Rationale",
+        "type": "string"
+      },
+      "changes_summary": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "revise_plan only: what changed and why.",
+        "title": "Changes Summary"
+      }
+    },
+    "required": [
+      "steps"
+    ],
+    "title": "PlanResponse",
+    "type": "object"
+  }
+}

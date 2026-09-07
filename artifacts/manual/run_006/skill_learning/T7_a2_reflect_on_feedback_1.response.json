@@ -1,0 +1,13 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T7-caveat_model_limitations",
+      "correction": "Add 'model_limitations' to the write_report caveats parameter to state the model's limitations as a baseline."
+    },
+    {
+      "feedback_id": "T7-caveat_no_operational_use",
+      "correction": "Add 'no_operational_use' to the write_report caveats parameter to state that the ranking must not be used operationally."
+    }
+  ],
+  "reusable_lessons": []
+}

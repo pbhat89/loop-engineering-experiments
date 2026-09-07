@@ -1,24 +1,46 @@
 {
-  "evolved_run_005_001": {
+  "evolved_run_006_001": {
+    "reuse_count": 3,
+    "reused_in": [
+      "T3",
+      "T7",
+      "T8"
+    ],
+    "status": "active",
+    "path": "skills/evolved/run_006/evolved_run_006_001_v1.md",
+    "name": "include_synthetic_data_caveat_in_reports",
+    "version": 1,
+    "kind": "evolved",
+    "run_id": "run_006",
+    "condition": "skill_learning",
+    "created_after_task": "T1",
+    "created_after_task_index": 0,
+    "source_feedback_ids": [
+      "T1-caveat_synthetic"
+    ],
+    "created_at": "2026-09-07T15:49:34+00:00",
+    "last_reused_at": "2026-09-07T16:24:55+00:00"
+  },
+  "evolved_run_006_002": {
     "reuse_count": 2,
     "reused_in": [
       "T4",
       "T3"
     ],
     "status": "active",
-    "path": "skills/evolved/run_005/evolved_run_005_001_v1.md",
-    "name": "correct_denial_rate_denominator_selection",
+    "path": "skills/evolved/run_006/evolved_run_006_002_v1.md",
+    "name": "denial_rate_denominator_standardization",
     "version": 1,
     "kind": "evolved",
-    "run_id": "run_005",
+    "run_id": "run_006",
     "condition": "skill_learning",
     "created_after_task": "T2",
-    "created_after_task_index": 0,
+    "created_after_task_index": 1,
     "source_feedback_ids": [
-      "T2-denial_rate_denominator",
-      "T2-denial_rate_value"
+      "T2-denial_rate_value",
+      "T2-denial_rate_denominator"
     ],
-    "created_at": "2026-09-07T09:28:57+00:00",
-    "last_reused_at": "2026-09-07T09:41:15+00:00"
+    "created_at": "2026-09-07T16:03:45+00:00",
+    "last_reused_at": "2026-09-07T16:16:03+00:00"
   }
 }

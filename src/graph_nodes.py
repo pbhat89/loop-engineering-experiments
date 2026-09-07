@@ -22,6 +22,8 @@ from typing import Any, Callable
 from pydantic import BaseModel, ValidationError
 
 from src.graph_state import (
+    MEMORY_CONDITIONS,
+    SELF_REVIEW_CONDITIONS,
     SKILL_RETRIEVING_CONDITIONS,
     PlanResponse,
     ReflectionResponse,
@@ -53,6 +55,8 @@ class Services:
     # Experiment 3 (D-21): how much of the evaluator's verdict the operator gets to see per attempt.
     feedback_max_items: int | None = None  # None = every failed check; 3 = only the three most severe findings
     reveal_fixes: bool = True  # False hides `related_components` (the literal parameter fix) from the operator
+    # Experiment 4 (D-22): builds the raw cross-task memory log for the memory arms; None disables memory entirely.
+    memory_factory: Callable[[str, str], Any] | None = None  # (run_id, condition) -> FeedbackMemory-like
 
 
 # --------------------------------------------------------------------------- operator instructions
@@ -94,6 +98,10 @@ SELF_EVALUATE_INSTRUCTIONS = (
 SELF_REVISE_NOTE = (
     "This revision follows your own review of the previous attempt (no external evaluation is available). "
     "Address the findings you raised."
+)
+PAST_FEEDBACK_NOTE = (
+    "Comments recorded on earlier tasks in this run (checker findings for feedback_memory, your own reviews for "
+    "self_refine_memory). They may or may not apply to this task."
 )
 SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}
 REPORT_EXCERPT_CHARS = 6000
@@ -299,6 +307,29 @@ def self_findings_as_feedback(task_id: str, attempt: int, response: dict) -> lis
     return out
 
 
+def self_review_items(history: list[dict] | None) -> list[dict]:
+    """Every finding of every self-review, each carrying that review's attempt, verdict and summary.
+
+    The self-review arm's memory is exactly what the operator told itself, in the item shape
+    :class:`~src.feedback_memory.FeedbackMemory` writes (``issue`` becomes the record's ``text``).
+    """
+    items: list[dict] = []
+    for i, review in enumerate(history or [], 1):
+        for finding in review.get("findings") or []:
+            items.append(
+                {
+                    "source": "self",
+                    "attempt": review.get("attempt") or i,
+                    "severity": finding.get("severity", "medium"),
+                    "criterion": "self_review",
+                    "issue": finding.get("issue"),
+                    "detail": review.get("summary"),
+                    "verdict": review.get("verdict"),
+                }
+            )
+    return items
+
+
 def execution_summary(result: dict | None) -> dict | None:
     if not result:
         return None
@@ -423,6 +454,19 @@ class ClaimsNodes:
             entry["status"] = "open" if fid in final_ids else f"resolved_after_attempt_{entry['last_seen_attempt']}"
         return list(merged.values())
 
+    def _memory(self, state: dict) -> Any | None:
+        """The raw memory log for this run and condition, or None when the arm has no memory."""
+        if state["condition"] not in MEMORY_CONDITIONS or self.s.memory_factory is None:
+            return None
+        return self.s.memory_factory(state["run_id"], state["condition"])
+
+    def _with_past_feedback(self, state: dict, payload: dict) -> dict:
+        """Add the recalled memory to an operator payload, for the memory arms only."""
+        if state["condition"] in MEMORY_CONDITIONS:
+            payload["past_feedback"] = list(state.get("past_feedback") or [])
+            payload["past_feedback_note"] = PAST_FEEDBACK_NOTE
+        return payload
+
     def _rendered_skills(self, state: dict) -> list[dict]:
         skills = state.get("retrieved_skills") or []
         render = getattr(self.s.skill_store, "render_for_operator", None)
@@ -462,8 +506,22 @@ class ClaimsNodes:
                     {"skill_id": getattr(s, "skill_id", None) or s.get("skill_id"), "kind": getattr(s, "kind", None) or s.get("kind")}
                     for s in lister()
                 ]
-        self._graph_event(state, "load_context", "start", available_skill_count=len(available))
-        return {"route_history": ["load_context"], "available_skills": available, "status": "running"}
+        past_feedback: list[dict] = []
+        memory = self._memory(state)
+        if memory is not None:
+            past_feedback = list(memory.recall(state["task_id"]) or [])
+            self.s.logger.log_skill_event(
+                {**self._meta(state), "timestamp": utc_now(), "event": "memory_retrieved", "count": len(past_feedback)}
+            )
+        self._graph_event(
+            state, "load_context", "start", available_skill_count=len(available), past_feedback_count=len(past_feedback)
+        )
+        return {
+            "route_history": ["load_context"],
+            "available_skills": available,
+            "past_feedback": past_feedback,
+            "status": "running",
+        }
 
     # ---- retrieve_skills -------------------------------------------------------------
     def retrieve_skills(self, state: dict) -> dict:
@@ -493,7 +551,7 @@ class ClaimsNodes:
             plan = default_plan(state["task_spec"])
             self._graph_event(state, "plan_task", "operator_cap: default plan", operator_steps=0)
             return {"route_history": ["plan_task"], "analysis_plan": plan, "plan_history": [plan], "stop_reason": "operator_cap"}
-        payload = self._base_payload(state)
+        payload = self._with_past_feedback(state, self._base_payload(state))
         if state["condition"] in SKILL_RETRIEVING_CONDITIONS:
             payload["retrieved_skills"] = self._rendered_skills(state)
         plan, steps, errors = self._decide(state, "plan_task", PLAN_INSTRUCTIONS, payload, PlanResponse)
@@ -561,7 +619,7 @@ class ClaimsNodes:
         weights = {c.get("check_id"): c.get("weight", 1) for c in evaluation.get("checks", [])}
         for item in all_feedback:
             item.setdefault("weight", weights.get(item.get("check_id"), 1))
-        self_refine = state["condition"] == "self_refine"
+        self_refine = state["condition"] in SELF_REVIEW_CONDITIONS
         # the self-reviewing condition never sees the evaluator; it is scored for the record only
         feedback = [] if self_refine else select_feedback(all_feedback, self.s.feedback_max_items)
         evaluation["feedback_shown"] = feedback
@@ -706,7 +764,7 @@ class ClaimsNodes:
 
     # ---- revise_plan -----------------------------------------------------------------
     def revise_plan(self, state: dict) -> dict:
-        payload = self._base_payload(state)
+        payload = self._with_past_feedback(state, self._base_payload(state))
         payload.update(
             {
                 "prior_plan": state.get("analysis_plan"),
@@ -716,7 +774,7 @@ class ClaimsNodes:
             }
         )
         instructions = REVISE_INSTRUCTIONS
-        if state["condition"] == "self_refine":  # its own review is the only feedback it gets
+        if state["condition"] in SELF_REVIEW_CONDITIONS:  # its own review is the only feedback it gets
             payload.update({"self_review": state.get("self_evaluation"), "feedback": state.get("feedback") or [], "note": SELF_REVISE_NOTE})
             instructions = REVISE_INSTRUCTIONS + " " + SELF_REVISE_NOTE
         else:
@@ -726,7 +784,7 @@ class ClaimsNodes:
                     "feedback": operator_feedback_view(state.get("feedback") or [], self.s.reveal_fixes),
                 }
             )
-        if state["condition"] not in ("baseline", "self_refine"):
+        if state["condition"] != "baseline" and state["condition"] not in SELF_REVIEW_CONDITIONS:
             payload["reflection"] = state.get("reflection")
         if state["condition"] in SKILL_RETRIEVING_CONDITIONS:
             payload["retrieved_skills"] = self._rendered_skills(state)
@@ -914,7 +972,7 @@ class ClaimsNodes:
         self_accepted = bool(self_reviews) and self_reviews[-1].get("verdict") == "accept"
         if state.get("stop_reason"):
             stop_reason = state["stop_reason"]
-        elif state["condition"] == "self_refine":  # the operator's own verdict ended the loop, not the evaluator's
+        elif state["condition"] in SELF_REVIEW_CONDITIONS:  # the operator's own verdict ended the loop, not the evaluator's
             stop_reason = "self_accepted" if self_accepted else "retry_budget_exhausted"
         else:
             stop_reason = "passed" if passed else "retry_budget_exhausted"
@@ -929,6 +987,17 @@ class ClaimsNodes:
                 recorder(skill_id, state["task_id"])
             self.s.logger.log_skill_event(
                 {**self._meta(state), "timestamp": utc_now(), "event": "skill_reused", "skill_id": skill_id}
+            )
+        memory = self._memory(state)
+        if memory is not None:
+            items = (
+                self_review_items(self_reviews)
+                if state["condition"] in SELF_REVIEW_CONDITIONS
+                else self._task_feedback(state)
+            )
+            written = memory.append(state["task_id"], (state.get("task_spec") or {}).get("title", ""), items)
+            self.s.logger.log_skill_event(
+                {**self._meta(state), "timestamp": utc_now(), "event": "memory_written", "count": written}
             )
         history = list(state.get("evaluation_history") or [])
         first_attempt_passed = bool(history[0].get("passed")) if history else False
@@ -953,7 +1022,8 @@ class ClaimsNodes:
             "attempts_to_pass": attempts_to_pass,
             "first_attempt_score_total": history[0].get("score_total") if history else None,
             "score_by_attempt": [e.get("score_total") for e in history],
-            "self_declared_pass": self_accepted if state["condition"] == "self_refine" else None,
+            "self_declared_pass": self_accepted if state["condition"] in SELF_REVIEW_CONDITIONS else None,
+            "past_feedback_count": len(state.get("past_feedback") or []),  # memory items this task was planned with
             "artifact_paths": list(state.get("artifacts") or []),
             "operator_steps_used": state.get("operator_steps_used", 0),
             "stop_reason": stop_reason,

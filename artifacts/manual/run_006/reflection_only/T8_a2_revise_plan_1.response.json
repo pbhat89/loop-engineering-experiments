@@ -1,0 +1,44 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": [
+          "T2",
+          "T5",
+          "T6",
+          "T7"
+        ]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": [
+          "key_findings",
+          "model_results",
+          "limitations",
+          "synthetic_caveats",
+          "next_steps"
+        ],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only",
+          "association_not_causation",
+          "model_limitations"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This revised plan addresses all three feedback findings from the evaluation. First, the brief_sections step now includes 'synthetic_caveats' as a required section to explicitly address the study's limitations regarding synthetic data. Second, causal_language is changed from 'allow' to 'avoid' to enforce associative rather than causal phrasing, preventing forbidden language such as 'drives', 'causes', 'leads to', and 'because of'. This aligns with the appropriate statistical discipline for a descriptive study of synthetic data. The collect_findings and write_report steps remain unchanged as they performed correctly.",
+  "changes_summary": "Two parameters in brief_sections were corrected: (1) sections expanded from [\"key_findings\", \"model_results\", \"limitations\", \"next_steps\"] to [\"key_findings\", \"model_results\", \"limitations\", \"synthetic_caveats\", \"next_steps\"] to include the required synthetic-data caveats section; (2) causal_language changed from 'allow' to 'avoid' to enforce associative language only and prevent forbidden causal phrasing. These changes directly address statistical discipline and completeness findings in the evaluation."
+}

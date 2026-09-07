@@ -338,7 +338,381 @@
           "eta_label": "rough ETA ≈ 0.0 min"
         }
       }
+    },
+    "stub_004": {
+      "mode": "stub",
+      "provider": {
+        "provider_mode": "stub",
+        "operator": "deterministic-fixture",
+        "model_identifier": "deterministic-fixture-v1"
+      },
+      "freeze_sha256": "59fb61d35fe828be678abff1a9e4d1c87ebaf5582398f1aee424ea88b4ab8a6f",
+      "created_at": "2026-09-07T15:30:14+00:00",
+      "conditions": {
+        "reflection_only": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 3.87,
+            "T2": 4.0,
+            "T4": 4.0,
+            "T3": 4.0,
+            "T7": 4.0,
+            "T8": 4.0
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 13,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 32,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 2.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "feedback_memory": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 3.87,
+            "T2": 4.0,
+            "T4": 4.0,
+            "T3": 4.0,
+            "T7": 4.0,
+            "T8": 4.0
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 13,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 32,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 3.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "skill_learning": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 3.87,
+            "T2": 4.0,
+            "T4": 4.0,
+            "T3": 4.0,
+            "T7": 4.0,
+            "T8": 4.0
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 13,
+          "execution_errors": 0,
+          "skills_created": 3,
+          "skills_retrieved": 8,
+          "operator_steps_used": 41,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 2.5,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "self_refine": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 1.38,
+            "T2": 1.28,
+            "T4": 1.18,
+            "T3": 0.73,
+            "T7": 1.77,
+            "T8": 1.55
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 6,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 24,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 1.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "self_refine_memory": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 1.38,
+            "T2": 1.28,
+            "T4": 1.18,
+            "T3": 0.73,
+            "T7": 1.77,
+            "T8": 1.55
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 6,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 24,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 1.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        }
+      }
+    },
+    "run_006": {
+      "mode": "manual",
+      "provider": {
+        "provider_mode": "manual",
+        "operator": "claude-code-subagent",
+        "model_identifier": "claude-haiku-4-5-20251001"
+      },
+      "freeze_sha256": "59fb61d35fe828be678abff1a9e4d1c87ebaf5582398f1aee424ea88b4ab8a6f",
+      "created_at": "2026-09-07T15:34:09+00:00",
+      "conditions": {
+        "reflection_only": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 4.0,
+            "T2": 3.8,
+            "T4": 4.0,
+            "T3": 3.87,
+            "T7": 3.6,
+            "T8": 3.91
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 8,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 23,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 380.5,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "feedback_memory": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 4.0,
+            "T2": 3.8,
+            "T4": 4.0,
+            "T3": 3.87,
+            "T7": 3.8,
+            "T8": 3.64
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": true,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 5,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 16,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 316.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "skill_learning": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 4.0,
+            "T2": 4.0,
+            "T4": 3.64,
+            "T3": 3.64,
+            "T7": 4.0,
+            "T8": 4.0
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": true,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 7,
+          "execution_errors": 0,
+          "skills_created": 2,
+          "skills_retrieved": 7,
+          "operator_steps_used": 31,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 378.5,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "self_refine": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 3.29,
+            "T2": 2.83,
+            "T4": 3.14,
+            "T3": 1.97,
+            "T7": 3.6,
+            "T8": 3.38
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": true
+          },
+          "retries": 4,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 21,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 409.5,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        },
+        "self_refine_memory": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 3.2,
+            "T2": 2.69,
+            "T4": 2.98,
+            "T3": 2.07,
+            "T7": 3.8,
+            "T8": 2.59
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 6,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 0,
+          "operator_steps_used": 24,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 449.5,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        }
+      }
     }
   },
-  "updated_at": "2026-09-07T09:46:15+00:00"
+  "updated_at": "2026-09-07T16:24:59+00:00"
 }

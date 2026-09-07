@@ -1,0 +1,48 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_006_002",
+    "evolved_run_006_001"
+  ],
+  "rationale": "Plan groups claims by both provider specialty and network status to compare volume, paid amounts, denial rate and fraud-flag rate across both dimensions. Denial rates use adjudicated_claims denominator per the denial_rate_denominator_standardization skill, with explicit numerator/denominator reporting via show_denominators=true for transparency. Provider ranking identifies top 10 by claim count with min_group_size=30 to flag small groups. Report includes synthetic_data and small_groups caveats per the evolved skills and task tags. This addresses all required artifacts and applies statistical discipline standards."
+}

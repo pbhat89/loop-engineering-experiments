@@ -1,0 +1,55 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "provider_join",
+      "params": {
+        "provider_key": "rendering_npi",
+        "how": "inner",
+        "validate": "many_to_one"
+      }
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty",
+          "network_status",
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The prior plan structure is sound. This revision addresses all three evaluation failures: (1) Adding 'provider_specialty' and 'network_status' as separate group_by dimensions ensures the group_comparison metric produces distinct groups for each dimension, resolving the missing groups_specialty and groups_network_status checks. (2) Changing the denominator from 'all_claims' to 'adjudicated_claims' aligns denial-rate computation with statistical discipline and the portfolio description. (3) Setting min_group_size to 30 enables proper small-group flagging. These changes preserve the complete analysis intent while fixing the specific metric calculation errors that caused evaluation failure.",
+  "changes_summary": "Fixed group_comparison parameters: (1) expanded group_by to include separate 'provider_specialty', 'network_status', and combined 'provider_specialty+network_status' dimensions instead of only the combined dimension, (2) changed denominator from 'all_claims' to 'adjudicated_claims' for correct denial-rate computation, (3) set min_group_size from 0 to 30 for small-group flagging. These changes directly address the three evaluation failures while preserving all required artifacts and the overall analysis strategy."
+}

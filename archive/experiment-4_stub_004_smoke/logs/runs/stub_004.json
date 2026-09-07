@@ -1,0 +1,927 @@
+{
+  "run_id": "stub_004",
+  "config": {
+    "run_id": "stub_004",
+    "mode": "stub",
+    "conditions": [
+      "reflection_only",
+      "feedback_memory",
+      "skill_learning",
+      "self_refine",
+      "self_refine_memory"
+    ],
+    "task_order": [
+      "T1",
+      "T2",
+      "T4",
+      "T3",
+      "T7",
+      "T8"
+    ],
+    "seed": 42,
+    "max_retries": 4,
+    "pass_threshold": 3.5,
+    "max_operator_steps_per_condition": 64,
+    "retrieval_k": 8,
+    "model_identifier": null,
+    "operator": null,
+    "freeze_sha256": "59fb61d35fe828be678abff1a9e4d1c87ebaf5582398f1aee424ea88b4ab8a6f",
+    "feedback_max_items": 3,
+    "reveal_fixes": true,
+    "foundational_skills": false,
+    "created_at": "2026-09-07T15:30:14+00:00"
+  },
+  "provider": {
+    "provider_mode": "stub",
+    "operator": "deterministic-fixture",
+    "model_identifier": "deterministic-fixture-v1"
+  },
+  "conditions": {
+    "reflection_only": {
+      "status": "done",
+      "next_task_index": 6,
+      "operator_steps_used": 32,
+      "current_task": null,
+      "current_node": null,
+      "pending_request": null,
+      "waiting_since": null,
+      "task_started_at": null,
+      "task_results": {
+        "T1": {
+          "score_total": 3.87,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 3.33,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.38,
+            2.57,
+            3.87
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 5,
+          "started_at": "2026-09-07T15:30:17+00:00",
+          "finished_at": "2026-09-07T15:30:19+00:00",
+          "duration_seconds": 2.0
+        },
+        "T2": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 4,
+          "execution_errors": 0,
+          "retry_count": 3,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.28,
+            2.47,
+            3.2,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 12,
+          "started_at": "2026-09-07T15:30:25+00:00",
+          "finished_at": "2026-09-07T15:30:28+00:00",
+          "duration_seconds": 3.0
+        },
+        "T4": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.18,
+            3.2,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 17,
+          "started_at": "2026-09-07T15:30:33+00:00",
+          "finished_at": "2026-09-07T15:30:35+00:00",
+          "duration_seconds": 2.0
+        },
+        "T3": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            0.73,
+            2.97,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 22,
+          "started_at": "2026-09-07T15:30:40+00:00",
+          "finished_at": "2026-09-07T15:30:42+00:00",
+          "duration_seconds": 2.0
+        },
+        "T7": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.77,
+            2.97,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 27,
+          "started_at": "2026-09-07T15:30:47+00:00",
+          "finished_at": "2026-09-07T15:30:55+00:00",
+          "duration_seconds": 8.0
+        },
+        "T8": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.55,
+            2.25,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 32,
+          "started_at": "2026-09-07T15:31:00+00:00",
+          "finished_at": "2026-09-07T15:31:01+00:00",
+          "duration_seconds": 1.0
+        }
+      },
+      "written_requests": []
+    },
+    "feedback_memory": {
+      "status": "done",
+      "next_task_index": 6,
+      "operator_steps_used": 32,
+      "current_task": null,
+      "current_node": null,
+      "pending_request": null,
+      "waiting_since": null,
+      "task_started_at": null,
+      "task_results": {
+        "T1": {
+          "score_total": 3.87,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 3.33,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.38,
+            2.57,
+            3.87
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 5,
+          "started_at": "2026-09-07T15:31:05+00:00",
+          "finished_at": "2026-09-07T15:31:07+00:00",
+          "duration_seconds": 2.0
+        },
+        "T2": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 4,
+          "execution_errors": 0,
+          "retry_count": 3,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.28,
+            2.47,
+            3.2,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 12,
+          "started_at": "2026-09-07T15:31:13+00:00",
+          "finished_at": "2026-09-07T15:31:17+00:00",
+          "duration_seconds": 4.0
+        },
+        "T4": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.18,
+            3.2,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 17,
+          "started_at": "2026-09-07T15:31:22+00:00",
+          "finished_at": "2026-09-07T15:31:26+00:00",
+          "duration_seconds": 4.0
+        },
+        "T3": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            0.73,
+            2.97,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 22,
+          "started_at": "2026-09-07T15:31:32+00:00",
+          "finished_at": "2026-09-07T15:31:34+00:00",
+          "duration_seconds": 2.0
+        },
+        "T7": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.77,
+            2.97,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 27,
+          "started_at": "2026-09-07T15:31:41+00:00",
+          "finished_at": "2026-09-07T15:31:49+00:00",
+          "duration_seconds": 8.0
+        },
+        "T8": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.55,
+            2.25,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 32,
+          "started_at": "2026-09-07T15:31:57+00:00",
+          "finished_at": "2026-09-07T15:31:58+00:00",
+          "duration_seconds": 1.0
+        }
+      },
+      "written_requests": []
+    },
+    "skill_learning": {
+      "status": "done",
+      "next_task_index": 6,
+      "operator_steps_used": 41,
+      "current_task": null,
+      "current_node": null,
+      "pending_request": null,
+      "waiting_since": null,
+      "task_started_at": null,
+      "task_results": {
+        "T1": {
+          "score_total": 3.87,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 3.33,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [
+            "evolved_stub_004_001"
+          ],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.38,
+            2.57,
+            3.87
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 7,
+          "started_at": "2026-09-07T15:32:05+00:00",
+          "finished_at": "2026-09-07T15:32:07+00:00",
+          "duration_seconds": 2.0
+        },
+        "T2": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 4,
+          "execution_errors": 0,
+          "retry_count": 3,
+          "skills_created": [
+            "evolved_stub_004_002"
+          ],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.28,
+            2.47,
+            3.2,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 16,
+          "started_at": "2026-09-07T15:32:12+00:00",
+          "finished_at": "2026-09-07T15:32:15+00:00",
+          "duration_seconds": 3.0
+        },
+        "T4": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [
+            "evolved_stub_004_003"
+          ],
+          "skills_retrieved": [
+            "evolved_stub_004_002",
+            "evolved_stub_004_001"
+          ],
+          "score_by_attempt": [
+            1.18,
+            3.2,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 23,
+          "started_at": "2026-09-07T15:32:20+00:00",
+          "finished_at": "2026-09-07T15:32:23+00:00",
+          "duration_seconds": 3.0
+        },
+        "T3": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [
+            "evolved_stub_004_002",
+            "evolved_stub_004_003",
+            "evolved_stub_004_001"
+          ],
+          "score_by_attempt": [
+            0.73,
+            2.97,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 29,
+          "started_at": "2026-09-07T15:32:27+00:00",
+          "finished_at": "2026-09-07T15:32:29+00:00",
+          "duration_seconds": 2.0
+        },
+        "T7": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [
+            "evolved_stub_004_002"
+          ],
+          "score_by_attempt": [
+            1.77,
+            2.97,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 35,
+          "started_at": "2026-09-07T15:32:33+00:00",
+          "finished_at": "2026-09-07T15:32:38+00:00",
+          "duration_seconds": 5.0
+        },
+        "T8": {
+          "score_total": 4.0,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 4.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 4.0,
+            "communication": 4.0
+          },
+          "passed": true,
+          "first_attempt_passed": false,
+          "execution_attempts": 3,
+          "execution_errors": 0,
+          "retry_count": 2,
+          "skills_created": [],
+          "skills_retrieved": [
+            "evolved_stub_004_003",
+            "evolved_stub_004_002"
+          ],
+          "score_by_attempt": [
+            1.55,
+            2.25,
+            4.0
+          ],
+          "stop_reason": "passed",
+          "operator_steps_used_after": 41,
+          "started_at": "2026-09-07T15:32:43+00:00",
+          "finished_at": "2026-09-07T15:32:44+00:00",
+          "duration_seconds": 1.0
+        }
+      },
+      "written_requests": []
+    },
+    "self_refine": {
+      "status": "done",
+      "next_task_index": 6,
+      "operator_steps_used": 24,
+      "current_task": null,
+      "current_node": null,
+      "pending_request": null,
+      "waiting_since": null,
+      "task_started_at": null,
+      "task_results": {
+        "T1": {
+          "score_total": 1.38,
+          "scores": {
+            "correctness": 2.22,
+            "completeness": 0.67,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.38,
+            1.38
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 4,
+          "started_at": "2026-09-07T15:32:48+00:00",
+          "finished_at": "2026-09-07T15:32:49+00:00",
+          "duration_seconds": 1.0
+        },
+        "T2": {
+          "score_total": 1.28,
+          "scores": {
+            "correctness": 1.6,
+            "completeness": 0.8,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.28,
+            1.28
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 8,
+          "started_at": "2026-09-07T15:32:53+00:00",
+          "finished_at": "2026-09-07T15:32:54+00:00",
+          "duration_seconds": 1.0
+        },
+        "T4": {
+          "score_total": 1.18,
+          "scores": {
+            "correctness": 0.89,
+            "completeness": 1.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.18,
+            1.18
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 12,
+          "started_at": "2026-09-07T15:32:58+00:00",
+          "finished_at": "2026-09-07T15:32:59+00:00",
+          "duration_seconds": 1.0
+        },
+        "T3": {
+          "score_total": 0.73,
+          "scores": {
+            "correctness": 0.0,
+            "completeness": 0.67,
+            "reproducibility": 3.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            0.73,
+            0.73
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 16,
+          "started_at": "2026-09-07T15:33:04+00:00",
+          "finished_at": "2026-09-07T15:33:05+00:00",
+          "duration_seconds": 1.0
+        },
+        "T7": {
+          "score_total": 1.77,
+          "scores": {
+            "correctness": 2.0,
+            "completeness": 2.86,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.77,
+            1.77
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 20,
+          "started_at": "2026-09-07T15:33:09+00:00",
+          "finished_at": "2026-09-07T15:33:10+00:00",
+          "duration_seconds": 1.0
+        },
+        "T8": {
+          "score_total": 1.55,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 0.89,
+            "reproducibility": 1.14,
+            "statistical_discipline": 0.0,
+            "communication": 1.71
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.55,
+            1.55
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 24,
+          "started_at": "2026-09-07T15:33:14+00:00",
+          "finished_at": "2026-09-07T15:33:14+00:00",
+          "duration_seconds": 0.0
+        }
+      },
+      "written_requests": []
+    },
+    "self_refine_memory": {
+      "status": "done",
+      "next_task_index": 6,
+      "operator_steps_used": 24,
+      "current_task": null,
+      "current_node": null,
+      "pending_request": null,
+      "waiting_since": null,
+      "task_started_at": null,
+      "task_results": {
+        "T1": {
+          "score_total": 1.38,
+          "scores": {
+            "correctness": 2.22,
+            "completeness": 0.67,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.38,
+            1.38
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 4,
+          "started_at": "2026-09-07T15:33:18+00:00",
+          "finished_at": "2026-09-07T15:33:19+00:00",
+          "duration_seconds": 1.0
+        },
+        "T2": {
+          "score_total": 1.28,
+          "scores": {
+            "correctness": 1.6,
+            "completeness": 0.8,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.28,
+            1.28
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 8,
+          "started_at": "2026-09-07T15:33:23+00:00",
+          "finished_at": "2026-09-07T15:33:24+00:00",
+          "duration_seconds": 1.0
+        },
+        "T4": {
+          "score_total": 1.18,
+          "scores": {
+            "correctness": 0.89,
+            "completeness": 1.0,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.18,
+            1.18
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 12,
+          "started_at": "2026-09-07T15:33:28+00:00",
+          "finished_at": "2026-09-07T15:33:29+00:00",
+          "duration_seconds": 1.0
+        },
+        "T3": {
+          "score_total": 0.73,
+          "scores": {
+            "correctness": 0.0,
+            "completeness": 0.67,
+            "reproducibility": 3.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            0.73,
+            0.73
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 16,
+          "started_at": "2026-09-07T15:33:33+00:00",
+          "finished_at": "2026-09-07T15:33:34+00:00",
+          "duration_seconds": 1.0
+        },
+        "T7": {
+          "score_total": 1.77,
+          "scores": {
+            "correctness": 2.0,
+            "completeness": 2.86,
+            "reproducibility": 4.0,
+            "statistical_discipline": 0.0,
+            "communication": 0.0
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.77,
+            1.77
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 20,
+          "started_at": "2026-09-07T15:33:38+00:00",
+          "finished_at": "2026-09-07T15:33:39+00:00",
+          "duration_seconds": 1.0
+        },
+        "T8": {
+          "score_total": 1.55,
+          "scores": {
+            "correctness": 4.0,
+            "completeness": 0.89,
+            "reproducibility": 1.14,
+            "statistical_discipline": 0.0,
+            "communication": 1.71
+          },
+          "passed": false,
+          "first_attempt_passed": false,
+          "execution_attempts": 2,
+          "execution_errors": 0,
+          "retry_count": 1,
+          "skills_created": [],
+          "skills_retrieved": [],
+          "score_by_attempt": [
+            1.55,
+            1.55
+          ],
+          "stop_reason": "self_accepted",
+          "operator_steps_used_after": 24,
+          "started_at": "2026-09-07T15:33:43+00:00",
+          "finished_at": "2026-09-07T15:33:44+00:00",
+          "duration_seconds": 1.0
+        }
+      },
+      "written_requests": []
+    }
+  },
+  "created_at": "2026-09-07T15:30:14+00:00",
+  "updated_at": "2026-09-07T15:33:48+00:00"
+}

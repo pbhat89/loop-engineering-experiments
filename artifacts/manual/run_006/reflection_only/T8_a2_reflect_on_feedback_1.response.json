@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T8-sections",
+      "correction": "Add 'synthetic_caveats' to the sections list in brief_sections component. Change sections from [\"key_findings\", \"model_results\", \"limitations\", \"next_steps\"] to [\"key_findings\", \"model_results\", \"limitations\", \"synthetic_caveats\", \"next_steps\"]."
+    },
+    {
+      "feedback_id": "T8-no_causal_language",
+      "correction": "Change causal_language from 'allow' to 'avoid' in brief_sections component to prevent causal phrasing such as 'drives', 'causes', 'leads to', and 'because of'."
+    },
+    {
+      "feedback_id": "T8-causal_language_setting",
+      "correction": "Change causal_language from 'allow' to 'avoid' in brief_sections component, as a descriptive study of synthetic data supports only associative, not causal, claims."
+    }
+  ],
+  "reusable_lessons": []
+}

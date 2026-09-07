@@ -1,0 +1,173 @@
+{
+  "task_id": "T8",
+  "run_id": "run_006",
+  "condition": "feedback_memory",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-07T16:03:45+00:00",
+  "plan_sha256": "601f055aa3849c924a0e1448372bae510ef7fad6eb27ea5adc3d8512bcb8f5ac",
+  "plan": {
+    "steps": [
+      {
+        "component": "collect_findings",
+        "params": {
+          "sources": [
+            "T1",
+            "T3",
+            "T4",
+            "T7"
+          ]
+        }
+      },
+      {
+        "component": "brief_sections",
+        "params": {
+          "sections": [
+            "key_findings",
+            "model_results",
+            "limitations",
+            "next_steps"
+          ],
+          "causal_language": "avoid",
+          "cite_artifacts": false
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "sample_preview",
+            "association_not_causation",
+            "small_groups",
+            "model_limitations",
+            "no_operational_use"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Collects findings from the four explicitly required sources: T1 (dataset description), T3 (provider/network patterns), T4 (denial analysis), and T7 (high-cost model). Brief sections address all mandate requirements: key findings, model performance, limitations, and next steps. Language set to avoid causal phrasing per T3 feedback. Report incorporates all substantive caveats from earlier feedback (synthetic data, sample preview, association/causation distinction, small group instability, model limitations, and operational-use restrictions) to ensure executive has full context. Denominators shown for statistical transparency.",
+    "changes_summary": null
+  },
+  "tables": {},
+  "findings": [
+    {
+      "task_id": "T1",
+      "metric_key": "tables.members.rows",
+      "label": "members row count",
+      "value": 500,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T1/attempt_2/metrics.json#tables.members.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.providers.rows",
+      "label": "providers row count",
+      "value": 150,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T1/attempt_2/metrics.json#tables.providers.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.medical_claims.rows",
+      "label": "medical_claims row count",
+      "value": 12845,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T1/attempt_2/metrics.json#tables.medical_claims.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.pharmacy_claims.rows",
+      "label": "pharmacy_claims row count",
+      "value": 18310,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T1/attempt_2/metrics.json#tables.pharmacy_claims.rows"
+    },
+    {
+      "task_id": "T1",
+      "metric_key": "tables.adherence.rows",
+      "label": "adherence row count",
+      "value": 10627,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T1/attempt_2/metrics.json#tables.adherence.rows"
+    },
+    {
+      "task_id": "T3",
+      "metric_key": "group_comparison.groups.network_status.In-Network.denial_rate",
+      "label": "Denial rate, network_status = In-Network",
+      "value": 0.1055930568948891,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T3/attempt_1/metrics.json#group_comparison.groups.network_status.In-Network.denial_rate",
+      "numerator": 1095,
+      "denominator": 10370
+    },
+    {
+      "task_id": "T3",
+      "metric_key": "group_comparison.groups.network_status.Out-of-Network.denial_rate",
+      "label": "Denial rate, network_status = Out-of-Network",
+      "value": 0.09700355510411376,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T3/attempt_1/metrics.json#group_comparison.groups.network_status.Out-of-Network.denial_rate",
+      "numerator": 191,
+      "denominator": 1969
+    },
+    {
+      "task_id": "T4",
+      "metric_key": "denial_code_ranking.codes[0]",
+      "label": "Top denial code CO-15 (scope: denied_claims)",
+      "value": 0.187402799377916,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T4/attempt_2/metrics.json#denial_code_ranking.codes[0]",
+      "numerator": 241,
+      "denominator": 1286
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "target_definition.threshold_value",
+      "label": "High-cost threshold (paid_amount p95, train_only)",
+      "value": 3198.9879999999994,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T7/attempt_2/metrics.json#target_definition.threshold_value"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "models.logistic_regression.pr_auc",
+      "label": "High-cost model logistic_regression PR-AUC",
+      "value": 0.2232961168354745,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T7/attempt_2/metrics.json#models.logistic_regression.pr_auc"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "models.gradient_boosting.pr_auc",
+      "label": "High-cost model gradient_boosting PR-AUC",
+      "value": 0.21737344211633483,
+      "source_path": "artifacts/tasks/run_006/feedback_memory/T7/attempt_2/metrics.json#models.gradient_boosting.pr_auc"
+    }
+  ],
+  "brief": {
+    "sections": [
+      "key_findings",
+      "model_results",
+      "limitations",
+      "next_steps"
+    ],
+    "causal_language": "avoid",
+    "cite_artifacts": false,
+    "word_count": 241,
+    "n_numeric_statements": 11,
+    "n_cited_statements": 0
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "sample_preview",
+      "association_not_causation",
+      "small_groups",
+      "model_limitations",
+      "no_operational_use"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

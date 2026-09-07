@@ -1,0 +1,39 @@
+{
+  "features": [
+    "claim_type",
+    "cpt_category",
+    "place_of_service",
+    "provider_specialty",
+    "network_status",
+    "service_units",
+    "length_of_stay",
+    "er_flag",
+    "elective_flag",
+    "preventive_flag",
+    "auth_required_flag",
+    "primary_icd10_cm",
+    "drg_present"
+  ],
+  "n_categorical": 6,
+  "n_numeric": 7,
+  "id_fields_present": [],
+  "target_derived_present": [],
+  "target": "high_cost (amount > threshold)",
+  "categorical": [
+    "claim_type",
+    "cpt_category",
+    "place_of_service",
+    "provider_specialty",
+    "network_status",
+    "primary_icd10_cm"
+  ],
+  "numeric": [
+    "service_units",
+    "length_of_stay",
+    "er_flag",
+    "elective_flag",
+    "preventive_flag",
+    "auth_required_flag",
+    "drg_present"
+  ]
+}

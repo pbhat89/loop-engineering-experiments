@@ -1,0 +1,13 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T8-no_causal_language",
+      "correction": "Set brief_sections parameter causal_language to 'avoid' to prevent causal phrasing (e.g., 'drives', 'causes', 'leads to') in the executive brief, replacing with associative language."
+    },
+    {
+      "feedback_id": "T8-causal_language_setting",
+      "correction": "Set brief_sections parameter causal_language from 'allow' to 'avoid'; a descriptive study of synthetic data cannot support causal claims."
+    }
+  ],
+  "reusable_lessons": []
+}

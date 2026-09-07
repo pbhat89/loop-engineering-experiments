@@ -1,0 +1,72 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 95,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "none"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "model_limitations",
+          "class_imbalance"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Revised plan addresses self-review finding about data leakage from target-derived amount fields. Removed billed_amount and allowed_amount from the feature set to ensure the early-warning model operates on claim-intake-available features only (clinical and administrative attributes: claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, flags, primary_icd10_cm, drg_present). This ensures the model achieves its stated objective of flagging high-cost claims when they first arrive for nurse review, without relying on post-adjudication amounts that introduce leakage and prevent operational deployment.",
+  "changes_summary": "Removed billed_amount and allowed_amount from feature_set to eliminate data leakage. The prior plan included these post-intake amount fields, which are not available at claim receipt and were driving unrealistic model performance (ROC-AUC 0.997). The revised plan uses only claim-intake-available features for a model that can operationally flag high-risk claims at review time."
+}

@@ -1,0 +1,42 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": [
+          "T1",
+          "T2",
+          "T3"
+        ]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": [
+          "key_findings",
+          "limitations",
+          "synthetic_caveats",
+          "next_steps"
+        ],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "model_limitations",
+          "association_not_causation"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Revised plan addresses the self-review finding that T6 (high-cost model) is missing and cannot be included as a source. The plan now synthesizes the three available analyses: T1 (book description), T2 (denial analysis), and T3 (provider/network comparison). The 'model_results' section has been removed from brief_sections since it cannot be meaningfully covered without T6 data. The brief retains comprehensive coverage of key findings, limitations, and next steps with conservative causal language and full citations for traceability. Report maintains strong caveats (synthetic_data, model_limitations, association_not_causation) with denominators and artifact citations.",
+  "changes_summary": "Removed T6 from collect_findings.sources (changed from [T1, T2, T3, T6] to [T1, T2, T3]); removed 'model_results' from brief_sections.sections (changed from [key_findings, model_results, limitations, synthetic_caveats, next_steps] to [key_findings, limitations, synthetic_caveats, next_steps]). Plan now addresses only available data sources and removes coverage of the missing high-cost model analysis."
+}

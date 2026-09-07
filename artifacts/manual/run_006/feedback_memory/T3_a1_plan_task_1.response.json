@@ -1,0 +1,41 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": ["medical_claims.rendering_npi->providers.provider_npi"]
+      }
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": ["provider_specialty", "network_status", "provider_specialty+network_status"],
+        "metrics": ["claim_count", "paid_amount_sum", "denial_rate", "fraud_rate"],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "small_groups"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan addresses task objective to compare volume, paid amounts, denial and fraud rates across provider specialties and network status. Group comparisons include all three required groupings (specialty, network status, and combination). Provider ranking lists top 10 by claim count as specified. Parameters reflect lessons from prior tasks: adjudicated_claims denominator for denial rates (T2 feedback), small-group flagging at threshold 30 (T4 feedback), and inclusion of synthetic_data and small_groups caveats. Join validation ensures data quality before group analysis."
+}

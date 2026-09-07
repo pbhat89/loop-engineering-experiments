@@ -1,0 +1,73 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 95,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "class_imbalance",
+          "model_limitations"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Revised plan eliminates feature and data leakage identified in self-review. Removed billed_amount and allowed_amount from feature_set—these are determined during claim adjudication, not available when a claim arrives, and their inclusion inflates model performance unrealistically. Changed target_definition threshold_source to 'train_only' to compute the 95th percentile on training data only, maintaining clean train/test separation. Changed preprocessing fit_on to 'train_only' to prevent leaking test-set information through encoder and scaler fitting. These corrections ensure the model reflects realistic production performance when applied to incoming claims at adjudication time. All other components retain their prior configuration to satisfy the task objective.",
+  "changes_summary": "Addressed three leakage findings: (1) Removed billed_amount and allowed_amount from features—adjudication-stage amounts unavailable at claim intake violate the task requirement ('when a claim comes in'). (2) Changed target_definition threshold_source from 'all_data' to 'train_only'—compute 95th percentile on training rows only for proper train/test separation. (3) Changed preprocessing fit_on from 'all_data' to 'train_only'—fit encoder and scaler on training data only to prevent test-set information leakage and metric bias."
+}

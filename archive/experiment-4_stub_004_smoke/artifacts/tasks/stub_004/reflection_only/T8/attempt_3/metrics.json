@@ -1,0 +1,167 @@
+{
+  "task_id": "T8",
+  "run_id": "stub_004",
+  "condition": "reflection_only",
+  "attempt": 3,
+  "seed": 42,
+  "generated_at": "2026-09-07T15:31:01+00:00",
+  "plan_sha256": "4fd8a070f908a1c3d0aa887f5bb0f401974c8635a7cc8d75f3b0a570811f4572",
+  "plan": {
+    "steps": [
+      {
+        "component": "collect_findings",
+        "params": {
+          "sources": [
+            "T2",
+            "T3",
+            "T4",
+            "T5",
+            "T6",
+            "T7"
+          ]
+        }
+      },
+      {
+        "component": "brief_sections",
+        "params": {
+          "sections": [
+            "key_findings",
+            "model_results",
+            "limitations",
+            "synthetic_caveats",
+            "next_steps"
+          ],
+          "causal_language": "avoid",
+          "cite_artifacts": true
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "deterministic fixture: catalogue defaults + feedback-recommended components",
+    "changes_summary": "brief_sections <- T8-sections; brief_sections <- T8-no_causal_language; brief_sections <- T8-causal_language_setting"
+  },
+  "tables": {},
+  "findings": [
+    {
+      "task_id": "T2",
+      "metric_key": "denial_rate",
+      "label": "Denial rate (denominator: adjudicated_claims)",
+      "value": 0.10422238430991167,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T2/attempt_4/metrics.json#denial_rate",
+      "numerator": 1286,
+      "denominator": 12339
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "claim_volume.total_claims",
+      "label": "Total medical claims",
+      "value": 12845,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T2/attempt_4/metrics.json#claim_volume.total_claims"
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "financial_summary.paid_amount.sum",
+      "label": "Total paid amount",
+      "value": 9783415.77,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T2/attempt_4/metrics.json#financial_summary.paid_amount.sum"
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "fraud_prevalence",
+      "label": "Fraud prevalence (denominator: all_claims)",
+      "value": 0.050369793694044374,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T2/attempt_4/metrics.json#fraud_prevalence",
+      "numerator": 647,
+      "denominator": 12845
+    },
+    {
+      "task_id": "T3",
+      "metric_key": "group_comparison.groups.network_status.In-Network.denial_rate",
+      "label": "Denial rate, network_status = In-Network",
+      "value": 0.1055930568948891,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T3/attempt_3/metrics.json#group_comparison.groups.network_status.In-Network.denial_rate",
+      "numerator": 1095,
+      "denominator": 10370
+    },
+    {
+      "task_id": "T3",
+      "metric_key": "group_comparison.groups.network_status.Out-of-Network.denial_rate",
+      "label": "Denial rate, network_status = Out-of-Network",
+      "value": 0.09700355510411376,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T3/attempt_3/metrics.json#group_comparison.groups.network_status.Out-of-Network.denial_rate",
+      "numerator": 191,
+      "denominator": 1969
+    },
+    {
+      "task_id": "T4",
+      "metric_key": "denial_code_ranking.codes[0]",
+      "label": "Top denial code CO-15 (scope: denied_claims)",
+      "value": 0.187402799377916,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T4/attempt_3/metrics.json#denial_code_ranking.codes[0]",
+      "numerator": 241,
+      "denominator": 1286
+    },
+    {
+      "task_id": "T5",
+      "status": "missing"
+    },
+    {
+      "task_id": "T6",
+      "status": "missing"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "target_definition.threshold_value",
+      "label": "High-cost threshold (paid_amount p95, train_only)",
+      "value": 3198.9879999999994,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T7/attempt_3/metrics.json#target_definition.threshold_value"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "models.logistic_regression.pr_auc",
+      "label": "High-cost model logistic_regression PR-AUC",
+      "value": 0.22148583749627626,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T7/attempt_3/metrics.json#models.logistic_regression.pr_auc"
+    },
+    {
+      "task_id": "T7",
+      "metric_key": "models.random_forest.pr_auc",
+      "label": "High-cost model random_forest PR-AUC",
+      "value": 0.19725579955307304,
+      "source_path": "artifacts/tasks/stub_004/reflection_only/T7/attempt_3/metrics.json#models.random_forest.pr_auc"
+    }
+  ],
+  "brief": {
+    "sections": [
+      "key_findings",
+      "model_results",
+      "limitations",
+      "synthetic_caveats",
+      "next_steps"
+    ],
+    "causal_language": "avoid",
+    "cite_artifacts": true,
+    "word_count": 324,
+    "n_numeric_statements": 11,
+    "n_cited_statements": 11
+  },
+  "report": {
+    "caveats": [],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Method"
+    ]
+  }
+}

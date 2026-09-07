@@ -1,0 +1,41 @@
+{
+  "proposal": {
+    "name": "Include synthetic data caveat in reports",
+    "tags": [
+      "reporting",
+      "caveats",
+      "data_governance",
+      "communication"
+    ],
+    "trigger": "When writing reports based on synthetic or simulated data",
+    "objective": "Ensure all analysis reports clearly communicate that findings are derived from synthetic data rather than production data, enabling stakeholders to properly interpret results and maintain data governance standards across analysis tasks.",
+    "procedure": [
+      "Before finalizing any report on synthetic data, verify that the write_report component's caveats parameter includes 'synthetic_data'.",
+      "Confirm that the report text includes language stating the dataset is synthetic or simulated, ensuring stakeholders understand the data source.",
+      "Review all caveats to confirm synthetic_data is appropriate for the dataset being analyzed."
+    ],
+    "required_checks": [
+      "Confirm 'synthetic_data' caveat is listed in the write_report component's caveats parameter",
+      "Verify 'synthetic' or 'simulated' language appears in the report Caveats section"
+    ],
+    "expected_artifacts": [
+      "report.md with synthetic_data listed in caveats"
+    ],
+    "failure_modes": [
+      "Report lacks synthetic_data caveat, leaving stakeholders unaware data is synthetic",
+      "Caveats parameter omits synthetic_data despite dataset being synthetic"
+    ],
+    "example": "For T1 (Dataset reconnaissance), when writing report.md, ensure the write_report component's caveats parameter includes 'synthetic_data', resulting in the report containing language such as 'This analysis uses synthetically generated member and claims data' in the Caveats section.",
+    "applicable_task_ids": [
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8"
+    ],
+    "source_feedback_ids": [
+      "T1-caveat_synthetic"
+    ]
+  },
+  "reason_if_null": null
+}

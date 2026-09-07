@@ -1,0 +1,39 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T2-denial_rate_value",
+      "correction": "Change denial_rate component parameter from denominator 'all_claims' to 'adjudicated_claims' to exclude Pended claims and compute the correct denial rate."
+    },
+    {
+      "feedback_id": "T2-denial_rate_denominator",
+      "correction": "Change denial_rate component parameter from denominator 'all_claims' to 'adjudicated_claims' to use only adjudicated claims and record the correct choice."
+    },
+    {
+      "feedback_id": "T2-monthly_date_column",
+      "correction": "Change monthly_trend component parameter from date_column 'adjudication_date' to 'service_date_from' to key trend on when service occurred, not when claim was processed."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When computing denial rates, always use adjudicated claims (claim_status in {Paid, Denied, Adjusted}) as the denominator, excluding Pended claims which have not yet been decided. Including pending claims understates the true denial rate.",
+      "applicable_task_ids": [
+        "T3",
+        "T4"
+      ],
+      "source_feedback_ids": [
+        "T2-denial_rate_value",
+        "T2-denial_rate_denominator"
+      ]
+    },
+    {
+      "lesson": "When analyzing monthly volume and payment trends, key the series on service_date_from (when care began) rather than adjudication_date (when claim was processed), as adjudication dates lag service dates and introduce inconsistencies in trend analysis.",
+      "applicable_task_ids": [
+        "T3",
+        "T4"
+      ],
+      "source_feedback_ids": [
+        "T2-monthly_date_column"
+      ]
+    }
+  ]
+}

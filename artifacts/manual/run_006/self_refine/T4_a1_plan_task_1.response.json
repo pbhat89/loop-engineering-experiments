@@ -1,0 +1,42 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "all_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "claim_type",
+          "provider_specialty",
+          "network_status",
+          "place_of_service",
+          "auth_required_flag"
+        ],
+        "denominator": "all_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "small_groups",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This plan addresses the denial analysis objective by ranking all denial codes (including the high proportion of missing codes) across claim statuses, then segmenting denial rates by the five requested dimensions (claim type, provider specialty, network status, place of service, and prior auth requirement). The min_group_size=30 flags small subgroups for interpretation caution given the many segment combinations. Show_denominators=true and cite_artifacts=true support reproducibility and transparency in the presence of potentially small segments and high denial code missingness (~91% null).",
+  "changes_summary": null
+}

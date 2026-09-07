@@ -1,0 +1,45 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "all_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan analyzes provider-network patterns by (1) loading tables, (2) grouping claims by specialty-network combinations to compare volume, paid amounts, and denial/fraud rates, (3) ranking top 10 rendering providers by claim count with directory attributes, and (4) reporting findings with explicit denominators and artifact citations for statistical discipline. Min group size of 30 flags small-group findings in both comparison and caveats."
+}

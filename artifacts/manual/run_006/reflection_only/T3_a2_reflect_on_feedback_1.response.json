@@ -1,0 +1,38 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T3-join_check_rendering_npi",
+      "correction": "Add join_check component step to the plan with pairs parameter set to ['medical_claims.rendering_npi->providers.provider_npi'] to verify the join cardinality and detect any unmatched keys before using provider attributes."
+    },
+    {
+      "feedback_id": "T3-show_denominators",
+      "correction": "Set write_report parameter show_denominators to true to print every rate as numerator / denominator = rate, making the statistical foundation of each metric transparent."
+    },
+    {
+      "feedback_id": "T3-caveat_small_groups",
+      "correction": "Add 'small_groups' to the write_report parameter caveats list to communicate that rates computed for small groups are statistically unstable."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When reporting rates in analyses, display denominators alongside every rate (as numerator / denominator = rate) to make the statistical foundation and sample size transparent to stakeholders.",
+      "applicable_task_ids": [
+        "T7",
+        "T8"
+      ],
+      "source_feedback_ids": [
+        "T3-show_denominators"
+      ]
+    },
+    {
+      "lesson": "When computing group-level statistics, include the small_groups caveat to signal that rates for groups below a size threshold are statistically unstable and should be interpreted with caution.",
+      "applicable_task_ids": [
+        "T7",
+        "T8"
+      ],
+      "source_feedback_ids": [
+        "T3-caveat_small_groups"
+      ]
+    }
+  ]
+}

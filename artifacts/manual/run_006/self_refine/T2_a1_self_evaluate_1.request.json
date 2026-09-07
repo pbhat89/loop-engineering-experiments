@@ -1,0 +1,797 @@
+{
+  "request_id": "run_006:self_refine:T2:a1:self_evaluate:1",
+  "run_id": "run_006",
+  "condition": "self_refine",
+  "task_id": "T2",
+  "attempt": 1,
+  "node": "self_evaluate",
+  "seq": 1,
+  "created_at": "2026-09-07T15:49:38+00:00",
+  "instructions": "You executed the plan below and produced the report and metrics shown. No external reviewer is available: review your own output against the brief and good analytical practice. Return verdict 'accept' if the output is ready to hand to the sponsor, or 'revise' with at most three findings (most important first), each naming the catalogue component/parameter change that would address it. Attempts are limited; do not revise for cosmetic reasons.",
+  "payload": {
+    "task_id": "T2",
+    "condition": "self_refine",
+    "task_spec": {
+      "task_id": "T2",
+      "title": "Claims portfolio description",
+      "objective": "The head of claims wants a one-page picture of the medical claims book. How many claims do we have and how do they split by status? What is our denial rate? How common is the fraud flag? What do billed, allowed and paid amounts look like in total and per claim? And how has monthly claim volume moved over time? Produce the standard artifacts (status chart, monthly trend chart and table, financial summary table, report).",
+      "tags": [
+        "descriptive",
+        "portfolio",
+        "rates",
+        "denominators",
+        "financial",
+        "trends",
+        "status_mix"
+      ],
+      "input_tables": [
+        "medical_claims"
+      ],
+      "required_artifacts": [
+        "claims_status_distribution.png",
+        "monthly_claim_volume.png",
+        "financial_summary.csv",
+        "monthly_trend.csv",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "claim_volume",
+        "description": "Total claim count and count/share breakdowns by one or more categorical columns.",
+        "default_selected": true,
+        "params": {
+          "by": {
+            "description": "Which categorical columns to break the volume down by.",
+            "multi": true,
+            "options": [
+              "claim_status",
+              "claim_type",
+              "cpt_category",
+              "place_of_service",
+              "network_status",
+              "provider_specialty"
+            ],
+            "default": [
+              "claim_status"
+            ]
+          },
+          "figure": {
+            "description": "Whether to draw the status distribution figure (when claim_status is among the breakdowns).",
+            "options": [
+              true,
+              false
+            ],
+            "default": true
+          }
+        },
+        "produces": [
+          {
+            "key": "claim_volume",
+            "shape": "{total_claims: int, by: {column: {value: {n: int, share: float}}}}"
+          }
+        ],
+        "artifacts": [
+          "claims_status_distribution.png"
+        ]
+      },
+      {
+        "id": "denial_rate",
+        "description": "Denied claims divided by a stated denominator, with both counts and their definitions recorded.",
+        "default_selected": true,
+        "params": {
+          "denominator": {
+            "description": "Which claims form the denominator of the denial rate.",
+            "options": [
+              "all_claims",
+              "adjudicated_claims",
+              "paid_and_denied"
+            ],
+            "default": "all_claims"
+          }
+        },
+        "produces": [
+          {
+            "key": "denial_rate",
+            "shape": "{value: float, numerator: int, denominator: int, numerator_definition: str, denominator_definition: str, denominator_option: str}"
+          }
+        ]
+      },
+      {
+        "id": "fraud_prevalence",
+        "description": "Share of claims carrying the synthetic fraud label over a stated denominator.",
+        "default_selected": false,
+        "params": {
+          "denominator": {
+            "description": "Which claims form the denominator of the fraud-label prevalence.",
+            "options": [
+              "all_claims",
+              "adjudicated_claims"
+            ],
+            "default": "all_claims"
+          }
+        },
+        "produces": [
+          {
+            "key": "fraud_prevalence",
+            "shape": "{value: float, numerator: int, denominator: int, denominator_option: str}"
+          }
+        ]
+      },
+      {
+        "id": "financial_summary",
+        "description": "Count, sum, mean and optionally median/p90/p99 for selected amount columns.",
+        "default_selected": true,
+        "params": {
+          "amount_columns": {
+            "description": "Which amount columns to summarise.",
+            "multi": true,
+            "options": [
+              "billed_amount",
+              "allowed_amount",
+              "paid_amount",
+              "member_oop",
+              "cob_amount"
+            ],
+            "default": [
+              "paid_amount"
+            ]
+          },
+          "statistics": {
+            "description": "Whether to report only sum and mean or also the median, 90th and 99th percentiles.",
+            "options": [
+              "sum_mean",
+              "sum_mean_quantiles"
+            ],
+            "default": "sum_mean"
+          }
+        },
+        "produces": [
+          {
+            "key": "financial_summary",
+            "shape": "{column: {n: int, sum: float, mean: float, median?: float, p90?: float, p99?: float}}"
+          }
+        ],
+        "artifacts": [
+          "financial_summary.csv"
+        ]
+      },
+      {
+        "id": "monthly_trend",
+        "description": "Monthly series of claim counts and/or paid totals keyed on a chosen date column.",
+        "default_selected": true,
+        "params": {
+          "date_column": {
+            "description": "Which date column defines the month of each claim.",
+            "options": [
+              "service_date_from",
+              "service_date_to",
+              "adjudication_date"
+            ],
+            "default": "adjudication_date"
+          },
+          "metrics": {
+            "description": "Which monthly series to produce.",
+            "multi": true,
+            "options": [
+              "claim_count",
+              "paid_amount_sum"
+            ],
+            "default": [
+              "claim_count"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "monthly_trend",
+            "shape": "{date_column: str, n_months: int, first_month: 'YYYY-MM', last_month: 'YYYY-MM', unparseable_dates: int, series: {metric: {'YYYY-MM': value}}}"
+          }
+        ],
+        "artifacts": [
+          "monthly_claim_volume.png",
+          "monthly_trend.csv"
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T4",
+      "T3",
+      "T7",
+      "T8"
+    ],
+    "remaining_tasks": [
+      {
+        "task_id": "T4",
+        "title": "Denial analysis"
+      },
+      {
+        "task_id": "T3",
+        "title": "Provider and network patterns"
+      },
+      {
+        "task_id": "T7",
+        "title": "High-cost claim identification"
+      },
+      {
+        "task_id": "T8",
+        "title": "Executive brief"
+      }
+    ],
+    "plan": {
+      "steps": [
+        {
+          "component": "load_tables",
+          "params": {}
+        },
+        {
+          "component": "claim_volume",
+          "params": {
+            "by": [
+              "claim_status"
+            ],
+            "figure": true
+          }
+        },
+        {
+          "component": "denial_rate",
+          "params": {
+            "denominator": "all_claims"
+          }
+        },
+        {
+          "component": "fraud_prevalence",
+          "params": {
+            "denominator": "all_claims"
+          }
+        },
+        {
+          "component": "financial_summary",
+          "params": {
+            "amount_columns": [
+              "billed_amount",
+              "allowed_amount",
+              "paid_amount"
+            ],
+            "statistics": "sum_mean"
+          }
+        },
+        {
+          "component": "monthly_trend",
+          "params": {
+            "date_column": "adjudication_date",
+            "metrics": [
+              "claim_count",
+              "paid_amount_sum"
+            ]
+          }
+        },
+        {
+          "component": "write_report",
+          "params": {
+            "caveats": [
+              "synthetic_data",
+              "descriptive_only"
+            ],
+            "show_denominators": true,
+            "cite_artifacts": true
+          }
+        }
+      ],
+      "skills_applied": [],
+      "rationale": "Task T2 requires a comprehensive portfolio description covering claim volumes and status distribution, denial rate, fraud prevalence, and financial metrics across billed/allowed/paid amounts, plus monthly claim volume trends. The plan loads tables, quantifies claims by status with the status distribution figure, calculates denial and fraud rates against all claims (the most inclusive denominator), summarizes all three financial amount columns at sum and mean level, computes monthly trends in both claim count and paid amounts, and synthesizes all findings into a one-page report with denominators shown and artifact citations for transparency.",
+      "changes_summary": null
+    },
+    "execution_summary": {
+      "status": "ok",
+      "components_executed": [
+        "load_tables",
+        "claim_volume",
+        "denial_rate",
+        "fraud_prevalence",
+        "financial_summary",
+        "monthly_trend",
+        "write_report"
+      ],
+      "components_failed": [],
+      "errors": [],
+      "artifacts": [
+        "claims_status_distribution.png",
+        "financial_summary.csv",
+        "monthly_trend.csv",
+        "monthly_claim_volume.png",
+        "report.md",
+        "metrics.json"
+      ],
+      "metric_keys": [
+        "claim_volume",
+        "denial_rate",
+        "financial_summary",
+        "fraud_prevalence",
+        "monthly_trend",
+        "plan",
+        "report",
+        "tables"
+      ]
+    },
+    "output": {
+      "report_md": "# T2 — Claims portfolio description\n\n## Summary\n\nTask T2 (Claims portfolio description) for run `run_006` / condition `self_refine`, attempt 1: status **ok**; 7 component(s) executed, 0 failed, 0 error(s) recorded.\nTables: medical_claims (12845 rows).\n\n## Results\n\n### load_tables\n\n- medical_claims: 12845 rows, 54 columns [source: metrics.json#tables]\n\n### claim_volume\n\n- Total claims: 12845 [source: metrics.json#claim_volume.total_claims]\n- claim_status = Paid: share of claims: 10511 / 12845 = 0.818295 [source: metrics.json#claim_volume.by.claim_status]\n- claim_status = Denied: share of claims: 1286 / 12845 = 0.100117 [source: metrics.json#claim_volume.by.claim_status]\n- claim_status = Adjusted: share of claims: 542 / 12845 = 0.042195 [source: metrics.json#claim_volume.by.claim_status]\n- claim_status = Pended: share of claims: 506 / 12845 = 0.039393 [source: metrics.json#claim_volume.by.claim_status]\n\n### denial_rate\n\n- Denial rate (denominator: all_claims): 1286 / 12845 = 0.100117 [source: metrics.json#denial_rate]\n\n### fraud_prevalence\n\n- Fraud prevalence (denominator: all_claims): 647 / 12845 = 0.050370 [source: metrics.json#fraud_prevalence]\n\n### financial_summary\n\n- billed_amount: sum: 21254208.810000 [source: metrics.json#financial_summary]\n- billed_amount: mean: 1654.667872 [source: metrics.json#financial_summary]\n- allowed_amount: sum: 12175223.450000 [source: metrics.json#financial_summary]\n- allowed_amount: mean: 947.857022 [source: metrics.json#financial_summary]\n- paid_amount: sum: 9783415.770000 [source: metrics.json#financial_summary]\n- paid_amount: mean: 761.651675 [source: metrics.json#financial_summary]\n\n### monthly_trend\n\n- Date column adjudication_date: months covered: 38 [source: metrics.json#monthly_trend]\n- Range 2021-01 … 2024-02; unparseable dates: 0 [source: metrics.json#monthly_trend.unparseable_dates]\n- claim_count: mean per month: 338.026316 [source: artifacts/tasks/run_006/self_refine/T2/attempt_1/monthly_trend.csv]\n- paid_amount_sum: mean per month: 257458.309737 [source: artifacts/tasks/run_006/self_refine/T2/attempt_1/monthly_trend.csv]\n\n## Artifacts\n\n- `artifacts/tasks/run_006/self_refine/T2/attempt_1/claims_status_distribution.png`\n- `artifacts/tasks/run_006/self_refine/T2/attempt_1/financial_summary.csv`\n- `artifacts/tasks/run_006/self_refine/T2/attempt_1/monthly_trend.csv`\n- `artifacts/tasks/run_006/self_refine/T2/attempt_1/monthly_claim_volume.png`\n- `artifacts/tasks/run_006/self_refine/T2/attempt_1/metrics.json`\n- `artifacts/tasks/run_006/self_refine/T2/attempt_1/report.md`\n\n## Caveats\n\n- **synthetic_data**: All records are synthetic (HLT-008 sample preview); the figures describe the generator's output, not real-world healthcare behaviour.\n- **descriptive_only**: The results are descriptive summaries; they estimate no effects and support no inference.\n\n## Method\n\n- Seed: 42; plan sha256: `257dd683fa5075bcb0bd8fecac0b73e8b0331a6a45ef8c7590313549a58fd266`.\n- Components (canonical order): load_tables, claim_volume, denial_rate, fraud_prevalence, financial_summary, monthly_trend, write_report.\n- `load_tables` params: `{}`\n- `claim_volume` params: `{'by': ['claim_status'], 'figure': True}`\n- `denial_rate` params: `{'denominator': 'all_claims'}`\n- `fraud_prevalence` params: `{'denominator': 'all_claims'}`\n- `financial_summary` params: `{'amount_columns': ['billed_amount', 'allowed_amount', 'paid_amount'], 'statistics': 'sum_mean'}`\n- `monthly_trend` params: `{'date_column': 'adjudication_date', 'metrics': ['claim_count', 'paid_amount_sum']}`\n- `write_report` params: `{'caveats': ['synthetic_data', 'descriptive_only'], 'show_denominators': True, 'cite_artifacts': True}`\n- Report options: show_denominators=True, cite_artifacts=True, caveats=['synthetic_data', 'descriptive_only'].\n",
+      "metrics_json": "{\n \"task_id\": \"T2\",\n \"run_id\": \"run_006\",\n \"condition\": \"self_refine\",\n \"attempt\": 1,\n \"seed\": 42,\n \"generated_at\": \"2026-09-07T15:49:38+00:00\",\n \"plan_sha256\": \"257dd683fa5075bcb0bd8fecac0b73e8b0331a6a45ef8c7590313549a58fd266\",\n \"tables\": {\n  \"medical_claims\": {\n   \"rows\": 12845,\n   \"columns\": 54\n  }\n },\n \"claim_volume\": {\n  \"total_claims\": 12845,\n  \"by\": {\n   \"claim_status\": {\n    \"Paid\": {\n     \"n\": 10511,\n     \"share\": 0.8182950564421954\n    },\n    \"Denied\": {\n     \"n\": 1286,\n     \"share\": 0.10011677695601401\n    },\n    \"Adjusted\": {\n     \"n\": 542,\n     \"share\": 0.04219540677306345\n    },\n    \"Pended\": {\n     \"n\": 506,\n     \"share\": 0.03939275982872713\n    }\n   }\n  }\n },\n \"denial_rate\": {\n  \"value\": 0.10011677695601401,\n  \"numerator\": 1286,\n  \"denominator\": 12845,\n  \"numerator_definition\": \"claim_status == \\\"Denied\\\"\",\n  \"denominator_definition\": \"all rows of medical_claims\",\n  \"denominator_option\": \"all_claims\"\n },\n \"fraud_prevalence\": {\n  \"value\": 0.050369793694044374,\n  \"numerator\": 647,\n  \"denominator\": 12845,\n  \"denominator_option\": \"all_claims\"\n },\n \"financial_summary\": {\n  \"billed_amount\": {\n   \"n\": 12845,\n   \"sum\": 21254208.810000002,\n   \"mean\": 1654.6678715453486\n  },\n  \"allowed_amount\": {\n   \"n\": 12845,\n   \"sum\": 12175223.45,\n   \"mean\": 947.8570221876216\n  },\n  \"paid_amount\": {\n   \"n\": 12845,\n   \"sum\": 9783415.77,\n   \"mean\": 761.6516753600622\n  }\n },\n \"monthly_trend\": {\n  \"date_column\": \"adjudication_date\",\n  \"n_months\": 38,\n  \"first_month\": \"2021-01\",\n  \"last_month\": \"2024-02\",\n  \"unparseable_dates\": 0,\n  \"series\": {\n   \"claim_count\": {\n    \"2021-01\": 94,\n    \"2021-02\": 297,\n    \"2021-03\": 361,\n    \"2021-04\": 336,\n    \"2021-05\": 351,\n    \"2021-06\": 347,\n    \"2021-07\": 376,\n    \"2021-08\": 357,\n    \"2021-09\": 355,\n    \"2021-10\": 386,\n    \"2021-11\": 381,\n    \"2021-12\": 358,\n    \"2022-01\": 355,\n    \"2022-02\": 348,\n    \"2022-03\": 342,\n    \"2022-04\": 363,\n    \"2022-05\": 340,\n    \"2022-06\": 367,\n    \"2022-07\": 409,\n    \"2022-08\": 382,\n    \"2022-09\": 333,\n    \"2022-10\": 328,\n    \"2022-11\": 341,\n    \"2022-12\": 348,\n    \"2023-01\": 375,\n    \"2023-02\": 338,\n    \"2023-03\": 364,\n    \"2023-04\": 360,\n    \"2023-05\": 392,\n    \"2023-06\": 378,\n    \"2023-07\": 377,\n    \"2023-08\": 329,\n    \"2023-09\": 365,\n    \"2023-10\": 340,\n    \"2023-11\": 312,\n    \"2023-12\": 360,\n    \"2024-01\": 269,\n    \"2024-02\": 31\n   },\n   \"paid_amount_sum\": {\n    \"2021-01\": 71453.0,\n    \"2021-02\": 231110.07,\n    \"2021-03\": 337552.58,\n    \"2021-04\": 281267.69,\n    \"2021-05\": 267969.7,\n    \"2021-06\": 212995.72,\n    \"2021-07\": 265009.44,\n    \"2021-08\": 301602.43,\n    \"2021-09\": 264466.73,\n    \"2021-10\": 265196.9,\n    \"2021-11\": 373387.64999999997,\n    \"2021-12\": 267214.32,\n    \"2022-01\": 271542.12,\n    \"2022-02\": 243692.18,\n    \"2022-03\": 338656.33999999997,\n    \"2022-04\": 250225.4,\n    \"2022-05\": 271562.61,\n    \"2022-06\": 288576.95,\n    \"2022-07\": 287391.14,\n    \"2022-08\": 259770.07,\n    \"2022-09\": 258008.97,\n    \"2022-10\": 336846.76,\n    \"2022-11\": 228626.71,\n    \"2022-12\": 220713.34,\n    \"2023-01\": 325732.73,\n    \"2023-02\": 256536.93,\n    \"2023-03\": 230763.25,\n    \"2023-04\": 232111.26,\n    \"2023-05\": 270113.3,\n    \"2023-06\": 301811.11,\n    \"2023-07\": 322953.9,\n    \"2023-08\": 284509.84,\n    \"2023-09\": 283293.03,\n    \"2023-10\": 249105.03,\n    \"2023-11\": 171517.13,\n    \"2023-12\": 261162.29,\n    \"2024-01\": 175513.13999999998,\n    \"2024-02\": 23454.01\n   }\n  }\n },\n \"report\": {\n  \"caveats\": [\n   \"synthetic_data\",\n   \"descriptive_only\"\n  ],\n  \"show_denominators\": true,\n  \"cite_artifacts\": true,\n  \"sections\": [\n   \"Summary\",\n   \"Results\",\n   \"Artifacts\",\n   \"Caveats\",\n   \"Method\"\n  ]\n }\n}"
+    },
+    "attempt": 1,
+    "attempts_remaining": 4,
+    "previous_self_reviews": []
+  },
+  "response_schema": {
+    "$defs": {
+      "SelfFinding": {
+        "properties": {
+          "issue": {
+            "description": "What is wrong or missing in the output, in one or two sentences.",
+            "minLength": 3,
+            "title": "Issue",
+            "type": "string"
+          },
+          "severity": {
+            "default": "medium",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "suggested_change": {
+            "default": "",
+            "description": "Which catalogue component/parameter change would address it.",
+            "title": "Suggested Change",
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue"
+        ],
+        "title": "SelfFinding",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``self_evaluate`` (self_refine only): the operator reviews its own output without any external feedback.",
+    "properties": {
+      "verdict": {
+        "enum": [
+          "accept",
+          "revise"
+        ],
+        "title": "Verdict",
+        "type": "string"
+      },
+      "findings": {
+        "description": "At most the three most important problems.",
+        "items": {
+          "$ref": "#/$defs/SelfFinding"
+        },
+        "title": "Findings",
+        "type": "array"
+      },
+      "summary": {
+        "default": "",
+        "title": "Summary",
+        "type": "string"
+      }
+    },
+    "required": [
+      "verdict"
+    ],
+    "title": "SelfEvaluationResponse",
+    "type": "object"
+  }
+}

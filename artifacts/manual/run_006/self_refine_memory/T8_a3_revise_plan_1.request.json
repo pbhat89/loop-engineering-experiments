@@ -1,0 +1,1358 @@
+{
+  "request_id": "run_006:self_refine_memory:T8:a3:revise_plan:1",
+  "run_id": "run_006",
+  "condition": "self_refine_memory",
+  "task_id": "T8",
+  "attempt": 3,
+  "node": "revise_plan",
+  "seq": 1,
+  "created_at": "2026-09-07T16:17:28+00:00",
+  "instructions": "The previous plan was executed and evaluated; the evaluation summary, the feedback items and (when provided) a reflection are included. Return a complete revised plan - not a diff - that addresses the feedback, and summarise what changed in changes_summary. This revision follows your own review of the previous attempt (no external evaluation is available). Address the findings you raised.",
+  "payload": {
+    "task_id": "T8",
+    "condition": "self_refine_memory",
+    "task_spec": {
+      "task_id": "T8",
+      "title": "Executive brief",
+      "objective": "Write a one-page brief (no more than 600 words) for the head of claims summarising what this piece of work found, using only the saved results of the earlier tasks in this run: the description of the book, the denial analysis, the provider and network comparison and the high-cost model. Cover the key findings, how the model performed, the limitations and what to do next. Produce the standard artifacts (executive brief, findings table, report).",
+      "tags": [
+        "communication",
+        "executive_brief",
+        "traceability",
+        "caveats",
+        "synthesis",
+        "limitations"
+      ],
+      "input_tables": [],
+      "required_artifacts": [
+        "executive_brief.md",
+        "findings.json",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "collect_findings",
+        "description": "Extract headline metrics from the final attempt of chosen source tasks under the same run and condition; missing sources are recorded, never invented.",
+        "default_selected": true,
+        "params": {
+          "sources": {
+            "description": "Which earlier tasks' saved metrics feed the brief.",
+            "multi": true,
+            "options": [
+              "T1",
+              "T2",
+              "T3",
+              "T4",
+              "T5",
+              "T6",
+              "T7"
+            ],
+            "default": [
+              "T2",
+              "T6"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "findings",
+            "shape": "[{task_id: str, metric_key: str, label: str, value, numerator?: int, denominator?: int, source_path: str}] or {task_id, status: missing}"
+          }
+        ],
+        "artifacts": [
+          "findings.json"
+        ]
+      },
+      {
+        "id": "brief_sections",
+        "description": "Compose executive_brief.md from the collected findings with chosen sections, language style and citation policy.",
+        "default_selected": true,
+        "params": {
+          "sections": {
+            "description": "Which sections the brief contains.",
+            "multi": true,
+            "options": [
+              "key_findings",
+              "model_results",
+              "limitations",
+              "synthetic_caveats",
+              "next_steps",
+              "methodology"
+            ],
+            "default": [
+              "key_findings",
+              "model_results"
+            ]
+          },
+          "causal_language": {
+            "description": "Whether the brief may phrase relationships causally (\"X drives Y\") or only associatively (\"X is associated with Y\").",
+            "options": [
+              "avoid",
+              "allow"
+            ],
+            "default": "allow"
+          },
+          "cite_artifacts": {
+            "description": "Whether every numeric statement ends with a [source: <path>] citation.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "brief",
+            "shape": "{sections: [str], causal_language: str, cite_artifacts: bool, word_count: int, n_numeric_statements: int, n_cited_statements: int}"
+          }
+        ],
+        "artifacts": [
+          "executive_brief.md"
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "adherence": {
+          "rows": 10627,
+          "columns": [
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "therapeutic_class",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "total_days_supply",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "n_fills",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "pdc",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "mpr",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "adherence_flag_pdc80",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [],
+          "date_columns": [],
+          "date_ranges": {}
+        },
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        },
+        "members": {
+          "rows": 500,
+          "columns": [
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "age",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "age_band",
+              "dtype": "str",
+              "null_count": 2
+            },
+            {
+              "name": "sex",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "race_ethnicity",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "zip_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "payer_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "income_band",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dual_eligible_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "lis_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hcc_risk_score",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "n_chronic_conditions",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "enrollment_start",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "enrollment_end",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "care_management_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ami",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_alzheimer",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_anemia",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_asthma",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_atrialfib",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cataract",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_chrnkidn",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_copd",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_chf",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_diabetes",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_deprssion",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hyperl",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hyperp",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ihd",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_mo_diabetes",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_osteoprs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ra_oa",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_stroke_tia",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_colorectal",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_endometrial",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_lung",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_prostate",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_breast",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_glaucoma",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hip_fracture",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hipvteib",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_bnign_prostate",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "member_id"
+          ],
+          "date_columns": [
+            "enrollment_start",
+            "enrollment_end"
+          ],
+          "date_ranges": {
+            "enrollment_end": [
+              "2023-12-31",
+              "2023-12-31"
+            ],
+            "enrollment_start": [
+              "2020-01-03",
+              "2021-01-01"
+            ]
+          }
+        },
+        "pharmacy_claims": {
+          "rows": 18310,
+          "columns": [
+            {
+              "name": "rx_claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "fill_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "paid_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pharmacy_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "prescriber_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "bin_number",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pcn_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "ndc_11",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "drug_name_generic",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "drug_name_brand",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "therapeutic_class",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "atc_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "formulary_tier",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "days_supply",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "quantity_dispensed",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "refill_number",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "pharmacy_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dispense_as_written_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty_rx_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "compounded_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ingredient_cost",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "dispensing_fee",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "gross_amount_due",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "copay_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "plan_paid",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "dir_fee_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "awp_per_unit",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "nadac_per_unit",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "early_refill_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label_rx",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "diversion_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "controlled_substance_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "end_date",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "rx_claim_id"
+          ],
+          "date_columns": [
+            "fill_date",
+            "paid_date",
+            "end_date"
+          ],
+          "date_ranges": {
+            "end_date": [
+              "2021-01-08",
+              "2024-03-30"
+            ],
+            "fill_date": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "paid_date": [
+              "2021-01-02",
+              "2024-01-04"
+            ]
+          }
+        },
+        "providers": {
+          "rows": 150,
+          "columns": [
+            {
+              "name": "provider_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "nucc_taxonomy",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "group_id",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "provider_npi"
+          ],
+          "date_columns": [],
+          "date_ranges": {}
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "pharmacy_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "adherence.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 10627,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 10627,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "no_match",
+          "from": "pharmacy_claims.pharmacy_npi",
+          "from_distinct": 18310,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 0.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 150,
+          "to_unique": true,
+          "unmatched_from": 18310,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 18310
+        },
+        {
+          "cardinality": "no_match",
+          "from": "pharmacy_claims.prescriber_npi",
+          "from_distinct": 18310,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 0.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 150,
+          "to_unique": true,
+          "unmatched_from": 18310,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 18310
+        }
+      ]
+    },
+    "remaining_task_ids": [],
+    "remaining_tasks": [],
+    "past_feedback": [
+      {
+        "task_id": "T7",
+        "task_title": "High-cost claim identification",
+        "attempt": 1,
+        "source": "self",
+        "severity": "medium",
+        "criterion": "self_review",
+        "text": "Preprocessing fit on all_data. The encoder and scaler were fit on both train and test rows, leaking test-set information and potentially biasing metrics optimistically.",
+        "detail": "Feature leakage with adjudication-stage amount fields inflates performance. Remove these fields and apply standard train/test separation for threshold and preprocessing to ensure production-valid results.",
+        "written_at": "2026-09-07T16:07:34+00:00",
+        "verdict": "revise"
+      },
+      {
+        "task_id": "T7",
+        "task_title": "High-cost claim identification",
+        "attempt": 1,
+        "source": "self",
+        "severity": "medium",
+        "criterion": "self_review",
+        "text": "Threshold computed on all_data (including test rows). The 95th percentile should be computed on training data only to maintain clean train/test separation.",
+        "detail": "Feature leakage with adjudication-stage amount fields inflates performance. Remove these fields and apply standard train/test separation for threshold and preprocessing to ensure production-valid results.",
+        "written_at": "2026-09-07T16:07:34+00:00",
+        "verdict": "revise"
+      },
+      {
+        "task_id": "T7",
+        "task_title": "High-cost claim identification",
+        "attempt": 1,
+        "source": "self",
+        "severity": "high",
+        "criterion": "self_review",
+        "text": "Feature leakage: billed_amount and allowed_amount are determined during claim adjudication, not available when a claim arrives. Including them inflates model performance unrealistically and violates the task objective ('when a claim comes in').",
+        "detail": "Feature leakage with adjudication-stage amount fields inflates performance. Remove these fields and apply standard train/test separation for threshold and preprocessing to ensure production-valid results.",
+        "written_at": "2026-09-07T16:07:34+00:00",
+        "verdict": "revise"
+      },
+      {
+        "task_id": "T4",
+        "task_title": "Denial analysis",
+        "attempt": 1,
+        "source": "self",
+        "severity": "low",
+        "criterion": "self_review",
+        "text": "Report includes 'small_groups' caveat but min_group_size=30 resulted in no segments flagged as small_group_flag=true; the caveat is unnecessary.",
+        "detail": "Denial rate analysis and segments are complete and correct. Denial code scope misalignment with task objective requires correction.",
+        "written_at": "2026-09-07T15:56:10+00:00",
+        "verdict": "revise"
+      },
+      {
+        "task_id": "T4",
+        "task_title": "Denial analysis",
+        "attempt": 1,
+        "source": "self",
+        "severity": "high",
+        "criterion": "self_review",
+        "text": "Denial code ranking uses 'all_claims' scope, presenting 90% as missing; the task asked for 'share of denials'. Code CO-15 appears as 241/12845=1.88% rather than 241/1286=18.76% of denied claims—obscuring the denial pattern the analysis should illuminate.",
+        "detail": "Denial rate analysis and segments are complete and correct. Denial code scope misalignment with task objective requires correction.",
+        "written_at": "2026-09-07T15:56:10+00:00",
+        "verdict": "revise"
+      },
+      {
+        "task_id": "T2",
+        "task_title": "Claims portfolio description",
+        "attempt": 1,
+        "source": "self",
+        "severity": "medium",
+        "criterion": "self_review",
+        "text": "Denial and fraud rates are shown as proportions (0.100117, 0.050370) without displaying the numerator and denominator (e.g., 1286/12845), reducing transparency about sample sizes and evidence for rates.",
+        "detail": "Execution successfully covers all task requirements with 7 components executed and all required artifacts produced. Two presentation choices warrant revision for transparency and credibility when handing to the sponsor.",
+        "written_at": "2026-09-07T15:49:38+00:00",
+        "verdict": "revise"
+      },
+      {
+        "task_id": "T2",
+        "task_title": "Claims portfolio description",
+        "attempt": 1,
+        "source": "self",
+        "severity": "high",
+        "criterion": "self_review",
+        "text": "Report does not include a caveat that the data is synthetic. When presented to the sponsor without this disclosure, it may be misunderstood as real production data, creating credibility and transparency issues.",
+        "detail": "Execution successfully covers all task requirements with 7 components executed and all required artifacts produced. Two presentation choices warrant revision for transparency and credibility when handing to the sponsor.",
+        "written_at": "2026-09-07T15:49:38+00:00",
+        "verdict": "revise"
+      }
+    ],
+    "past_feedback_note": "Comments recorded on earlier tasks in this run (checker findings for feedback_memory, your own reviews for self_refine_memory). They may or may not apply to this task.",
+    "prior_plan": {
+      "steps": [
+        {
+          "component": "collect_findings",
+          "params": {
+            "sources": [
+              "T2",
+              "T4",
+              "T7"
+            ]
+          }
+        },
+        {
+          "component": "brief_sections",
+          "params": {
+            "sections": [
+              "key_findings",
+              "model_results",
+              "limitations",
+              "synthetic_caveats",
+              "next_steps"
+            ],
+            "causal_language": "allow",
+            "cite_artifacts": false
+          }
+        },
+        {
+          "component": "write_report",
+          "params": {
+            "caveats": [
+              "synthetic_data",
+              "descriptive_only",
+              "association_not_causation",
+              "model_limitations"
+            ],
+            "show_denominators": true,
+            "cite_artifacts": false
+          }
+        }
+      ],
+      "skills_applied": [],
+      "rationale": "The revised plan incorporates the self-review finding that synthetic_caveats must be added to the brief to explicitly document the scope limitation: the unavailability of T6 (provider and network comparison) analysis. This section will allow the head of claims to understand which analyses comprise the brief (T2 portfolio description, T4 denial patterns, T7 high-cost model) and which planned analyses are absent, maintaining transparency about the work's boundaries. The section ordering (key_findings → model_results → limitations → synthetic_caveats → next_steps) places scope documentation before recommendations, ensuring the audience understands constraints before considering action items.",
+      "changes_summary": "Added synthetic_caveats to brief_sections parameter to address self-review finding: the sections list now includes synthetic_caveats (was [key_findings, model_results, limitations, next_steps], now [key_findings, model_results, limitations, synthetic_caveats, next_steps]) to transparently document that T6 provider/network analysis is not included in this brief."
+    },
+    "execution_summary": {
+      "status": "ok",
+      "components_executed": [
+        "collect_findings",
+        "brief_sections",
+        "write_report"
+      ],
+      "components_failed": [],
+      "errors": [],
+      "artifacts": [
+        "findings.json",
+        "executive_brief.md",
+        "report.md",
+        "metrics.json"
+      ],
+      "metric_keys": [
+        "brief",
+        "plan",
+        "report",
+        "tables"
+      ]
+    },
+    "attempt": 4,
+    "attempts_remaining": 1,
+    "self_review": {
+      "verdict": "revise",
+      "findings": [
+        {
+          "issue": "The executive brief contains 8 numeric statements without any source citations (cite_artifacts is false). For an executive brief to the head of claims, traceability and credibility of key metrics—denial rates, fraud prevalence, model performance scores—require source citations [source: path].",
+          "severity": "high",
+          "suggested_change": "Set brief_sections cite_artifacts parameter to true to include artifact citations for all numeric statements."
+        }
+      ],
+      "summary": "The prior revision successfully added synthetic_caveats to document scope limitations. However, numeric findings lack source traceability, which is essential for executive-level credibility.",
+      "attempt": 3
+    },
+    "feedback": [
+      {
+        "feedback_id": "T8-self-a3-1",
+        "check_id": null,
+        "criterion": "self_review",
+        "issue_type": "self_finding",
+        "severity": "high",
+        "remediation": "Set brief_sections cite_artifacts parameter to true to include artifact citations for all numeric statements.",
+        "related_components": [],
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": null,
+        "expected": null,
+        "detail": "The executive brief contains 8 numeric statements without any source citations (cite_artifacts is false). For an executive brief to the head of claims, traceability and credibility of key metrics—denial rates, fraud prevalence, model performance scores—require source citations [source: path].",
+        "source": "self"
+      }
+    ],
+    "note": "This revision follows your own review of the previous attempt (no external evaluation is available). Address the findings you raised."
+  },
+  "response_schema": {
+    "$defs": {
+      "PlanStep": {
+        "properties": {
+          "component": {
+            "description": "Component id from the task's catalogue.",
+            "title": "Component",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "Parameter values; only declared options are valid.",
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "component"
+        ],
+        "title": "PlanStep",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``plan_task`` and ``revise_plan``. A revised plan is a complete plan, not a diff.",
+    "properties": {
+      "steps": {
+        "items": {
+          "$ref": "#/$defs/PlanStep"
+        },
+        "minItems": 1,
+        "title": "Steps",
+        "type": "array"
+      },
+      "skills_applied": {
+        "description": "Skill ids the operator actually used.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Skills Applied",
+        "type": "array"
+      },
+      "rationale": {
+        "default": "",
+        "title": "Rationale",
+        "type": "string"
+      },
+      "changes_summary": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "revise_plan only: what changed and why.",
+        "title": "Changes Summary"
+      }
+    },
+    "required": [
+      "steps"
+    ],
+    "title": "PlanResponse",
+    "type": "object"
+  }
+}

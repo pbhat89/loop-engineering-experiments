@@ -22,10 +22,34 @@ from pydantic import BaseModel, ConfigDict, Field
 # Experiment 3 adds `self_refine` (decision D-21): the frozen evaluator still scores every attempt for the
 # record, but the operator never sees its feedback - after each attempt the operator reviews its own output
 # and decides whether to stop or revise (Self-Refine, Madaan et al. 2023). Nothing crosses tasks.
-CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine")
+# Experiment 4 adds the two raw-memory arms (decision D-22): `feedback_memory` is `reflection_only` plus a plain
+# per-condition log of the checker findings the operator was shown, and `self_refine_memory` is `self_refine` plus a
+# log of the operator's own review findings. The log is appended verbatim after each task and shown in full (most
+# recent first, capped) before planning later tasks - no distillation, no relevance filtering, no skills.
+CONDITIONS: tuple[str, ...] = (
+    "baseline",
+    "reflection_only",
+    "skill_learning",
+    "foundational_only",
+    "self_refine",
+    "feedback_memory",
+    "self_refine_memory",
+)
 DEFAULT_CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning")
 SKILL_RETRIEVING_CONDITIONS: tuple[str, ...] = ("skill_learning", "foundational_only")
-Condition = Literal["baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine"]
+# Conditions in which the operator reviews its own output and never sees the evaluator's feedback.
+SELF_REVIEW_CONDITIONS: tuple[str, ...] = ("self_refine", "self_refine_memory")
+# Conditions that carry the raw cross-task memory log.
+MEMORY_CONDITIONS: tuple[str, ...] = ("feedback_memory", "self_refine_memory")
+Condition = Literal[
+    "baseline",
+    "reflection_only",
+    "skill_learning",
+    "foundational_only",
+    "self_refine",
+    "feedback_memory",
+    "self_refine_memory",
+]
 
 LLM_DECISION_NODES: tuple[str, ...] = (
     "plan_task",
@@ -65,7 +89,8 @@ class ClaimsGraphState(TypedDict, total=False):
     evaluation: dict | None
     feedback: list[dict]
     reflection: dict | None
-    self_evaluation: dict | None  # self_refine only: the operator's own verdict on its latest attempt
+    self_evaluation: dict | None  # self-review arms only: the operator's own verdict on its latest attempt
+    past_feedback: list[dict]  # memory arms only: the raw log recalled from earlier tasks in this run
     skill_proposal: dict | None
     skill_validation: dict | None
     retry_count: int
@@ -136,6 +161,7 @@ def initial_state(
         feedback=[],
         reflection=None,
         self_evaluation=None,
+        past_feedback=[],
         skill_proposal=None,
         skill_validation=None,
         retry_count=0,

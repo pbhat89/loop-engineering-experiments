@@ -4,7 +4,8 @@ Four append-only JSONL logs plus the atomic ``experiment_status.json`` snapshot:
 
     logs/experiment_events.jsonl   one record per task attempt (status "attempt") and one final record per task (status "done")
     logs/graph_events.jsonl        node transitions and operator request / response / validation-error events
-    logs/skill_events.jsonl        skill retrieval, proposal, validation, persistence, reuse and archive events
+    logs/skill_events.jsonl        skill retrieval, proposal, validation, persistence, reuse and archive events,
+                                   plus the memory arms' memory_retrieved / memory_written records
     logs/feedback_events.jsonl     evaluator feedback issued and later incorporated
     logs/experiment_status.json    per run / condition live snapshot written by the runner (LEAD §10 shape)
 
@@ -50,6 +51,9 @@ SKILL_EVENT_NAMES: tuple[str, ...] = (
     "skill_persisted",
     "skill_reused",
     "skill_archived",
+    # experiment 4 (D-22): the raw cross-task memory arms record recall and write here too
+    "memory_retrieved",
+    "memory_written",
 )
 FEEDBACK_EVENT_NAMES: tuple[str, ...] = ("feedback_issued", "feedback_incorporated", "feedback_update", "feedback_resolved")
 EXPERIMENT_STATUSES: tuple[str, ...] = ("attempt", "done")
@@ -124,6 +128,8 @@ class SkillEventRecord(_Event):
         "skill_persisted",
         "skill_reused",
         "skill_archived",
+        "memory_retrieved",
+        "memory_written",
     ]
 
 

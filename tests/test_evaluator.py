@@ -78,8 +78,8 @@ def one(evaluation: dict) -> dict:
 def test_suite_shape(suite, tasks):
     assert suite["suite_version"] == "1"
     assert list(tasks) == ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8"]
-    # experiment 3 runs the four-task suite T2 -> T4 -> T3 -> T7 (D-21); the order must be a subset of the specs and match experiment.yaml
-    assert suite["task_order"] == ["T2", "T4", "T3", "T7"] and set(suite["task_order"]) <= set(tasks)
+    # experiment 4 runs the six-task suite T1 -> T2 -> T4 -> T3 -> T7 -> T8 (D-22); the order must be a subset of the specs and match experiment.yaml
+    assert suite["task_order"] == ["T1", "T2", "T4", "T3", "T7", "T8"] and set(suite["task_order"]) <= set(tasks)
     from src.utils import CONFIG_DIR, read_yaml
     assert read_yaml(CONFIG_DIR / "experiment.yaml")["task_order"] == suite["task_order"]
     for tid, spec in tasks.items():

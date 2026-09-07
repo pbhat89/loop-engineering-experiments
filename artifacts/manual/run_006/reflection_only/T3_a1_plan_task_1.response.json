@@ -1,0 +1,42 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "provider_join",
+      "params": {
+        "provider_key": "rendering_npi",
+        "how": "inner",
+        "validate": "many_to_one"
+      }
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": ["provider_specialty+network_status"],
+        "metrics": ["claim_count", "paid_amount_sum", "denial_rate", "fraud_rate"],
+        "denominator": "all_claims",
+        "min_group_size": 0
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data"],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The plan addresses the core requirement: compare volume, paid amounts, denial rate and fraud-flag rate across both provider specialties and network status, plus rank the top 10 rendering providers. The provider_join step validates data quality and ensures the provider directory is the authoritative source for specialty and network status. The group_comparison step uses the combined specialty+network_status grouping to directly answer how money and denials distribute across both dimensions. The provider_ranking step identifies the most active providers by claim volume with their certified attributes. All required artifacts are produced by this sequence."
+}

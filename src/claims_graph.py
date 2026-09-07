@@ -1,19 +1,25 @@
 """The LangGraph ``StateGraph`` for the claims skill loop.
 
-One graph serves all three experimental conditions; the routing functions read
+One graph serves every experimental condition; the routing functions read
 ``state["condition"]`` and the ``next_route`` decisions recorded by
 ``evaluate_output`` / ``validate_skill``:
 
     START -> load_context -> [skill_learning: retrieve_skills] -> plan_task -> execute_task -> evaluate_output
       completed     -> finalize_task -> END
       retry         -> [baseline: revise_plan | others: reflect_on_feedback -> revise_plan] -> execute_task
-      self_evaluate -> self_evaluate (self_refine: the operator reviews its own output, never the evaluator's feedback)
+      self_evaluate -> self_evaluate (the self-review arms review their own output, never the evaluator's feedback)
                          retry     -> revise_plan -> execute_task
                          completed -> finalize_task -> END
       learn         -> reflect_on_feedback -> propose_skill -> validate_skill
                          accepted       -> persist_skill -> finalize_task -> END
                          rejected       -> finalize_task -> END
                          retry_revision -> revise_skill_proposal -> validate_skill
+
+The experiment-4 memory arms (D-22) add no nodes and no routes: ``feedback_memory``
+travels the ``reflection_only`` path and ``self_refine_memory`` the ``self_refine``
+path. They differ only in what ``load_context`` recalls and ``finalize_task``
+appends to the raw memory log, and in the ``past_feedback`` payload key the
+planning nodes carry.
 
 ``designed_topology()`` describes the same graph as plain nodes/edges for the
 topology diagram (design, not observation).
@@ -115,14 +121,14 @@ def designed_topology() -> dict:
     edges = [
         ("START", "load_context", ""),
         ("load_context", "retrieve_skills", "skill_learning | foundational_only"),
-        ("load_context", "plan_task", "baseline | reflection_only"),
+        ("load_context", "plan_task", "baseline | reflection_only | feedback_memory | self_refine | self_refine_memory"),
         ("retrieve_skills", "plan_task", ""),
         ("plan_task", "execute_task", ""),
         ("execute_task", "evaluate_output", ""),
         ("evaluate_output", "finalize_task", "completed"),
         ("evaluate_output", "revise_plan", "retry (baseline)"),
-        ("evaluate_output", "reflect_on_feedback", "retry (reflection_only, skill_learning) | learn (skill_learning)"),
-        ("evaluate_output", "self_evaluate", "self_evaluate (self_refine)"),
+        ("evaluate_output", "reflect_on_feedback", "retry (reflection_only, feedback_memory, skill_learning) | learn (skill_learning)"),
+        ("evaluate_output", "self_evaluate", "self_evaluate (self_refine, self_refine_memory)"),
         ("self_evaluate", "revise_plan", "retry (operator verdict: revise)"),
         ("self_evaluate", "finalize_task", "completed (operator verdict: accept)"),
         ("reflect_on_feedback", "revise_plan", "retry"),
@@ -147,6 +153,9 @@ def designed_topology() -> dict:
         ],
         "self_refine": ["load_context", "plan_task", "execute_task", "evaluate_output", "self_evaluate", "revise_plan", "finalize_task"],
     }
+    # experiment 4 (D-22): the memory arms reuse the existing paths unchanged; only their payloads and logs differ
+    per_condition["feedback_memory"] = list(per_condition["reflection_only"])
+    per_condition["self_refine_memory"] = list(per_condition["self_refine"])
     return {"nodes": list(NODES), "edges": [{"source": s, "target": t, "label": l} for s, t, l in edges], "per_condition": per_condition}
 
 

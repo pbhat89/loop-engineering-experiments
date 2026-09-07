@@ -21,7 +21,9 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from src.utils import LOGS_DIR, read_json, read_jsonl  # noqa: E402
 
-CONDITION_ORDER = ["baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine"]
+CONDITION_ORDER = [
+    "baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine", "feedback_memory", "self_refine_memory",
+]
 
 
 def summarize(run_id: str) -> dict:

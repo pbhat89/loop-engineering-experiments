@@ -5,7 +5,7 @@
 What moves (only for the given run id; other runs' records stay where they are):
   logs/{experiment,skill,graph,feedback}_events.jsonl   lines with run_id == <run_id> are cut out into the archive copy
   logs/runs/<run_id>.json, logs/checkpoints/<run_id>.sqlite
-  artifacts/tasks/<run_id>/, artifacts/manual/<run_id>/, skills/evolved/<run_id>/
+  artifacts/tasks/<run_id>/, artifacts/manual/<run_id>/, artifacts/memory/<run_id>/, skills/evolved/<run_id>/
   skills/index.json                                     entries whose run_id == <run_id> are cut out into the archive copy
 The archive folder gets a README.md stub naming the run, the date and the note. Nothing is deleted; ``git mv`` is up to the caller.
 """
@@ -70,6 +70,7 @@ def main(argv: list[str] | None = None) -> int:
         (LOGS_DIR / "checkpoints" / f"{run_id}.sqlite", Path("logs/checkpoints") / f"{run_id}.sqlite"),
         (ARTIFACTS_DIR / "tasks" / run_id, Path("artifacts/tasks") / run_id),
         (ARTIFACTS_DIR / "manual" / run_id, Path("artifacts/manual") / run_id),
+        (ARTIFACTS_DIR / "memory" / run_id, Path("artifacts/memory") / run_id),
         (SKILLS_DIR / "evolved" / run_id, Path("skills/evolved") / run_id),
     ):
         report.append(f"{rel_dst}: {'moved' if move(src, dest / rel_dst) else 'absent'}")

@@ -447,3 +447,169 @@ def test_capped_feedback_flows_through_reflection_and_revision():
     assert req["node"] == "reflect_on_feedback"
     assert len(req["payload"]["feedback"]) == 1 and "related_components" not in req["payload"]["feedback"][0]
     assert req["payload"]["evaluation_summary"]["n_failed_checks_shown"] == 1
+
+
+# --------------------------------------------------------------------------- experiment 4 (D-22)
+
+
+class FakeMemory:
+    """Stand-in for src.feedback_memory.FeedbackMemory: one raw, unfiltered log, most recent recalled first."""
+
+    def __init__(self):
+        self.records: list[dict] = []
+
+    def append(self, task_id: str, task_title: str, items: list[dict]) -> int:
+        for item in items or []:
+            source = "self" if item.get("source") == "self" else "checker"
+            self.records.append(
+                {
+                    "task_id": task_id,
+                    "task_title": task_title,
+                    "attempt": item.get("attempt") or item.get("first_seen_attempt"),
+                    "source": source,
+                    "severity": item.get("severity"),
+                    "criterion": item.get("criterion"),
+                    "text": item.get("remediation") if source == "checker" else item.get("issue"),
+                    "detail": item.get("detail"),
+                    "verdict": item.get("verdict"),
+                }
+            )
+        return len(items or [])
+
+    def recall(self, exclude_task_id: str, limit: int = 30) -> list[dict]:
+        return list(reversed([r for r in self.records if r["task_id"] != exclude_task_id]))[:limit]
+
+
+class FakeMemories:
+    """A ``memory_factory``: one log per (run_id, condition), shared across the graphs of a test."""
+
+    def __init__(self):
+        self.logs: dict[tuple[str, str], FakeMemory] = {}
+
+    def __call__(self, run_id: str, condition: str) -> FakeMemory:
+        return self.logs.setdefault((run_id, condition), FakeMemory())
+
+
+def memory_services(provider, memories, logger=None) -> Services:
+    services = make_services(provider, logger=logger)
+    services.memory_factory = memories
+    return services
+
+
+def test_feedback_memory_records_checker_findings_and_shows_them_on_the_next_task():
+    memories, logger = FakeMemories(), FakeLogger()
+    first = build_claims_skill_graph(memory_services(stub(), memories, logger)).invoke(
+        make_state("feedback_memory", task_id="T2", task_index=1, remaining=("T3", "T4"))
+    )
+    # the arm travels the reflection_only path and nothing was recallable on the first task
+    assert first["route_history"][4:6] == ["reflect_on_feedback", "revise_plan"]
+    assert first["past_feedback"] == [] and logger.experiment[-1]["past_feedback_count"] == 0
+    written = [e for e in logger.skill if e["event"] == "memory_written"]
+    assert len(written) == 1 and written[0]["count"] > 0
+    assert [e["event"] for e in logger.skill] == ["memory_retrieved", "memory_written"]
+
+    graph = build_claims_skill_graph(
+        memory_services(ManualProvider(ProviderSettings(mode="manual")), memories, logger), checkpointer=MemorySaver()
+    )
+    cfg = {"configurable": {"thread_id": "run_t:feedback_memory:T3"}}
+    paused = graph.invoke(
+        make_state("feedback_memory", task_id="T3", task_index=2, remaining=("T4",), provider_mode="manual"), config=cfg
+    )
+    request = paused["__interrupt__"][0].value
+    assert request["node"] == "plan_task"
+    past = request["payload"]["past_feedback"]
+    assert past and {p["source"] for p in past} == {"checker"} and all(p["text"] for p in past)
+    assert all(p["task_id"] == "T2" for p in past)  # never a finding from the task being planned
+    assert "may or may not apply" in request["payload"]["past_feedback_note"]
+    assert [e["count"] for e in logger.skill if e["event"] == "memory_retrieved"][-1] == len(past)
+
+
+def test_reflection_only_requests_never_carry_past_feedback():
+    memories = FakeMemories()
+    memories("run_t", "reflection_only").append("T2", "Task T2", [{"remediation": "state the denominator", "severity": "high"}])
+    graph = build_claims_skill_graph(
+        memory_services(ManualProvider(ProviderSettings(mode="manual")), memories), checkpointer=MemorySaver()
+    )
+    cfg = {"configurable": {"thread_id": "run_t:reflection_only:T3"}}
+    paused = graph.invoke(
+        make_state("reflection_only", task_id="T3", task_index=2, remaining=("T4",), provider_mode="manual"), config=cfg
+    )
+    payload = paused["__interrupt__"][0].value["payload"]
+    assert "past_feedback" not in payload and "past_feedback_note" not in payload
+
+
+def test_self_refine_memory_carries_its_own_findings_and_never_the_evaluator():
+    memories, logger = FakeMemories(), FakeLogger()
+    first = build_claims_skill_graph(memory_services(stub(), memories, logger)).invoke(
+        make_state("self_refine_memory", task_id="T2", task_index=1, remaining=("T3", "T4"), max_retries=4)
+    )
+    assert first["route_history"] == [
+        "load_context", "plan_task", "execute_task", "evaluate_output", "self_evaluate", "revise_plan",
+        "execute_task", "evaluate_output", "self_evaluate", "finalize_task",
+    ]
+    assert first["stop_reason"] == "self_accepted" and logger.experiment[-1]["self_declared_pass"] is True
+    assert [e["count"] for e in logger.skill if e["event"] == "memory_written"] == [1]  # the one finding it raised itself
+    assert {e.get("source") for e in logger.feedback if e.get("event") == "feedback_issued"} == {"self"}
+
+    graph = build_claims_skill_graph(
+        memory_services(ManualProvider(ProviderSettings(mode="manual")), memories, logger), checkpointer=MemorySaver()
+    )
+    cfg = {"configurable": {"thread_id": "run_t:self_refine_memory:T3"}}
+    paused = graph.invoke(
+        make_state("self_refine_memory", task_id="T3", task_index=2, remaining=("T4",), max_retries=4, provider_mode="manual"),
+        config=cfg,
+    )
+    payloads = [paused["__interrupt__"][0].value["payload"]]
+    past = payloads[0]["past_feedback"]
+    assert [p["source"] for p in past] == ["self"] and past[0]["task_id"] == "T2" and past[0]["verdict"] == "revise"
+
+    paused = graph.invoke(Command(resume={"steps": [{"component": "load_tables"}, {"component": "write_report"}]}), config=cfg)
+    assert paused["__interrupt__"][0].value["node"] == "self_evaluate"
+    payloads.append(paused["__interrupt__"][0].value["payload"])
+    paused = graph.invoke(
+        Command(
+            resume={
+                "verdict": "revise",
+                "findings": [{"issue": "denial rate missing", "severity": "high", "suggested_change": "add denial_rate"}],
+            }
+        ),
+        config=cfg,
+    )
+    assert paused["__interrupt__"][0].value["node"] == "revise_plan"
+    payloads.append(paused["__interrupt__"][0].value["payload"])
+    for payload in payloads:  # nothing the frozen checker produced ever reaches this arm
+        assert "evaluation_summary" not in payload and "reflection" not in payload
+        assert all(f.get("source") == "self" for f in payload.get("feedback") or [])
+        assert all(p["source"] == "self" for p in payload.get("past_feedback") or [])
+
+
+def test_memory_arms_reuse_the_existing_paths_and_graph_yaml_mirrors_them():
+    from src.utils import CONFIG_DIR, read_yaml
+
+    per_condition = designed_topology()["per_condition"]
+    assert per_condition["feedback_memory"] == per_condition["reflection_only"]
+    assert per_condition["self_refine_memory"] == per_condition["self_refine"]
+    doc = read_yaml(CONFIG_DIR / "graph.yaml")
+    assert doc["per_condition"] == per_condition and doc["graph_version"] == "4"
+    assert set(doc["memory"]["arms"]) == {"feedback_memory", "self_refine_memory"}
+    assert doc["memory"]["file"] == "artifacts/memory/<run_id>/<condition>.jsonl"
+
+
+def test_feedback_memory_store_appends_verbatim_and_recalls_newest_first(tmp_path):
+    from src.feedback_memory import FeedbackMemory
+
+    memory = FeedbackMemory(tmp_path, "run_t", "feedback_memory")
+    assert memory.recall("T2") == []
+    checker = {"remediation": "state the denominator", "severity": "high", "criterion": "correctness",
+               "detail": "x" * 400, "first_seen_attempt": 1}
+    assert memory.append("T2", "Task T2", [checker]) == 1
+    assert memory.append("T3", "Task T3", [{"source": "self", "issue": "no caveats", "severity": "low", "verdict": "revise"}]) == 1
+    assert memory.path == tmp_path / "run_t" / "feedback_memory.jsonl"
+    recalled = memory.recall("T4")
+    assert [r["task_id"] for r in recalled] == ["T3", "T2"]  # most recent first
+    assert recalled[0]["source"] == "self" and recalled[0]["text"] == "no caveats" and recalled[0]["verdict"] == "revise"
+    assert recalled[1]["source"] == "checker" and recalled[1]["text"] == "state the denominator"
+    assert len(recalled[1]["detail"]) == 240  # only the detail is truncated
+    assert [r["task_id"] for r in memory.recall("T3")] == ["T2"]
+    assert len(memory.recall("T4", limit=1)) == 1
+    assert memory.append("T4", "Task T4", []) == 0

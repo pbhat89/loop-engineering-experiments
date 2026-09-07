@@ -1,0 +1,24 @@
+{
+  "evolved_run_005_001": {
+    "reuse_count": 2,
+    "reused_in": [
+      "T4",
+      "T3"
+    ],
+    "status": "active",
+    "path": "skills/evolved/run_005/evolved_run_005_001_v1.md",
+    "name": "correct_denial_rate_denominator_selection",
+    "version": 1,
+    "kind": "evolved",
+    "run_id": "run_005",
+    "condition": "skill_learning",
+    "created_after_task": "T2",
+    "created_after_task_index": 0,
+    "source_feedback_ids": [
+      "T2-denial_rate_denominator",
+      "T2-denial_rate_value"
+    ],
+    "created_at": "2026-09-07T09:28:57+00:00",
+    "last_reused_at": "2026-09-07T09:41:15+00:00"
+  }
+}
