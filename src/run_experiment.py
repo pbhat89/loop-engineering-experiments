@@ -239,7 +239,8 @@ class Runner:
                 raise SystemExit(f"unknown condition {c!r}; expected {CONDITIONS}")
         config = config or RunConfig.from_experiment_yaml(run_id, mode, conditions)
         config.conditions = list(conditions)
-        must_freeze = mode == "manual" if require_freeze is None else require_freeze
+        # reported runs (manual operator, rule learner) need the frozen golden pack; stub demos do not
+        must_freeze = mode in ("manual", "rule_learner") if require_freeze is None else require_freeze
         if must_freeze:
             sha, drift = verify_freeze()
             if drift:
@@ -613,8 +614,8 @@ def main(argv: list[str] | None = None) -> int:
     sp = sub.add_parser("init")
     sp.add_argument("--run-id", required=True)
     sp.add_argument("--conditions", default=",".join(DEFAULT_CONDITIONS), help=f"subset of {CONDITIONS}")
-    sp.add_argument("--mode", default="manual", choices=["manual", "stub"])
-    sp.add_argument("--allow-unfrozen", action="store_true", help="manual mode only: skip the freeze check (never for reported runs)")
+    sp.add_argument("--mode", default="manual", choices=["manual", "stub", "rule_learner"])
+    sp.add_argument("--allow-unfrozen", action="store_true", help="skip the freeze check (never for reported runs)")
     for name in ("advance", "resume"):
         sp = sub.add_parser(name)
         sp.add_argument("--run-id", required=True)
@@ -625,9 +626,12 @@ def main(argv: list[str] | None = None) -> int:
             sp.add_argument("--max-tasks", type=int, default=None)
     for name in ("status", "pending", "advance-all"):
         sub.add_parser(name).add_argument("--run-id", required=True)
-    sp = sub.add_parser("run-stub")
-    sp.add_argument("--run-id", required=True)
-    sp.add_argument("--conditions", default=",".join(DEFAULT_CONDITIONS), help=f"subset of {CONDITIONS}")
+    for name in ("run-stub", "run-auto"):
+        sp = sub.add_parser(name, help="run every condition to completion without interrupts (stub fixtures or the rule learner)")
+        sp.add_argument("--run-id", required=True)
+        sp.add_argument("--conditions", default=",".join(DEFAULT_CONDITIONS), help=f"subset of {CONDITIONS}")
+        if name == "run-auto":
+            sp.add_argument("--mode", default="rule_learner", choices=["stub", "rule_learner"])
     args = p.parse_args(argv)
 
     if args.cmd == "freeze":
@@ -640,9 +644,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"initialised run {args.run_id} ({args.mode}) with conditions {conditions}")
         _print_status(runner)
         return 0
-    if args.cmd == "run-stub":
+    if args.cmd in ("run-stub", "run-auto"):
         conditions = [c.strip() for c in args.conditions.split(",") if c.strip()]
-        runner = Runner.init(args.run_id, conditions, "stub")
+        mode = "stub" if args.cmd == "run-stub" else args.mode
+        runner = Runner.init(args.run_id, conditions, mode)
         for c in conditions:
             summary = runner.advance(c)
             print(f"{c}: {summary['status']}")

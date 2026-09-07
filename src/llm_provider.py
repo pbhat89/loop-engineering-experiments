@@ -36,16 +36,18 @@ MODEL_ENV = "CLAIMS_SKILL_LOOP_MODEL"
 OPERATOR_ENV = "CLAIMS_SKILL_LOOP_OPERATOR"
 API_KEY_ENV = "ANTHROPIC_API_KEY"
 
-VALID_MODES: tuple[str, ...] = ("manual", "stub", "anthropic_api")
+VALID_MODES: tuple[str, ...] = ("manual", "stub", "rule_learner", "anthropic_api")
 DEFAULT_MODE = "manual"
 DEFAULT_MODEL_BY_MODE = {
     "manual": "claude-fable-5-1",  # the Claude Code session model that answers operator requests
     "stub": "deterministic-fixture-v1",
+    "rule_learner": "rule-learner-v1",  # experiment 2: deterministic convention learner (src/rule_learner.py)
     "anthropic_api": "claude-opus-5",
 }
 DEFAULT_OPERATOR_BY_MODE = {
     "manual": "claude-code-subagent",
     "stub": "deterministic-fixture",
+    "rule_learner": "deterministic-rule-learner",
     "anthropic_api": "anthropic-api",
 }
 MANUAL_ROOT = ARTIFACTS_DIR / "manual"
@@ -405,6 +407,10 @@ def get_provider(settings: ProviderSettings | None = None) -> BaseProvider:
         return ManualProvider(settings)
     if settings.mode == "stub":
         return FixtureProvider(settings)
+    if settings.mode == "rule_learner":
+        from src.rule_learner import RuleLearnerProvider  # local import: rule_learner imports graph_nodes
+
+        return RuleLearnerProvider(settings)
     if settings.mode == "anthropic_api":
         return AnthropicAPIProvider(settings)
     raise ProviderConfigurationError(f"unknown mode {settings.mode!r}")

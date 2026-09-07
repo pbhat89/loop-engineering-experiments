@@ -1,0 +1,21 @@
+{
+  "logistic_regression": {
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "pr_auc": 0.05139644511347831,
+    "roc_auc": 0.5004959888286816,
+    "confusion_matrix": [
+      [
+        3049,
+        0
+      ],
+      [
+        163,
+        0
+      ]
+    ],
+    "threshold": 0.5,
+    "n_test": 3212
+  }
+}

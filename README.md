@@ -6,8 +6,17 @@ An educational, reproducible **LangGraph** experiment in loop engineering: a cla
 
 - **Synthetic data only.** HLT-008 synthetic healthcare claims sample (CC-BY-NC-4.0). Nothing here is medical, actuarial, fraud, underwriting, pricing, adjudication, legal, regulatory, or operational evidence.
 - **External procedural memory, not training.** The "learning" is Markdown skill files retrieved into the planner's context; no model weights change.
-- **No model API calls.** The Python runtime runs in `manual` mode: at each decision node the graph pauses on a LangGraph interrupt and a fresh, **stateless Claude Code subagent** (Claude Fable 5.1) answers one JSON request. `stub` mode uses deterministic fixtures for tests and is always labelled non-LLM simulation. No API key, Agent SDK, headless-CLI bridge, or session-credential reuse of any kind.
+- **No model API calls.** In `manual` mode the graph pauses on a LangGraph interrupt at each decision node and a fresh, **stateless Claude Code subagent** (Claude Fable 5.1) answers one JSON request (experiment 1). In `rule_learner` mode a deterministic convention learner answers instead — no LLM at all (experiment 2). `stub` mode uses trivial fixtures for tests and is always labelled non-LLM simulation. No API key, Agent SDK, headless-CLI bridge, or session-credential reuse of any kind.
 - **Illustrative results.** One run per condition; comparisons are reported as illustrative, populated only from the recorded logs.
+
+## Results so far
+
+| Experiment | Planner | Headline (first-attempt rubric score, 0–4, T2–T8) | Where |
+|---|---|---|---|
+| 1 — `run_001` | stateless Claude Fable 5.1 subagents, briefs stating the conventions | Ceiling: every condition 4.00 first attempt, 0 retries, 0 feedback → 0 grounded skills (null result) | `archive/experiment-1_run_001/` |
+| 2 — `run_004` | deterministic rule learner starting from textbook defaults | baseline = reflection_only **1.55** vs skill_learning **2.17**; statistical discipline 0.12 → 0.81, communication 0.23 → 2.43; 6 skills persisted, 22 reuses, 1 never reused; still one retry per task | `docs/writeup.md`, `articles/loop-engineering-markdown-skills/` |
+
+Both are single deterministic or single-operator runs on synthetic data — illustrative, not evidence of anything operational. The article about both experiments (Substack-ready Markdown + a self-contained web version) is in `articles/loop-engineering-markdown-skills/`; read it online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
 
 ## Repository layout
 
@@ -45,6 +54,7 @@ Python equivalents: `uv run python -m src.download_data` · `uv run python -m sr
 | Mode | Default | What happens | Credentials |
 |---|:-:|---|---|
 | `manual` | **yes** | graph pauses at each LLM-decision node; request JSON written under `artifacts/manual/`; a stateless `experiment-operator` subagent writes the response; the lead resumes | none |
+| `rule_learner` | | a deterministic **convention learner** (`src/rule_learner.py`) answers every decision: textbook catalogue defaults, changed only by evaluator feedback or by a retrieved skill's `param:/list:/component:` tokens, generalised by parameter name; requires the frozen golden pack; experiment 2 | none |
 | `stub` | | deterministic fixtures answer every decision; tests and pipeline demos; labelled non-LLM simulation | none |
 | `anthropic_api` | | thin fail-closed adapter around `langchain-anthropic`; refuses to start without `ANTHROPIC_API_KEY`; **not used in this study** | separate Anthropic Console billing, never the Claude Code subscription |
 
@@ -68,7 +78,17 @@ uv run python -m src.run_experiment resume  --run-id run_001 --condition skill_l
 uv run python -m src.run_experiment status  --run-id run_001
 ```
 
-Stopping rules: pass → finalise immediately; `max_retries = 2`; skills proposed only for lessons reusable in ≥ 2 remaining tasks, ≤ 1 revision; hard cap of 40 operator steps per condition; all conditions always run all eight tasks.
+Stopping rules: pass → finalise immediately; `max_retries = 2`; skills proposed only for lessons reusable in ≥ 2 remaining tasks, ≤ 1 revision; hard cap of 64 operator steps per condition; all conditions always run all eight tasks.
+
+## Running the experiment (rule-learner mode, experiment 2)
+
+```bash
+uv run python -m src.run_experiment run-auto --run-id run_005 --mode rule_learner   # three conditions, ~2 minutes, no interrupts, no LLM
+uv run python scripts/summarize_run.py --run-id run_005                             # the numbers the write-up cites
+uv run python -m src.charts && uv run python -m src.dashboard                       # figures + dashboard from the logs
+```
+
+Superseded runs and experiment 1 live under `archive/` with their own READMEs; the goldens, suite, rubric and freeze manifest were never changed between experiments.
 
 ## Where to look while it runs
 

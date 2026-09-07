@@ -32,7 +32,7 @@ from typing import Any
 
 from src.utils import REPO_ROOT, read_json, rel, sha256_file
 
-EVALUATOR_VERSION = "1.0"
+EVALUATOR_VERSION = "1.1"  # 1.1: caveat keywords matched only in caveat/limitation sections or path-stripped text (D-19)
 FREEZE_MANIFEST_PATH = REPO_ROOT / "config" / "freeze_manifest.json"
 FLOAT_TOL = 1e-9
 MAX_MISMATCHES = 5
@@ -362,6 +362,38 @@ def _check_contract(chk: dict, ctx: _Context, key: str) -> dict:
             "detail": "contract satisfied" if passed else f"{chk['target']} is {_jsonable(observed)!r}, expected {_jsonable(expected)!r}"}
 
 
+_SECTION_RE = re.compile(r"^(#{1,6})\s+(.*)$", re.MULTILINE)
+
+
+_CONDITION_NAMES = ("baseline", "reflection_only", "skill_learning", "foundational_only")
+
+
+def _caveat_scope(text: str, identifiers: tuple[str, ...] = ()) -> str:
+    """Text in which caveat keywords may be matched (evaluator 1.1).
+
+    Only the bodies of sections whose heading mentions caveats/limitations count; when a report has no
+    such section, the whole text is used. In both cases artifact paths, ``[source: …]`` citations, the
+    run id, the condition name and every known condition name are removed first — a report that says
+    "condition `baseline`" must never satisfy a *model_limitations* caveat whose keywords include
+    "baseline".
+    """
+    headings = list(_SECTION_RE.finditer(text))
+    bodies: list[str] = []
+    for i, m in enumerate(headings):
+        title = m.group(2).lower()
+        if "caveat" in title or "limitation" in title:
+            end = headings[i + 1].start() if i + 1 < len(headings) else len(text)
+            bodies.append(text[m.end():end])
+    scoped = "\n".join(bodies) if bodies else text
+    scoped = re.sub(r"\[source:[^\]]*\]", " ", scoped, flags=re.IGNORECASE)  # citations first: they contain paths
+    scoped = re.sub(r"artifacts/\S+", " ", scoped)
+    scoped = re.sub(r"(?i)(?:run|condition)\s*`[^`]*`", " ", scoped)
+    for ident in tuple(identifiers) + _CONDITION_NAMES:
+        if ident:
+            scoped = re.sub(rf"(?i)`?{re.escape(str(ident))}`?", " ", scoped)
+    return scoped
+
+
 def _check_caveat(chk: dict, ctx: _Context, key: str) -> dict:
     entry = next((c for c in (ctx.golden.get("required_caveats") or []) if str(c.get("id")) == chk["target"]), None)
     if entry is None:
@@ -370,7 +402,8 @@ def _check_caveat(chk: dict, ctx: _Context, key: str) -> dict:
     found, listed = ctx.resolve("report.caveats")
     in_metrics = found and isinstance(listed, list) and chk["target"] in [str(c) for c in listed]
     texts = [t for t in (ctx.text("report.md"), ctx.text("executive_brief.md")) if t]
-    blob = "\n".join(texts).lower()
+    identifiers = tuple(str(ctx.metrics.get(k)) for k in ("run_id", "condition") if ctx.metrics.get(k))
+    blob = "\n".join(_caveat_scope(t, identifiers) for t in texts).lower()
     hits = [k for k in keywords if k.lower() in blob]
     passed = bool(in_metrics or hits)
     return {"passed": passed, "observed": {"in_report_caveats": bool(in_metrics), "keywords_found": hits, "report_text_available": bool(texts)},

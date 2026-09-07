@@ -505,6 +505,7 @@ class ClaimsNodes:
             {
                 "purpose": "learn: extract reusable lessons from the whole task" if learning else "retry: correct the current attempt",
                 "plan": state.get("analysis_plan"),
+                "plan_history": list(state.get("plan_history") or []),
                 "execution_summary": execution_summary(state.get("execution_result")),
                 "evaluation_summary": evaluation_summary(state.get("evaluation")),
                 "feedback": self._task_feedback(state) if learning else (state.get("feedback") or []),
@@ -573,7 +574,16 @@ class ClaimsNodes:
         for s in lister():
             get = (lambda k: getattr(s, k, None)) if not isinstance(s, dict) else s.get
             sections = get("sections") or {}
-            out.append({"skill_id": get("skill_id"), "name": get("name"), "kind": get("kind"), "objective": sections.get("objective")})
+            out.append(
+                {
+                    "skill_id": get("skill_id"),
+                    "name": get("name"),
+                    "kind": get("kind"),
+                    "objective": sections.get("objective"),
+                    "procedure": sections.get("procedure"),
+                    "required_checks": sections.get("required_checks"),
+                }
+            )
         return out
 
     def propose_skill(self, state: dict) -> dict:

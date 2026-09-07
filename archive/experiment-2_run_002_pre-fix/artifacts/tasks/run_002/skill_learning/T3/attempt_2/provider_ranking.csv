@@ -1,0 +1,11 @@
+provider_npi,specialty,network_status,n,value
+1186826716,Physical Therapy,In-Network,115,115.0
+1563980627,Critical Access Hospital,In-Network,108,108.0
+1609526529,Psychiatry,In-Network,106,106.0
+1644128543,Gastroenterology,In-Network,106,106.0
+1193493783,Critical Access Hospital,Out-of-Network,105,105.0
+1752470395,Home Health,In-Network,104,104.0
+1103747954,Urology,In-Network,102,102.0
+1125190055,Nephrology,In-Network,102,102.0
+1590915516,Physical Therapy,Out-of-Network,102,102.0
+1531398223,OB/GYN,In-Network,101,101.0

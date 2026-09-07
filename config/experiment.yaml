@@ -12,7 +12,7 @@ pass_threshold: 3.5                     # must equal config/rubric.yaml pass_thr
 max_operator_steps_per_condition: 64    # every operator request file written counts, re-requests included
 
 # Skills
-retrieval_k: 6
+retrieval_k: 8
 duplicate_similarity_threshold: 0.6     # token-Jaccard over objective + procedure
 
 # Data snapshot (one-time download by src/download_data.py; no network afterwards)

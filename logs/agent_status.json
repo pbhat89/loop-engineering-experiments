@@ -1,24 +1,24 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-06T23:52:41+00:00",
+  "updated_at": "2026-09-07T00:45:16+00:00",
   "acceptance_gates_passed": true,
   "agents": [
     {
       "agent_id": "L0",
-      "role": "Lead: integration, LangGraph core, provider, operator orchestration, acceptance",
+      "role": "Lead: integration, LangGraph core, provider, operator orchestration, acceptance, experiment 2",
       "status": "running",
-      "current_task": "Phase 5: write-up, verification, ship",
+      "current_task": "Experiment 2 shipped",
       "started_at": "2026-09-06T13:06:03+00:00",
-      "updated_at": "2026-09-06T23:52:40+00:00",
+      "updated_at": "2026-09-07T00:45:16+00:00",
       "finished_at": null,
-      "completed_work_units": 12.0,
-      "total_work_units": 12.0,
+      "completed_work_units": 16.0,
+      "total_work_units": 16.0,
       "percent_complete": 100.0,
       "eta_minutes": 0.0,
       "eta_label": "rough ETA ≈ 0.0 min",
       "blocked_by": [],
-      "last_artifact": "docs/writeup.md",
-      "note": "Phase 5: verify 24/24 PASS; write-up populated from logs; verification log consolidated",
+      "last_artifact": "articles/loop-engineering-markdown-skills/article.md",
+      "note": "Experiment 2: rule learner, evaluator 1.1, run_004, write-up v2, article + artifact",
       "unit_completions": [
         "2026-09-06T13:06:05+00:00",
         "2026-09-06T13:06:06+00:00",
@@ -27,7 +27,8 @@
         "2026-09-06T17:15:03+00:00",
         "2026-09-06T23:05:32+00:00",
         "2026-09-06T23:52:40+00:00",
-        "2026-09-06T23:52:40+00:00"
+        "2026-09-06T23:52:40+00:00",
+        "2026-09-07T00:45:16+00:00"
       ]
     },
     {
@@ -192,17 +193,17 @@
     }
   ],
   "overall": {
-    "total_work_units": 58.0,
-    "completed_work_units": 58.0,
+    "total_work_units": 62.0,
+    "completed_work_units": 62.0,
     "remaining_work_units": 0.0,
     "blocked_work_units": 0.0,
     "percent_complete": 100.0,
-    "completed_unit_count": 54,
-    "median_seconds_per_unit": 62.0,
+    "completed_unit_count": 55,
+    "median_seconds_per_unit": 80.0,
     "eta_minutes": 0.0,
     "eta_label": "rough ETA ≈ 0.0 min",
     "eta_uncertain_due_to_blocked": false,
-    "eta_computed_at": "2026-09-06T23:52:41+00:00",
+    "eta_computed_at": "2026-09-07T00:45:16+00:00",
     "counts": {
       "configured": 7,
       "queued": 0,

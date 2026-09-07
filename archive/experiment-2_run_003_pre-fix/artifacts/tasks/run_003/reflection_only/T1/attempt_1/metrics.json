@@ -1,0 +1,190 @@
+{
+  "task_id": "T1",
+  "run_id": "run_003",
+  "condition": "reflection_only",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-07T00:29:10+00:00",
+  "plan_sha256": "d113f7a67a1461a082737ea0a956a7e5c462f22f0d90f506a2e81ea0a7787a00",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "schema_summary",
+        "params": {}
+      },
+      {
+        "component": "missingness",
+        "params": {
+          "scope": "top_10"
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "rule learner: textbook catalogue defaults",
+    "changes_summary": null
+  },
+  "tables": {
+    "members": {
+      "rows": 500,
+      "columns": 44
+    },
+    "providers": {
+      "rows": 150,
+      "columns": 7
+    },
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    },
+    "pharmacy_claims": {
+      "rows": 18310,
+      "columns": 35
+    },
+    "adherence": {
+      "rows": 10627,
+      "columns": 7
+    }
+  },
+  "schema": {
+    "members": {
+      "rows": 500,
+      "n_columns": 44,
+      "dtypes": {
+        "float64": 1,
+        "int64": 32,
+        "str": 11
+      }
+    },
+    "providers": {
+      "rows": 150,
+      "n_columns": 7,
+      "dtypes": {
+        "str": 7
+      }
+    },
+    "medical_claims": {
+      "rows": 12845,
+      "n_columns": 54,
+      "dtypes": {
+        "float64": 8,
+        "int64": 14,
+        "str": 32
+      }
+    },
+    "pharmacy_claims": {
+      "rows": 18310,
+      "n_columns": 35,
+      "dtypes": {
+        "float64": 8,
+        "int64": 10,
+        "str": 17
+      }
+    },
+    "adherence": {
+      "rows": 10627,
+      "n_columns": 7,
+      "dtypes": {
+        "float64": 2,
+        "int64": 3,
+        "str": 2
+      }
+    }
+  },
+  "missingness": {
+    "scope": "top_10",
+    "per_table": {
+      "members": {
+        "age_band": 2,
+        "member_id": 0,
+        "age": 0,
+        "sex": 0,
+        "race_ethnicity": 0,
+        "state": 0,
+        "zip_code": 0,
+        "payer_type": 0,
+        "plan_type": 0,
+        "income_band": 0
+      },
+      "providers": {
+        "provider_npi": 0,
+        "provider_type": 0,
+        "specialty": 0,
+        "nucc_taxonomy": 0,
+        "state": 0,
+        "network_status": 0,
+        "group_id": 0
+      },
+      "medical_claims": {
+        "dx3": 12845,
+        "dx4": 12845,
+        "dx5": 12845,
+        "modifier1": 12845,
+        "modifier2": 12845,
+        "denial_reason_desc": 12845,
+        "auth_number": 12845,
+        "fraud_pattern_type": 12198,
+        "denial_code_carc": 11559,
+        "drg_code": 10914
+      },
+      "pharmacy_claims": {
+        "rx_claim_id": 0,
+        "member_id": 0,
+        "fill_date": 0,
+        "paid_date": 0,
+        "pharmacy_npi": 0,
+        "prescriber_npi": 0,
+        "plan_id": 0,
+        "bin_number": 0,
+        "pcn_code": 0,
+        "ndc_11": 0
+      },
+      "adherence": {
+        "member_id": 0,
+        "therapeutic_class": 0,
+        "total_days_supply": 0,
+        "n_fills": 0,
+        "pdc": 0,
+        "mpr": 0,
+        "adherence_flag_pdc80": 0
+      }
+    },
+    "all_null_columns": {
+      "members": [],
+      "providers": [],
+      "medical_claims": [
+        "dx3",
+        "dx4",
+        "dx5",
+        "modifier1",
+        "modifier2",
+        "denial_reason_desc",
+        "auth_number"
+      ],
+      "pharmacy_claims": [],
+      "adherence": []
+    }
+  },
+  "report": {
+    "caveats": [],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Method"
+    ]
+  }
+}
