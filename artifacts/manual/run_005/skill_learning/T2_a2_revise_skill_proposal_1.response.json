@@ -1,0 +1,47 @@
+{
+  "proposal": {
+    "name": "Correct denial-rate denominator selection",
+    "tags": [
+      "rates",
+      "denominators",
+      "claims-analysis",
+      "correctness"
+    ],
+    "trigger": "When computing denial rates, authorization-rate, or other claim-status-based metrics where pending claims must be excluded from the calculation base",
+    "objective": "Ensure denial rates and similar status-based metrics are computed over adjudicated claims only (final statuses), excluding Pended claims, to avoid artificially understating the rate",
+    "procedure": [
+      "Identify all claim statuses in the dataset and determine which ones represent final adjudication decisions versus pending decisions",
+      "When computing a denial rate or similar metric, use only claims with final adjudication status (Paid, Denied, or Adjusted) as the denominator",
+      "Explicitly exclude Pended claims from the denominator calculation, as these represent claims not yet decided and their inclusion reduces the apparent rate",
+      "Record and report both the numerator definition (e.g., count of Denied claims) and the denominator definition with status filter applied",
+      "Set the appropriate parameter choice (e.g., denominator_option: 'adjudicated_claims') and verify this is documented in the output schema"
+    ],
+    "required_checks": [
+      "Numerator is calculated correctly (e.g., count of claim_status == 'Denied' for denial rate)",
+      "Denominator filter excludes Pended status and includes only {Paid, Denied, Adjusted}",
+      "Parameter denominator_option is set to 'adjudicated_claims' (not 'all_claims')",
+      "Both numerator and denominator definitions are explicitly stated in output and report"
+    ],
+    "expected_artifacts": [
+      "Denial-rate metrics with numerator count, denominator count, and their status definitions",
+      "Report sections documenting the denominator strategy and justifying the exclusion of Pended claims",
+      "Summary tables showing claim counts by adjudication status (Paid, Denied, Adjusted, Pended)"
+    ],
+    "failure_modes": [
+      "Including Pended claims in the denominator understates the denial rate and creates a false impression of performance",
+      "Misclassifying claim statuses (e.g., treating Pended as a type of approval) distorts the calculation",
+      "Failing to document and record the denominator choice makes the metric uninterpretable to stakeholders",
+      "Inconsistent application across tasks leads to non-comparable rates when multiple denial analyses are performed"
+    ],
+    "example": "In a denial analysis task, ensure that when the denial-rate component executes, the denominator parameter is set to 'adjudicated_claims' rather than 'all_claims'. This ensures that only claims with final statuses contribute to the denominator, and pending claims are excluded. The output must include numerator and denominator counts and their status definitions.",
+    "applicable_task_ids": [
+      "T4",
+      "T3"
+    ],
+    "source_feedback_ids": [
+      "T2-denial_rate_denominator",
+      "T2-denial_rate_value"
+    ]
+  },
+  "reason_if_null": null
+}

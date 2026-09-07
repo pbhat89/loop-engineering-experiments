@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T7-no_target_leakage",
+      "correction": "Remove billed_amount and allowed_amount from the feature_set component's features parameter. Use only submission-time features: claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, er_flag, elective_flag, preventive_flag, auth_required_flag, primary_icd10_cm, drg_present."
+    },
+    {
+      "feedback_id": "T7-roc_auc_range",
+      "correction": "The suspiciously high ROC-AUC (0.996-0.997) is a direct symptom of target leakage from including billed_amount and allowed_amount. Removing these leakage fields will naturally bring ROC-AUC into expected range [0.6, 0.95]."
+    },
+    {
+      "feedback_id": "T7-caveat_model_limitations",
+      "correction": "Add model_limitations to the write_report component's caveats parameter. Change caveats from [\"small_groups\", \"class_imbalance\"] to [\"small_groups\", \"class_imbalance\", \"model_limitations\"]."
+    }
+  ],
+  "reusable_lessons": []
+}

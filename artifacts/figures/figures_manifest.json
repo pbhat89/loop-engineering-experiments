@@ -1,8 +1,10 @@
 {
-  "generated_at": "2026-09-07T00:35:19+00:00",
+  "generated_at": "2026-09-07T09:47:28+00:00",
   "logs_dir": "logs",
   "run_ids": [
-    "run_004"
+    "run_004",
+    "run_005",
+    "stub_003"
   ],
   "task_ids": [
     "T1",
@@ -18,7 +20,8 @@
     "baseline": "#0072B2",
     "reflection_only": "#E69F00",
     "skill_learning": "#009E73",
-    "foundational_only": "#CC79A7"
+    "foundational_only": "#CC79A7",
+    "self_refine": "#D55E00"
   },
   "figures": [
     {
@@ -28,12 +31,14 @@
       "title": "Learning curve",
       "description": "Final rubric score (0-4) by task and condition.",
       "run_ids": [
-        "run_004"
+        "run_004",
+        "run_005",
+        "stub_003"
       ],
       "observations": true,
       "notes": [
         "series are offset slightly along the task axis so overlapping scores stay visible",
-        "no observations: foundational_only"
+        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, baseline · run_005, foundational_only · run_005, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -46,11 +51,13 @@
       "title": "Reliability curve",
       "description": "Execution errors and retries by task and condition.",
       "run_ids": [
-        "run_004"
+        "run_004",
+        "run_005",
+        "stub_003"
       ],
       "observations": true,
       "notes": [
-        "no observations: foundational_only"
+        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, baseline · run_005, foundational_only · run_005, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -63,11 +70,13 @@
       "title": "Skill accumulation",
       "description": "Foundational and evolved skills available over task order.",
       "run_ids": [
-        "run_004"
+        "run_004",
+        "run_005",
+        "stub_003"
       ],
       "observations": true,
       "notes": [
-        "no skill events: baseline, reflection_only, foundational_only (only skill_learning and foundational_only retrieve skills; only skill_learning creates them)"
+        "no skill events: baseline, reflection_only, foundational_only, self_refine (only skill_learning and foundational_only retrieve skills; only skill_learning creates them)"
       ],
       "sources": [
         "logs/skill_events.jsonl",
@@ -81,7 +90,9 @@
       "title": "Skill utility (illustrative)",
       "description": "Reuse count per evolved skill and mean final score where reused vs not.",
       "run_ids": [
-        "run_004"
+        "run_004",
+        "run_005",
+        "stub_003"
       ],
       "observations": true,
       "notes": [
@@ -99,19 +110,21 @@
       "title": "Observed skill lifecycle",
       "description": "task -> feedback -> skill created -> later retrieval / reuse, from logs.",
       "run_ids": [
-        "run_004"
+        "run_004",
+        "run_005",
+        "stub_003"
       ],
       "observations": true,
       "notes": [
-        "observed from logs; 39 foundational skill retrieval events omitted for legibility",
-        "11 of 61 feedback items never became a skill source and are not drawn"
+        "observed from logs; foundational skill retrievals omitted",
+        "15 of 17 feedback items never became a skill source and are not drawn"
       ],
       "sources": [
         "logs/skill_events.jsonl",
         "logs/feedback_events.jsonl"
       ],
-      "nodes": 69,
-      "edges": 128,
+      "nodes": 7,
+      "edges": 8,
       "copy": "artifacts/graphs/skill_lifecycle_graph.png"
     },
     {
@@ -121,11 +134,13 @@
       "title": "Rubric heatmap",
       "description": "Mean dimension score per task and condition, plus one panel per dimension.",
       "run_ids": [
-        "run_004"
+        "run_004",
+        "run_005",
+        "stub_003"
       ],
       "observations": true,
       "notes": [
-        "no observations: foundational_only"
+        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, baseline · run_005, foundational_only · run_005, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -134,76 +149,16 @@
   ],
   "skill_utility_rows": [
     {
-      "run_id": "run_004",
+      "run_id": "run_005",
       "condition": "skill_learning",
-      "skill_id": "evolved_run_004_001",
-      "skill_name": "conventions_missingness_scope_duplicate_check_keys_date_rang",
-      "created_after_task": "T1",
-      "reuse_count": 7,
-      "tasks_reused": 7,
-      "tasks_not_reused": 0,
-      "mean_score_reused": 4.0,
-      "mean_score_not_reused": null
-    },
-    {
-      "run_id": "run_004",
-      "condition": "skill_learning",
-      "skill_id": "evolved_run_004_002",
-      "skill_name": "conventions_denial_rate_denominator_fraud_prevalence_financi",
+      "skill_id": "evolved_run_005_001",
+      "skill_name": "correct_denial_rate_denominator_selection",
       "created_after_task": "T2",
-      "reuse_count": 5,
-      "tasks_reused": 5,
-      "tasks_not_reused": 1,
-      "mean_score_reused": 4.0,
-      "mean_score_not_reused": 4.0
-    },
-    {
-      "run_id": "run_004",
-      "condition": "skill_learning",
-      "skill_id": "evolved_run_004_003",
-      "skill_name": "conventions_group_comparison_min_group_size_group_by_metrics",
-      "created_after_task": "T3",
-      "reuse_count": 5,
-      "tasks_reused": 5,
-      "tasks_not_reused": 0,
-      "mean_score_reused": 4.0,
-      "mean_score_not_reused": null
-    },
-    {
-      "run_id": "run_004",
-      "condition": "skill_learning",
-      "skill_id": "evolved_run_004_004",
-      "skill_name": "conventions_denial_code_ranking_scope_quantify_missing_denia",
-      "created_after_task": "T4",
-      "reuse_count": 0,
-      "tasks_reused": 0,
-      "tasks_not_reused": 4,
-      "mean_score_reused": null,
-      "mean_score_not_reused": 4.0
-    },
-    {
-      "run_id": "run_004",
-      "condition": "skill_learning",
-      "skill_id": "evolved_run_004_005",
-      "skill_name": "conventions_feature_comparison_features_leakage_assessment_c",
-      "created_after_task": "T5",
-      "reuse_count": 3,
-      "tasks_reused": 3,
-      "tasks_not_reused": 0,
-      "mean_score_reused": 4.0,
-      "mean_score_not_reused": null
-    },
-    {
-      "run_id": "run_004",
-      "condition": "skill_learning",
-      "skill_id": "evolved_run_004_006",
-      "skill_name": "conventions_split_test_size_stratify_preprocessing_fit_on_mo",
-      "created_after_task": "T6",
       "reuse_count": 2,
       "tasks_reused": 2,
-      "tasks_not_reused": 0,
-      "mean_score_reused": 4.0,
-      "mean_score_not_reused": null
+      "tasks_not_reused": 1,
+      "mean_score_reused": 3.755,
+      "mean_score_not_reused": 3.8
     }
   ],
   "status_file": "logs/experiment_status.json",

@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T3-groups_network_status",
+      "correction": "In group_comparison, add 'network_status' to group_by list and set min_group_size to 30 to produce separate network status groups (In-Network, Out-of-Network) with correct small-group flagging."
+    },
+    {
+      "feedback_id": "T3-groups_specialty",
+      "correction": "In group_comparison, ensure 'provider_specialty' appears as a separate entry in group_by (not only as part of composite) and set min_group_size to 30 to produce specialty groups with correct small-group identification."
+    },
+    {
+      "feedback_id": "T3-in_network_denial_rate",
+      "correction": "This value will be computed correctly once network_status grouping is added to group_comparison with the adjudicated_claims denominator already configured."
+    }
+  ],
+  "reusable_lessons": []
+}

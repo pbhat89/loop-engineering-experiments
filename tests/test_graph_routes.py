@@ -360,7 +360,90 @@ def test_graph_yaml_mirrors_designed_topology_and_experiment_config():
     assert doc["nodes"] == designed["nodes"]
     assert {(e["source"], e["target"], e["label"]) for e in doc["edges"]} == {(e["source"], e["target"], e["label"]) for e in designed["edges"]}
     assert doc["per_condition"] == designed["per_condition"]
-    assert set(doc["llm_decision_nodes"]) == {"plan_task", "revise_plan", "reflect_on_feedback", "propose_skill", "revise_skill_proposal"}
+    assert set(doc["llm_decision_nodes"]) == {"plan_task", "revise_plan", "reflect_on_feedback", "propose_skill", "revise_skill_proposal", "self_evaluate"}
     experiment = read_yaml(CONFIG_DIR / "experiment.yaml")
     assert doc["termination"]["max_retries"] == experiment["max_retries"]
     assert doc["termination"]["max_operator_steps_per_condition"] == experiment["max_operator_steps_per_condition"]
+
+
+# --------------------------------------------------------------------------- experiment 3 (D-21)
+
+
+def test_self_refine_never_sees_the_evaluator_and_stops_on_its_own_verdict():
+    from src.llm_provider import FixtureProvider, ProviderSettings
+
+    logger = FakeLogger()
+    services = make_services(FixtureProvider(ProviderSettings(mode="stub")), logger=logger)
+    graph = build_claims_skill_graph(services, checkpointer=MemorySaver())
+    cfg = {"configurable": {"thread_id": "run_t:self_refine:T2"}}
+    out = graph.invoke(make_state("self_refine", max_retries=4), config=cfg)
+    # fixture: revise once, then accept - the frozen evaluator scores both attempts but never routes
+    assert out["route_history"] == [
+        "load_context", "plan_task", "execute_task", "evaluate_output", "self_evaluate", "revise_plan",
+        "execute_task", "evaluate_output", "self_evaluate", "finalize_task",
+    ]
+    assert out["stop_reason"] == "self_accepted" and out["self_evaluation"]["verdict"] == "accept"
+    assert len(out["self_evaluation_history"]) == 2 and len(out["evaluation_history"]) == 2
+    done = logger.experiment[-1]
+    assert done["self_declared_pass"] is True and done["passed"] in (True, False) and done["score_by_attempt"] and done["stop_reason"] == "self_accepted"
+    # the self-review feedback was logged with its source; no evaluator feedback was ever issued to this condition
+    sources = {e.get("source") for e in logger.feedback if e.get("event") == "feedback_issued"}
+    assert sources == {"self"}
+
+
+def test_self_refine_manual_requests_carry_no_evaluator_information():
+    services = make_services(ManualProvider(ProviderSettings(mode="manual")))
+    graph = build_claims_skill_graph(services, checkpointer=MemorySaver())
+    cfg = {"configurable": {"thread_id": "run_t:self_refine:manual"}}
+    paused = graph.invoke(make_state("self_refine", max_retries=4, provider_mode="manual"), config=cfg)
+    assert paused["__interrupt__"][0].value["node"] == "plan_task"
+    paused = graph.invoke(Command(resume={"steps": [{"component": "load_tables"}, {"component": "write_report"}]}), config=cfg)
+    req = paused["__interrupt__"][0].value
+    assert req["node"] == "self_evaluate"
+    assert "evaluation_summary" not in req["payload"] and "feedback" not in req["payload"]
+    assert set(req["payload"]["output"]) == {"report_md", "metrics_json"}
+    paused = graph.invoke(
+        Command(resume={"verdict": "revise", "findings": [{"issue": "denial rate missing", "severity": "high", "suggested_change": "add denial_rate"}]}),
+        config=cfg,
+    )
+    req = paused["__interrupt__"][0].value
+    assert req["node"] == "revise_plan" and "evaluation_summary" not in req["payload"] and "reflection" not in req["payload"]
+    assert req["payload"]["feedback"][0]["source"] == "self" and req["payload"]["self_review"]["verdict"] == "revise"
+
+
+def test_feedback_cap_and_hidden_fixes():
+    from src.graph_nodes import evaluation_summary, operator_feedback_view, select_feedback
+
+    items = [
+        {"feedback_id": "a", "severity": "low", "weight": 1, "related_components": [{"component": "x", "params": {}}]},
+        {"feedback_id": "b", "severity": "high", "weight": 3, "related_components": []},
+        {"feedback_id": "c", "severity": "medium", "weight": 2, "related_components": []},
+        {"feedback_id": "d", "severity": "high", "weight": 4, "related_components": []},
+        {"feedback_id": "e", "severity": "medium", "weight": 2, "related_components": []},
+    ]
+    assert [f["feedback_id"] for f in select_feedback(items, 3)] == ["b", "c", "d"]  # b, d (high) then c (medium, first in rubric order)
+    assert select_feedback(items, None) == items and len(select_feedback(items, 10)) == 5
+    hidden = operator_feedback_view(items, reveal_fixes=False)
+    assert all("related_components" not in f for f in hidden) and hidden[0]["feedback_id"] == "a"
+    assert operator_feedback_view(items, reveal_fixes=True)[0]["related_components"]
+    evaluation = {"score_total": 1.0, "scores": {}, "passed": False, "checks": [
+        {"check_id": "T2.a", "passed": False}, {"check_id": "T2.b", "passed": False}, {"check_id": "T2.c", "passed": True}]}
+    summary = evaluation_summary(evaluation, [{"check_id": "T2.b"}])
+    assert [c["check_id"] for c in summary["failed_checks"]] == ["T2.b"]
+    assert summary["n_failed_checks_total"] == 2 and summary["n_failed_checks_shown"] == 1 and "note" in summary
+    assert len(evaluation_summary(evaluation)["failed_checks"]) == 2
+
+
+def test_capped_feedback_flows_through_reflection_and_revision():
+    """With a cap of 1 and fixes hidden, the operator payload itemises one finding and carries no literal fix."""
+    services = make_services(ManualProvider(ProviderSettings(mode="manual")))
+    services.feedback_max_items = 1
+    services.reveal_fixes = False
+    graph = build_claims_skill_graph(services, checkpointer=MemorySaver())
+    cfg = {"configurable": {"thread_id": "run_t:reflection_only:cap"}}
+    paused = graph.invoke(make_state("reflection_only", provider_mode="manual"), config=cfg)
+    paused = graph.invoke(Command(resume={"steps": [{"component": "load_tables"}, {"component": "write_report"}]}), config=cfg)
+    req = paused["__interrupt__"][0].value
+    assert req["node"] == "reflect_on_feedback"
+    assert len(req["payload"]["feedback"]) == 1 and "related_components" not in req["payload"]["feedback"][0]
+    assert req["payload"]["evaluation_summary"]["n_failed_checks_shown"] == 1

@@ -16,7 +16,7 @@ Task T7 for run `run_003` / condition `baseline`, attempt 1: status **ok**. See 
 
 
 def test_version_bumped():
-    assert EVALUATOR_VERSION == "1.1"
+    assert EVALUATOR_VERSION == "1.2"
 
 
 def test_condition_name_and_paths_are_stripped_without_caveat_section():

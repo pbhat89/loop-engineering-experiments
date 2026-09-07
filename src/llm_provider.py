@@ -6,7 +6,9 @@ Three modes, selected by ``CLAIMS_SKILL_LOOP_LLM_MODE``:
   ``decide()`` raises a LangGraph ``interrupt`` carrying the operator request; the
   graph checkpoints and pauses. The lead writes the request to a JSON file, a
   stateless ``experiment-operator`` subagent writes the response file, and the
-  runner resumes the thread with ``Command(resume=<response dict>)``.
+  runner resumes the thread with ``Command(resume=<response dict>)``. Which Claude
+  model answers is whatever the lead spawns the subagent with (experiment 1: Fable
+  5.1; experiment 3: Haiku 4.5) and is recorded in ``config/experiment.yaml``.
 * ``stub`` - ``FixtureProvider`` answers the same requests deterministically from
   the request payload with simple rules. It exists to test the graph, logs,
   dashboard, and file lifecycle without any model; every record it produces is
@@ -213,6 +215,8 @@ class FixtureProvider(BaseProvider):
             return self._propose(payload)
         if node == "revise_skill_proposal":
             return self._revise_proposal(payload)
+        if node == "self_evaluate":
+            return self._self_evaluate(payload)
         raise ProviderError(f"fixture has no rule for node {node!r}")
 
     # ---- helpers -------------------------------------------------------------------
@@ -345,6 +349,16 @@ class FixtureProvider(BaseProvider):
                 "reason_if_null": None,
             }
         return {"proposal": None, "reason_if_null": "no lesson applies to at least two remaining tasks"}
+
+    def _self_evaluate(self, payload: dict) -> dict:
+        """Self-review rule (self_refine smoke tests only): ask for one revision, then accept - it never sees the evaluator."""
+        if int(payload.get("attempt") or 1) >= 2:
+            return {"verdict": "accept", "findings": [], "summary": "deterministic fixture: accepted on the second attempt"}
+        return {
+            "verdict": "revise",
+            "findings": [{"issue": "State the denominator of every rate explicitly.", "severity": "medium", "suggested_change": "denial_rate.denominator=adjudicated_claims"}],
+            "summary": "deterministic fixture: one revision requested",
+        }
 
     def _revise_proposal(self, payload: dict) -> dict:
         proposal = dict(payload.get("proposal") or {})

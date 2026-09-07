@@ -537,7 +537,9 @@ def build_t7(tables: dict[str, pd.DataFrame], review: Review) -> dict:
         "metric_ranges": {
             # Sanity range only: on this synthetic label, leakage-free models score ROC-AUC ~= 0.50 (A6 measured
             # 0.499-0.515), so the floor sits below chance to avoid failing honest models on noise.
-            "models.*.roc_auc": {"min": 0.40, "max": 1.0},
+            # D-21: a target band rather than a floor. Leakage-free models reach 0.89-0.91 on this data; amount features
+            # (the target is derived from them) push ROC-AUC to 0.997-1.0, so anything above 0.95 is treated as suspicious.
+            "models.*.roc_auc": {"min": 0.60, "max": 0.95},
             "models.*.pr_auc": {"min": {"ref": "target_definition.positive_rate_test", "factor": 0.5}, "max": 1.0},
             "models.*.precision_at_top_5pct": {"min": 0.0, "max": 1.0},
         },

@@ -1,0 +1,151 @@
+{
+  "task_id": "T4",
+  "run_id": "stub_003",
+  "condition": "self_refine",
+  "attempt": 2,
+  "seed": 42,
+  "generated_at": "2026-09-07T09:18:55+00:00",
+  "plan_sha256": "52de55ac4e887aee605643fdbfe74e7174a559718517c8adea95d59ed4315acc",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "denial_code_ranking",
+        "params": {
+          "scope": "all_claims",
+          "quantify_missing": "overall"
+        }
+      },
+      {
+        "component": "denial_rate_by_segment",
+        "params": {
+          "segments": [
+            "claim_type"
+          ],
+          "denominator": "all_claims",
+          "min_group_size": 0
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "deterministic fixture: catalogue defaults",
+    "changes_summary": "no feedback recommendations applied"
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "denial_code_ranking": {
+    "scope": "all_claims",
+    "quantify_missing": "overall",
+    "codes": [
+      {
+        "code": "CO-15",
+        "n": 241,
+        "share": 0.01876216426625146
+      },
+      {
+        "code": "CO-4",
+        "n": 206,
+        "share": 0.016037368625924486
+      },
+      {
+        "code": "CO-11",
+        "n": 147,
+        "share": 0.011444141689373298
+      },
+      {
+        "code": "CO-18",
+        "n": 138,
+        "share": 0.010743479953289217
+      },
+      {
+        "code": "PR-1",
+        "n": 120,
+        "share": 0.009342156481121059
+      },
+      {
+        "code": "CO-27",
+        "n": 115,
+        "share": 0.008952899961074349
+      },
+      {
+        "code": "CO-97",
+        "n": 99,
+        "share": 0.0077072790969248735
+      },
+      {
+        "code": "CO-50",
+        "n": 87,
+        "share": 0.0067730634488127675
+      },
+      {
+        "code": "CO-29",
+        "n": 82,
+        "share": 0.006383806928766057
+      },
+      {
+        "code": "CO-119",
+        "n": 51,
+        "share": 0.00397041650447645
+      }
+    ],
+    "missing_denial_codes": {
+      "definition": "denial_code_carc is null",
+      "overall": 11559,
+      "overall_denominator": 12845,
+      "among_denied": 0,
+      "among_denied_denominator": 1286
+    }
+  },
+  "denial_rate_by_segment": {
+    "denominator_option": "all_claims",
+    "min_group_size": 0,
+    "segments": {
+      "claim_type": {
+        "Institutional-IP": {
+          "numerator": 174,
+          "denominator": 1931,
+          "rate": 0.09010875194199897,
+          "small_group_flag": false
+        },
+        "Institutional-OP": {
+          "numerator": 419,
+          "denominator": 3873,
+          "rate": 0.10818486961012136,
+          "small_group_flag": false
+        },
+        "Professional": {
+          "numerator": 693,
+          "denominator": 7041,
+          "rate": 0.09842351938645079,
+          "small_group_flag": false
+        }
+      }
+    }
+  },
+  "report": {
+    "caveats": [],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Method"
+    ]
+  }
+}

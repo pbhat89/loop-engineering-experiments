@@ -19,10 +19,13 @@ from pydantic import BaseModel, ConfigDict, Field
 # The brief's three conditions plus an optional control, `foundational_only`, which retrieves the
 # curated foundational skills but never reflects across tasks, proposes, or persists - it separates
 # "having a skill library" from "learning new skills" (decision D-11). Not run by default.
-CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning", "foundational_only")
+# Experiment 3 adds `self_refine` (decision D-21): the frozen evaluator still scores every attempt for the
+# record, but the operator never sees its feedback - after each attempt the operator reviews its own output
+# and decides whether to stop or revise (Self-Refine, Madaan et al. 2023). Nothing crosses tasks.
+CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine")
 DEFAULT_CONDITIONS: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning")
 SKILL_RETRIEVING_CONDITIONS: tuple[str, ...] = ("skill_learning", "foundational_only")
-Condition = Literal["baseline", "reflection_only", "skill_learning", "foundational_only"]
+Condition = Literal["baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine"]
 
 LLM_DECISION_NODES: tuple[str, ...] = (
     "plan_task",
@@ -30,6 +33,7 @@ LLM_DECISION_NODES: tuple[str, ...] = (
     "reflect_on_feedback",
     "propose_skill",
     "revise_skill_proposal",
+    "self_evaluate",
 )
 
 
@@ -61,6 +65,7 @@ class ClaimsGraphState(TypedDict, total=False):
     evaluation: dict | None
     feedback: list[dict]
     reflection: dict | None
+    self_evaluation: dict | None  # self_refine only: the operator's own verdict on its latest attempt
     skill_proposal: dict | None
     skill_validation: dict | None
     retry_count: int
@@ -78,6 +83,7 @@ class ClaimsGraphState(TypedDict, total=False):
     skills_created: Annotated[list[str], operator.add]
     plan_history: Annotated[list[dict], operator.add]
     evaluation_history: Annotated[list[dict], operator.add]
+    self_evaluation_history: Annotated[list[dict], operator.add]
 
 
 def initial_state(
@@ -129,6 +135,7 @@ def initial_state(
         evaluation=None,
         feedback=[],
         reflection=None,
+        self_evaluation=None,
         skill_proposal=None,
         skill_validation=None,
         retry_count=0,
@@ -144,6 +151,7 @@ def initial_state(
         skills_created=[],
         plan_history=[],
         evaluation_history=[],
+        self_evaluation_history=[],
     )
 
 
@@ -209,12 +217,27 @@ class SkillProposalResponse(_Lenient):
     reason_if_null: str | None = None
 
 
+class SelfFinding(_Lenient):
+    issue: str = Field(min_length=3, description="What is wrong or missing in the output, in one or two sentences.")
+    severity: Literal["high", "medium", "low"] = "medium"
+    suggested_change: str = Field(default="", description="Which catalogue component/parameter change would address it.")
+
+
+class SelfEvaluationResponse(_Lenient):
+    """Answer for ``self_evaluate`` (self_refine only): the operator reviews its own output without any external feedback."""
+
+    verdict: Literal["accept", "revise"]
+    findings: list[SelfFinding] = Field(default_factory=list, description="At most the three most important problems.")
+    summary: str = ""
+
+
 RESPONSE_MODELS: dict[str, type[BaseModel]] = {
     "plan_task": PlanResponse,
     "revise_plan": PlanResponse,
     "reflect_on_feedback": ReflectionResponse,
     "propose_skill": SkillProposalResponse,
     "revise_skill_proposal": SkillProposalResponse,
+    "self_evaluate": SelfEvaluationResponse,
 }
 
 

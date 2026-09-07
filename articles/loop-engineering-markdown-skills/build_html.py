@@ -186,7 +186,7 @@ def convert(md: str) -> tuple[str, str, str]:
 def main() -> int:
     title, subtitle, body = convert(SRC.read_text(encoding="utf-8"))
     words = len(re.sub(r"```.*?```", "", SRC.read_text(encoding="utf-8"), flags=re.S).split())
-    page = f"""<title>Loop Engineering, Take Two</title>
+    page = f"""<title>Teaching a Claims Agent the House Rules</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>{CSS}</style>

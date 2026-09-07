@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T3-join_check_rendering_npi",
+      "correction": "Add join_check component to the plan before group_comparison with params pairs=['medical_claims.rendering_npi->providers.provider_npi'] to verify the many_to_one relationship and data integrity before using provider attributes."
+    },
+    {
+      "feedback_id": "T3-caveat_synthetic",
+      "correction": "Add 'synthetic_data' to the caveats list in write_report component params."
+    },
+    {
+      "feedback_id": "T3-caveat_association",
+      "correction": "Add 'association_not_causation' to the caveats list in write_report component params."
+    }
+  ],
+  "reusable_lessons": []
+}

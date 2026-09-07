@@ -495,9 +495,11 @@ def _title_for(raw_name: Any, slug: str) -> str:
 class SkillStore:
     """Read/write access to the skill library for one run (``run_id``) plus the foundational set."""
 
-    def __init__(self, root: Path | str = SKILLS_DIR, run_id: str | None = None):
+    def __init__(self, root: Path | str = SKILLS_DIR, run_id: str | None = None, include_foundational: bool = True):
         self.root = Path(root)
         self.run_id = str(run_id) if run_id else None
+        # experiment 3 starts from an empty library so every retrieved skill was learned inside the run (D-21)
+        self.include_foundational = bool(include_foundational)
         self.foundational_dir = self.root / "foundational"
         self.evolved_dir = self.root / "evolved"
         self.archived_dir = self.root / "archived"
@@ -519,7 +521,7 @@ class SkillStore:
 
     def skill_files(self) -> list[Path]:
         files: list[Path] = []
-        if self.foundational_dir.is_dir():
+        if self.include_foundational and self.foundational_dir.is_dir():
             files.extend(sorted(self.foundational_dir.glob("*.md")))
         if self.run_dir is not None and self.run_dir.is_dir():
             files.extend(sorted(self.run_dir.glob("*.md")))

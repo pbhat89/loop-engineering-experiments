@@ -1,0 +1,62 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": [
+          "claim_status"
+        ],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "adjudicated_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": [
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount"
+        ],
+        "statistics": "sum_mean"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "service_date_from",
+        "metrics": [
+          "claim_count"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Revised plan corrects two critical statistical issues from the prior attempt. The denial_rate component now uses 'adjudicated_claims' denominator to exclude pending claims that have not yet been resolved (Paid, Denied, Adjusted states only), yielding the correct denial rate of 1286 / 12339 = 0.1042. The monthly_trend component now keys on 'service_date_from' rather than 'adjudication_date' to capture utilization patterns based on when care was delivered rather than when claims were processed; this ensures accurate monthly volume trends. All other components remain unchanged to preserve the comprehensive portfolio view.",
+  "changes_summary": "Two parameter corrections: (1) denial_rate.denominator changed from 'all_claims' to 'adjudicated_claims' to exclude pending claims and correctly calculate the denial rate; (2) monthly_trend.date_column changed from 'adjudication_date' to 'service_date_from' to represent utilization timing accurately."
+}

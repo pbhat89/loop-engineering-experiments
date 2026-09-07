@@ -84,8 +84,8 @@
   },
   "metric_ranges": {
     "models.*.roc_auc": {
-      "min": 0.4,
-      "max": 1.0
+      "min": 0.6,
+      "max": 0.95
     },
     "models.*.pr_auc": {
       "min": {

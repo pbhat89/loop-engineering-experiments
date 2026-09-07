@@ -97,13 +97,15 @@ def test_render_with_generated_logs_shows_pending_request_and_score_grid(generat
             assert f">{cell}</td>" in text, f"score cell for {condition}/{task_id} missing"
     assert f"{dashboard.FIRST_ATTEMPT_GLYPH} = passed on the first attempt" in text
     assert "◆ waiting</td>" in text
-    assert "<th class='task'>T1</th>" in text and "<th class='task'>T8</th>" in text  # configured task order as columns
+    from src.charts import configured_task_order
+    order = configured_task_order()  # configured task order as columns (experiment 3: T2, T4, T3, T7)
+    assert f"<th class='task'>{order[0]}</th>" in text and f"<th class='task'>{order[-1]}</th>" in text
     # counts
     assert "Operator steps used / cap" in text and "/40" in text
     assert "1 condition(s) are waiting on an operator step" in text
     assert "Log validation: no problems" in text
-    for colour in CONDITION_COLORS.values():
-        assert colour in text  # swatches carry the fixed chart colours
+    for condition in CONDITIONS:
+        assert CONDITION_COLORS[condition] in text  # swatches carry the fixed chart colours of the conditions present
 
 
 # --------------------------------------------------------------------------- charts on the generated logs

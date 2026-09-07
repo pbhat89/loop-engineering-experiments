@@ -89,6 +89,10 @@ class RunConfig:
     model_identifier: str | None = None
     operator: str | None = None
     freeze_sha256: str = "unfrozen"
+    # experiment 3 (D-21): capped, fix-free feedback and an empty starting skill library
+    feedback_max_items: int | None = None
+    reveal_fixes: bool = True
+    foundational_skills: bool = True
     created_at: str = field(default_factory=utc_now)
 
     @classmethod
@@ -106,6 +110,10 @@ class RunConfig:
             retrieval_k=int(cfg.get("retrieval_k", 6)),
             model_identifier=cfg.get("model_identifier") if mode == "manual" else None,
             operator=cfg.get("operator") if mode == "manual" else None,
+            feedback_max_items=(int(cfg["feedback_max_items"]) if cfg.get("feedback_max_items") is not None else None),
+            # the fixture and the rule learner apply the literal fix by construction; hiding it only makes sense for a model
+            reveal_fixes=bool(cfg.get("reveal_fixes", True)) if mode == "manual" else True,
+            foundational_skills=bool(cfg.get("foundational_skills", True)),
         )
 
     def to_dict(self) -> dict:
@@ -189,7 +197,7 @@ def build_services(config: RunConfig):
         provider=provider,
         execute_task=execute_task,
         evaluate=evaluate,
-        skill_store=SkillStore(SKILLS_DIR, run_id=config.run_id),
+        skill_store=SkillStore(SKILLS_DIR, run_id=config.run_id, include_foundational=config.foundational_skills),
         validate_skill=validate_skill,
         logger=ExperimentLogger(LOGS_DIR),
         rubric=read_yaml(CONFIG_DIR / "rubric.yaml"),
@@ -197,6 +205,8 @@ def build_services(config: RunConfig):
         manifest_summary=summarize_manifest(manifest),
         retrieval_k=config.retrieval_k,
         task_titles={tid: spec.get("title", "") for tid, spec in tasks.items()},
+        feedback_max_items=config.feedback_max_items,
+        reveal_fixes=config.reveal_fixes,
     )
 
 
@@ -465,6 +475,7 @@ class Runner:
             "retry_count": result.get("retry_count"),
             "skills_created": list(result.get("skills_created") or []),
             "skills_retrieved": [s.get("skill_id") for s in result.get("retrieved_skills") or []],
+            "score_by_attempt": [e.get("score_total") for e in (result.get("evaluation_history") or [])],
             "stop_reason": result.get("stop_reason"),
             "operator_steps_used_after": result.get("operator_steps_used"),
             "started_at": started,

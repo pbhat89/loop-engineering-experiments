@@ -5,12 +5,15 @@ One graph serves all three experimental conditions; the routing functions read
 ``evaluate_output`` / ``validate_skill``:
 
     START -> load_context -> [skill_learning: retrieve_skills] -> plan_task -> execute_task -> evaluate_output
-      completed -> finalize_task -> END
-      retry     -> [baseline: revise_plan | others: reflect_on_feedback -> revise_plan] -> execute_task
-      learn     -> reflect_on_feedback -> propose_skill -> validate_skill
-                     accepted       -> persist_skill -> finalize_task -> END
-                     rejected       -> finalize_task -> END
-                     retry_revision -> revise_skill_proposal -> validate_skill
+      completed     -> finalize_task -> END
+      retry         -> [baseline: revise_plan | others: reflect_on_feedback -> revise_plan] -> execute_task
+      self_evaluate -> self_evaluate (self_refine: the operator reviews its own output, never the evaluator's feedback)
+                         retry     -> revise_plan -> execute_task
+                         completed -> finalize_task -> END
+      learn         -> reflect_on_feedback -> propose_skill -> validate_skill
+                         accepted       -> persist_skill -> finalize_task -> END
+                         rejected       -> finalize_task -> END
+                         retry_revision -> revise_skill_proposal -> validate_skill
 
 ``designed_topology()`` describes the same graph as plain nodes/edges for the
 topology diagram (design, not observation).
@@ -30,6 +33,7 @@ NODES: tuple[str, ...] = (
     "plan_task",
     "execute_task",
     "evaluate_output",
+    "self_evaluate",
     "reflect_on_feedback",
     "revise_plan",
     "propose_skill",
@@ -47,13 +51,19 @@ def route_after_load(state: dict) -> Literal["retrieve_skills", "plan_task"]:
     return "retrieve_skills" if state.get("condition") in SKILL_RETRIEVING_CONDITIONS else "plan_task"
 
 
-def route_after_evaluation(state: dict) -> Literal["finalize_task", "revise_plan", "reflect_on_feedback"]:
+def route_after_evaluation(state: dict) -> Literal["finalize_task", "revise_plan", "reflect_on_feedback", "self_evaluate"]:
     decision = state.get("next_route")
     if decision == "retry":
         return "revise_plan" if state.get("condition") == "baseline" else "reflect_on_feedback"
     if decision == "learn":
         return "reflect_on_feedback"
+    if decision == "self_evaluate":
+        return "self_evaluate"
     return "finalize_task"
+
+
+def route_after_self_evaluation(state: dict) -> Literal["revise_plan", "finalize_task"]:
+    return "revise_plan" if state.get("next_route") == "retry" else "finalize_task"
 
 
 def route_after_reflection(state: dict) -> Literal["revise_plan", "propose_skill"]:
@@ -85,8 +95,9 @@ def build_claims_skill_graph(services: Services, checkpointer: Any = None):
     builder.add_edge("plan_task", "execute_task")
     builder.add_edge("execute_task", "evaluate_output")
     builder.add_conditional_edges(
-        "evaluate_output", route_after_evaluation, ["finalize_task", "revise_plan", "reflect_on_feedback"]
+        "evaluate_output", route_after_evaluation, ["finalize_task", "revise_plan", "reflect_on_feedback", "self_evaluate"]
     )
+    builder.add_conditional_edges("self_evaluate", route_after_self_evaluation, ["revise_plan", "finalize_task"])
     builder.add_conditional_edges("reflect_on_feedback", route_after_reflection, ["revise_plan", "propose_skill"])
     builder.add_edge("revise_plan", "execute_task")
     builder.add_edge("propose_skill", "validate_skill")
@@ -111,6 +122,9 @@ def designed_topology() -> dict:
         ("evaluate_output", "finalize_task", "completed"),
         ("evaluate_output", "revise_plan", "retry (baseline)"),
         ("evaluate_output", "reflect_on_feedback", "retry (reflection_only, skill_learning) | learn (skill_learning)"),
+        ("evaluate_output", "self_evaluate", "self_evaluate (self_refine)"),
+        ("self_evaluate", "revise_plan", "retry (operator verdict: revise)"),
+        ("self_evaluate", "finalize_task", "completed (operator verdict: accept)"),
         ("reflect_on_feedback", "revise_plan", "retry"),
         ("reflect_on_feedback", "propose_skill", "learn"),
         ("revise_plan", "execute_task", ""),
@@ -127,10 +141,11 @@ def designed_topology() -> dict:
         "reflection_only": [
             "load_context", "plan_task", "execute_task", "evaluate_output", "reflect_on_feedback", "revise_plan", "finalize_task",
         ],
-        "skill_learning": list(NODES),
+        "skill_learning": [n for n in NODES if n != "self_evaluate"],
         "foundational_only": [
             "load_context", "retrieve_skills", "plan_task", "execute_task", "evaluate_output", "reflect_on_feedback", "revise_plan", "finalize_task",
         ],
+        "self_refine": ["load_context", "plan_task", "execute_task", "evaluate_output", "self_evaluate", "revise_plan", "finalize_task"],
     }
     return {"nodes": list(NODES), "edges": [{"source": s, "target": t, "label": l} for s, t, l in edges], "per_condition": per_condition}
 

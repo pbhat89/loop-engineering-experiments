@@ -25,10 +25,11 @@ from src.graph_state import (
     SKILL_RETRIEVING_CONDITIONS,
     PlanResponse,
     ReflectionResponse,
+    SelfEvaluationResponse,
     SkillProposalResponse,
 )
 from src.llm_provider import BaseProvider, OperatorRequest
-from src.utils import rel, sha256_text, utc_now
+from src.utils import REPO_ROOT, rel, sha256_text, utc_now
 
 # --------------------------------------------------------------------------- services
 
@@ -49,6 +50,9 @@ class Services:
     retrieval_k: int = 6
     max_validation_retries: int = 2
     task_titles: dict[str, str] = field(default_factory=dict)  # task_id -> title, so operators can target lessons at remaining tasks
+    # Experiment 3 (D-21): how much of the evaluator's verdict the operator gets to see per attempt.
+    feedback_max_items: int | None = None  # None = every failed check; 3 = only the three most severe findings
+    reveal_fixes: bool = True  # False hides `related_components` (the literal parameter fix) from the operator
 
 
 # --------------------------------------------------------------------------- operator instructions
@@ -80,6 +84,20 @@ REVISE_PROPOSAL_INSTRUCTIONS = (
     "The proposal failed validation; the failed checks are included. Return a corrected proposal, or null with a "
     "reason if it cannot be made valid without becoming a duplicate or a one-off."
 )
+SELF_EVALUATE_INSTRUCTIONS = (
+    "You executed the plan below and produced the report and metrics shown. No external reviewer is available: "
+    "review your own output against the brief and good analytical practice. Return verdict 'accept' if the "
+    "output is ready to hand to the sponsor, or 'revise' with at most three findings (most important first), each "
+    "naming the catalogue component/parameter change that would address it. Attempts are limited; do not revise "
+    "for cosmetic reasons."
+)
+SELF_REVISE_NOTE = (
+    "This revision follows your own review of the previous attempt (no external evaluation is available). "
+    "Address the findings you raised."
+)
+SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}
+REPORT_EXCERPT_CHARS = 6000
+METRICS_EXCERPT_CHARS = 6000
 
 TASK_BRIEF_KEYS = ("task_id", "title", "objective", "tags", "input_tables", "required_artifacts")
 
@@ -177,19 +195,108 @@ def task_brief(task_spec: dict) -> dict:
     return {k: task_spec.get(k) for k in TASK_BRIEF_KEYS if k in task_spec}
 
 
-def evaluation_summary(evaluation: dict | None) -> dict | None:
+def select_feedback(feedback: list[dict], k: int | None) -> list[dict]:
+    """The ``k`` most severe feedback items: critical/high first, then heavier rubric weight, then rubric order.
+
+    With ``k=None`` every item is returned (experiments 1 and 2). Experiment 3 shows three per attempt so the
+    verification loop has to iterate - a reviewer who lists the three biggest problems, not the whole checklist.
+    """
+    items = list(feedback or [])
+    if k is None or k >= len(items):
+        return items
+    ranked = sorted(
+        enumerate(items),
+        key=lambda ix: (SEVERITY_RANK.get(str(ix[1].get("severity")), 9), -float(ix[1].get("weight") or 0), ix[0]),
+    )
+    keep = sorted(ix for ix, _ in ranked[: max(int(k), 0)])
+    return [items[i] for i in keep]
+
+
+def operator_feedback_view(feedback: list[dict], reveal_fixes: bool) -> list[dict]:
+    """What the operator is shown: with ``reveal_fixes=False`` the literal component/parameter fix is withheld."""
+    if reveal_fixes:
+        return list(feedback or [])
+    return [{k: v for k, v in item.items() if k != "related_components"} for item in (feedback or [])]
+
+
+def evaluation_summary(evaluation: dict | None, shown_feedback: list[dict] | None = None) -> dict | None:
+    """Scorecard for the operator. When ``shown_feedback`` is given, only those checks are itemised (the rest is a count)."""
     if not evaluation:
         return None
-    return {
+    failed = [c for c in evaluation.get("checks", []) if not c.get("passed")]
+    if shown_feedback is not None:
+        visible = {f.get("check_id") for f in shown_feedback if f.get("check_id")}
+        # feedback ids are "<task>-<check name>" for check "<task>.<check name>"
+        visible |= {str(f.get("feedback_id", "")).replace("-", ".", 1) for f in shown_feedback if f.get("feedback_id")}
+        itemised = [c for c in failed if c.get("check_id") in visible]
+    else:
+        itemised = failed
+    summary = {
         "score_total": evaluation.get("score_total"),
         "scores": evaluation.get("scores"),
         "passed": evaluation.get("passed"),
-        "failed_checks": [
-            {k: c.get(k) for k in ("check_id", "dimension", "critical", "observed", "expected", "detail")}
-            for c in evaluation.get("checks", [])
-            if not c.get("passed")
-        ],
+        "failed_checks": [{k: c.get(k) for k in ("check_id", "dimension", "critical", "observed", "expected", "detail")} for c in itemised],
     }
+    if shown_feedback is not None:
+        summary["n_failed_checks_total"] = len(failed)
+        summary["n_failed_checks_shown"] = len(itemised)
+        if len(failed) > len(itemised):
+            summary["note"] = "only the most severe findings are itemised; further checks failed and will be reported once these are fixed"
+    return summary
+
+
+def _read_text_artifact(result: dict | None, name: str, limit: int) -> str | None:
+    """Text of an output file (e.g. report.md) from the execution result, truncated to ``limit`` characters."""
+    if not result:
+        return None
+    candidates = [a for a in (result.get("artifacts") or []) if Path(str(a)).name == name]
+    if name == "report.md" and result.get("report_path"):
+        candidates.append(result["report_path"])
+    if result.get("output_dir"):
+        candidates.append(f"{result['output_dir']}/{name}")
+    for c in candidates:
+        path = Path(str(c))
+        path = path if path.is_absolute() else REPO_ROOT / path
+        if path.is_file():
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            return text if len(text) <= limit else text[:limit] + f"\n... [truncated, {len(text) - limit} more characters]"
+    return None
+
+
+def output_preview(result: dict | None) -> dict:
+    """What a self-reviewing operator gets to look at: its own report and metrics, nothing from the evaluator."""
+    metrics = (result or {}).get("metrics") or {}
+    metrics_json = json.dumps({k: v for k, v in metrics.items() if k != "plan"}, default=str, ensure_ascii=False, indent=1)
+    if len(metrics_json) > METRICS_EXCERPT_CHARS:
+        metrics_json = metrics_json[:METRICS_EXCERPT_CHARS] + f"\n... [truncated, {len(metrics_json) - METRICS_EXCERPT_CHARS} more characters]"
+    return {"report_md": _read_text_artifact(result, "report.md", REPORT_EXCERPT_CHARS), "metrics_json": metrics_json}
+
+
+def self_findings_as_feedback(task_id: str, attempt: int, response: dict) -> list[dict]:
+    """The operator's own findings in the feedback-item shape the revise step already understands."""
+    out = []
+    for i, f in enumerate((response or {}).get("findings") or [], 1):
+        out.append(
+            {
+                "feedback_id": f"{task_id}-self-a{attempt}-{i}",
+                "check_id": None,
+                "criterion": "self_review",
+                "issue_type": "self_finding",
+                "severity": f.get("severity", "medium"),
+                "remediation": f.get("suggested_change") or f.get("issue"),
+                "related_components": [],
+                "reusable": False,
+                "applicable_task_ids": [],
+                "observed": None,
+                "expected": None,
+                "detail": f.get("issue"),
+                "source": "self",
+            }
+        )
+    return out
 
 
 def execution_summary(result: dict | None) -> dict | None:
@@ -308,7 +415,8 @@ class ClaimsNodes:
         final_ids = {f.get("feedback_id") for f in (state.get("feedback") or [])}
         merged: dict[str, dict] = {}
         for attempt_no, evaluation in enumerate(history, 1):
-            for item in evaluation.get("feedback") or []:
+            shown = evaluation.get("feedback_shown")
+            for item in (shown if shown is not None else evaluation.get("feedback")) or []:
                 entry = merged.setdefault(item.get("feedback_id"), {**item, "first_seen_attempt": attempt_no})
                 entry["last_seen_attempt"] = attempt_no
         for fid, entry in merged.items():
@@ -448,16 +556,27 @@ class ClaimsNodes:
     def evaluate_output(self, state: dict) -> dict:
         golden = self.s.load_golden(state["task_spec"])
         evaluation = self.s.evaluate(state["task_spec"], state.get("execution_result") or {}, self.s.rubric, golden)
-        feedback = list(evaluation.get("feedback") or [])
+        all_feedback = list(evaluation.get("feedback") or [])
+        # rubric weights travel with the feedback so the cap can rank by severity, then weight
+        weights = {c.get("check_id"): c.get("weight", 1) for c in evaluation.get("checks", [])}
+        for item in all_feedback:
+            item.setdefault("weight", weights.get(item.get("check_id"), 1))
+        self_refine = state["condition"] == "self_refine"
+        # the self-reviewing condition never sees the evaluator; it is scored for the record only
+        feedback = [] if self_refine else select_feedback(all_feedback, self.s.feedback_max_items)
+        evaluation["feedback_shown"] = feedback
+        evaluation["n_feedback_total"] = len(all_feedback)
         attempt = state.get("retry_count", 0) + 1
         for item in feedback:
             self.s.logger.log_feedback_event(
-                {**self._meta(state), "timestamp": utc_now(), "event": "feedback_issued", "incorporated": False, **item}
+                {**self._meta(state), "timestamp": utc_now(), "event": "feedback_issued", "incorporated": False, "source": "evaluator", **item}
             )
         passed = bool(evaluation.get("passed"))
         can_retry = state.get("retry_count", 0) < state.get("max_retries", 0) and not self._budget_exhausted(state)
         if state["condition"] == "skill_learning":
             next_route = "learn" if passed or not can_retry else "retry"
+        elif self_refine:
+            next_route = "self_evaluate" if can_retry else "completed"
         else:
             next_route = "completed" if passed or not can_retry else "retry"
         # per-attempt experiment record (the final record with status "done" is written by finalize_task)
@@ -470,6 +589,11 @@ class ClaimsNodes:
                 "passed": passed,
                 "evaluator_score_total": evaluation.get("score_total"),
                 "evaluator_score_by_dimension": evaluation.get("scores"),
+                "n_checks": evaluation.get("n_checks"),
+                "n_failed_checks": len(all_feedback),
+                "n_feedback_shown": len(feedback),
+                "critical_failures": list(evaluation.get("critical_failures") or []),
+                "skills_applied": list((state.get("analysis_plan") or {}).get("skills_applied") or []),
                 "execution_errors": len((state.get("execution_result") or {}).get("errors") or []),
                 "graph_route": list(state.get("route_history") or []) + ["evaluate_output"],
                 "freeze_sha256": state.get("freeze_sha256"),
@@ -484,6 +608,8 @@ class ClaimsNodes:
             score_total=evaluation.get("score_total"),
             passed=passed,
             next_route=next_route,
+            n_failed_checks=len(all_feedback),
+            n_feedback_shown=len(feedback),
         )
         return {
             "route_history": ["evaluate_output"],
@@ -491,6 +617,52 @@ class ClaimsNodes:
             "evaluation_history": [evaluation],
             "feedback": feedback,
             "next_route": next_route,
+        }
+
+    # ---- self_evaluate (self_refine only) ------------------------------------------------
+    def self_evaluate(self, state: dict) -> dict:
+        attempt = state.get("retry_count", 0) + 1
+        if self._budget_exhausted(state):
+            verdict = {"verdict": "accept", "findings": [], "summary": "operator_cap: accepted by default"}
+            self._graph_event(state, "self_evaluate", "operator_cap: default accept", operator_steps=0)
+            return {
+                "route_history": ["self_evaluate"], "self_evaluation": verdict, "self_evaluation_history": [verdict],
+                "feedback": [], "next_route": "completed", "stop_reason": "operator_cap",
+            }
+        payload = self._base_payload(state)
+        payload.update(
+            {
+                "plan": state.get("analysis_plan"),
+                "execution_summary": execution_summary(state.get("execution_result")),
+                "output": output_preview(state.get("execution_result")),
+                "attempt": attempt,
+                "attempts_remaining": max(int(state.get("max_retries", 0)) - int(state.get("retry_count", 0)), 0),
+                "previous_self_reviews": list(state.get("self_evaluation_history") or []),
+            }
+        )
+        response, steps, errors = self._decide(state, "self_evaluate", SELF_EVALUATE_INSTRUCTIONS, payload, SelfEvaluationResponse)
+        reason = "operator self-review"
+        if response is None:
+            response = {"verdict": "accept", "findings": [], "summary": f"invalid response {len(errors)}x; accepted by default"}
+            reason = f"operator response invalid {len(errors)}x; default accept"
+        response = {**response, "attempt": attempt, "findings": list(response.get("findings") or [])[:3]}
+        feedback = self_findings_as_feedback(state["task_id"], attempt, response)
+        for item in feedback:
+            self.s.logger.log_feedback_event({**self._meta(state), "timestamp": utc_now(), "event": "feedback_issued", "incorporated": False, **item})
+        next_route = "retry" if response.get("verdict") == "revise" else "completed"
+        frozen = (state.get("evaluation") or {})
+        self._graph_event(
+            state, "self_evaluate", f"{reason}: verdict={response.get('verdict')} -> {next_route}",
+            operator_steps=steps, validation_failures=len(errors), verdict=response.get("verdict"), findings=len(feedback),
+            frozen_score_total=frozen.get("score_total"), frozen_passed=frozen.get("passed"),
+        )
+        return {
+            "route_history": ["self_evaluate"],
+            "self_evaluation": response,
+            "self_evaluation_history": [response],
+            "feedback": feedback,
+            "next_route": next_route,
+            "operator_steps_used": state.get("operator_steps_used", 0) + steps,
         }
 
     # ---- reflect_on_feedback ---------------------------------------------------------
@@ -507,9 +679,12 @@ class ClaimsNodes:
                 "plan": state.get("analysis_plan"),
                 "plan_history": list(state.get("plan_history") or []),
                 "execution_summary": execution_summary(state.get("execution_result")),
-                "evaluation_summary": evaluation_summary(state.get("evaluation")),
-                "feedback": self._task_feedback(state) if learning else (state.get("feedback") or []),
+                "evaluation_summary": evaluation_summary(state.get("evaluation"), state.get("feedback") or []),
+                "feedback": operator_feedback_view(
+                    self._task_feedback(state) if learning else (state.get("feedback") or []), self.s.reveal_fixes
+                ),
                 "attempts": state.get("execution_attempts", 0),
+                "attempts_remaining": max(int(state.get("max_retries", 0)) - int(state.get("retry_count", 0)), 0),
             }
         )
         reflection, steps, errors = self._decide(state, "reflect_on_feedback", REFLECT_INSTRUCTIONS, payload, ReflectionResponse)
@@ -536,15 +711,26 @@ class ClaimsNodes:
             {
                 "prior_plan": state.get("analysis_plan"),
                 "execution_summary": execution_summary(state.get("execution_result")),
-                "evaluation_summary": evaluation_summary(state.get("evaluation")),
-                "feedback": state.get("feedback") or [],
+                "attempt": state.get("retry_count", 0) + 2,
+                "attempts_remaining": max(int(state.get("max_retries", 0)) - int(state.get("retry_count", 0)) - 1, 0),
             }
         )
-        if state["condition"] != "baseline":
+        instructions = REVISE_INSTRUCTIONS
+        if state["condition"] == "self_refine":  # its own review is the only feedback it gets
+            payload.update({"self_review": state.get("self_evaluation"), "feedback": state.get("feedback") or [], "note": SELF_REVISE_NOTE})
+            instructions = REVISE_INSTRUCTIONS + " " + SELF_REVISE_NOTE
+        else:
+            payload.update(
+                {
+                    "evaluation_summary": evaluation_summary(state.get("evaluation"), state.get("feedback") or []),
+                    "feedback": operator_feedback_view(state.get("feedback") or [], self.s.reveal_fixes),
+                }
+            )
+        if state["condition"] not in ("baseline", "self_refine"):
             payload["reflection"] = state.get("reflection")
         if state["condition"] in SKILL_RETRIEVING_CONDITIONS:
             payload["retrieved_skills"] = self._rendered_skills(state)
-        plan, steps, errors = self._decide(state, "revise_plan", REVISE_INSTRUCTIONS, payload, PlanResponse)
+        plan, steps, errors = self._decide(state, "revise_plan", instructions, payload, PlanResponse)
         reason = "operator revision"
         if plan is None:
             plan = state.get("analysis_plan") or default_plan(state["task_spec"])
@@ -609,8 +795,8 @@ class ClaimsNodes:
         payload.update(
             {
                 "plan": state.get("analysis_plan"),
-                "evaluation_summary": evaluation_summary(state.get("evaluation")),
-                "feedback": self._task_feedback(state),
+                "evaluation_summary": evaluation_summary(state.get("evaluation"), state.get("feedback") or []),
+                "feedback": operator_feedback_view(self._task_feedback(state), self.s.reveal_fixes),
                 "reflection": reflection,
                 "existing_skills": self._existing_skills_brief(),
             }
@@ -724,7 +910,14 @@ class ClaimsNodes:
     def finalize_task(self, state: dict) -> dict:
         evaluation = state.get("evaluation") or {}
         passed = bool(evaluation.get("passed"))
-        stop_reason = state.get("stop_reason") or ("passed" if passed else "retry_budget_exhausted")
+        self_reviews = list(state.get("self_evaluation_history") or [])
+        self_accepted = bool(self_reviews) and self_reviews[-1].get("verdict") == "accept"
+        if state.get("stop_reason"):
+            stop_reason = state["stop_reason"]
+        elif state["condition"] == "self_refine":  # the operator's own verdict ended the loop, not the evaluator's
+            stop_reason = "self_accepted" if self_accepted else "retry_budget_exhausted"
+        else:
+            stop_reason = "passed" if passed else "retry_budget_exhausted"
         retrieved_ids = [s.get("skill_id") for s in state.get("retrieved_skills") or []]
         applied: list[str] = []
         for plan in state.get("plan_history") or []:
@@ -739,6 +932,7 @@ class ClaimsNodes:
             )
         history = list(state.get("evaluation_history") or [])
         first_attempt_passed = bool(history[0].get("passed")) if history else False
+        attempts_to_pass = next((i for i, e in enumerate(history, 1) if e.get("passed")), None)
         record = {
             **self._meta(state),
             "attempt": state.get("execution_attempts", 0),
@@ -756,6 +950,10 @@ class ClaimsNodes:
             "evaluator_score_by_dimension": evaluation.get("scores"),
             "passed": passed,
             "first_attempt_passed": first_attempt_passed,
+            "attempts_to_pass": attempts_to_pass,
+            "first_attempt_score_total": history[0].get("score_total") if history else None,
+            "score_by_attempt": [e.get("score_total") for e in history],
+            "self_declared_pass": self_accepted if state["condition"] == "self_refine" else None,
             "artifact_paths": list(state.get("artifacts") or []),
             "operator_steps_used": state.get("operator_steps_used", 0),
             "stop_reason": stop_reason,

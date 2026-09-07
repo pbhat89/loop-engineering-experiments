@@ -32,7 +32,7 @@ from typing import Any
 
 from src.utils import REPO_ROOT, read_json, rel, sha256_file
 
-EVALUATOR_VERSION = "1.1"  # 1.1: caveat keywords matched only in caveat/limitation sections or path-stripped text (D-19)
+EVALUATOR_VERSION = "1.2"  # 1.1: caveat keywords matched only in caveat/limitation sections or path-stripped text (D-19); 1.2: self_refine added to the stripped condition names (D-21), scoring unchanged
 FREEZE_MANIFEST_PATH = REPO_ROOT / "config" / "freeze_manifest.json"
 FLOAT_TOL = 1e-9
 MAX_MISMATCHES = 5
@@ -365,7 +365,7 @@ def _check_contract(chk: dict, ctx: _Context, key: str) -> dict:
 _SECTION_RE = re.compile(r"^(#{1,6})\s+(.*)$", re.MULTILINE)
 
 
-_CONDITION_NAMES = ("baseline", "reflection_only", "skill_learning", "foundational_only")
+_CONDITION_NAMES = ("baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine")
 
 
 def _caveat_scope(text: str, identifiers: tuple[str, ...] = ()) -> str:

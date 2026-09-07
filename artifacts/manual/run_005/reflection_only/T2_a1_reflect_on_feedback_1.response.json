@@ -1,0 +1,28 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T2-denial_rate_denominator",
+      "correction": "Change denial_rate component parameter denominator from 'all_claims' to 'adjudicated_claims' to exclude pending claims and correctly compute the rate over only resolved claims (Paid, Denied, Adjusted)."
+    },
+    {
+      "feedback_id": "T2-denial_rate_value",
+      "correction": "The denial_rate value will be automatically corrected when the denominator parameter changes to 'adjudicated_claims', yielding the correct value of 1286 / 12339 = 0.1042."
+    },
+    {
+      "feedback_id": "T2-monthly_date_column",
+      "correction": "Change monthly_trend component parameter date_column from 'adjudication_date' to 'service_date_from' to capture when services occurred rather than when claims were processed."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "Denial rates and other portfolio rates must use 'adjudicated_claims' as the denominator to exclude pending claims that have not yet been decided. Report both numerator and denominator values alongside the rate to demonstrate the definition.",
+      "applicable_task_ids": ["T3", "T4"],
+      "source_feedback_ids": ["T2-denial_rate_denominator", "T2-denial_rate_value"]
+    },
+    {
+      "lesson": "Monthly trend series must key on service_date_from (when service occurred) rather than adjudication_date (when claim was processed) to accurately represent utilization patterns over time.",
+      "applicable_task_ids": ["T3", "T4"],
+      "source_feedback_ids": ["T2-monthly_date_column"]
+    }
+  ]
+}

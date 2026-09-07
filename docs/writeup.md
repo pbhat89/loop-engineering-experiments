@@ -1,110 +1,114 @@
-# Loop engineering with Markdown skills — experiment 2: a rule learner that learns house conventions
+# Write-up v3 — experiment 3: can a claims-analyst agent learn the house rules from a frozen checker?
 
-**Status:** populated 2026-09-07 (L0) from `logs/*.jsonl`, `logs/runs/run_004.json`, `artifacts/reports/run_summaries.json`, `skills/evolved/run_004/`, `artifacts/figures/`, `goldens/` and `config/freeze_manifest.json`. **Public article** (Substack-ready, PB voice): `articles/loop-engineering-markdown-skills/article.md` — web version at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee. Experiment 1's write-up is preserved unchanged at `archive/experiment-1_run_001/docs/writeup_run_001.md`. Synthetic data; educational demonstration; nothing here is medical, actuarial, fraud, underwriting, pricing, adjudication, legal, regulatory or operational evidence.
+**Reported run:** `run_005` (manual mode, Claude Haiku 4.5 as a fresh stateless subagent per decision, freeze `64b7292e8214…`, evaluator 1.2). Experiments 1 (`run_001`) and 2 (`run_004`) are summarised at the end and archived under `archive/`. Every number below is computed from `logs/*.jsonl` by `scripts/summarize_run.py` and the per-attempt records; nothing is estimated. Synthetic data; educational demonstration; nothing here is medical, actuarial, fraud, underwriting, pricing, adjudication, legal, regulatory or operational evidence. **Public article** (Substack-ready, PB voice): `articles/loop-engineering-markdown-skills/article.md` — web version at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
 
-## 1. What changed since experiment 1
+## 1. What was tested
 
-Experiment 1 asked a Fable 5.1-class stateless planner to work eight claims-analysis tasks from briefs that stated the house conventions. It never failed, the evaluator never issued feedback, and a loop that learns from feedback had nothing to learn (0 evolved skills; all scores 4.00 first attempt). Rather than argue with a ceiling, experiment 2 replaces the planner with something that *starts ignorant of the conventions*: a deterministic **rule learner** (`src/rule_learner.py`, runtime mode `rule_learner`, D-18) that
+Four questions an insurance analytics team is actually asked, on the synthetic HLT-008 claims sample (12,845 medical claims), in a fixed order:
 
-- starts every task from the catalogue's textbook defaults (all-claims denominators, adjudication date for trends, no small-group flag, preprocessing fitted on all data, leaky default features, no caveats);
-- changes a choice only when the evaluator's feedback on the current task recommends it, or when a retrieved skill carries a machine-readable convention (`param:<name>=<value>`, `list:<name>+=<value>`, `list:<name>-=<value>`, `component:<id>`);
-- generalises conventions **by parameter name** — "any `denominator` means adjudicated claims", "any `min_group_size` is 30" — and proposes one skill per task containing only conventions no existing skill already holds, with the feedback ids as provenance.
+| # | Task | The sponsor's question (blinded brief) | What the frozen checker holds (examples of golden values) |
+|---|---|---|---|
+| 1 | T2 Describe the book | How many claims, split by status? What is our denial rate? How common is the fraud flag? Amounts? Monthly volume? | 12,845 claims; status mix Paid 10,511 / Denied 1,286 / Adjusted 542 / Pended 506; **denial rate = 1,286 / 12,339 = 10.42 %** over adjudicated claims (Pended excluded); fraud flag 647 / 12,845 = 5.04 %; billed total $21.25 M, median $429.52; monthly trend keyed on service start date, 36 months from 2021-01; report must show numerator / denominator for every rate and say the data is synthetic |
+| 2 | T4 Where denials happen | Which denial codes dominate, how many claims carry no code, how does the denial rate differ by claim type, specialty, network, place of service, prior auth? | code shares over **denied** claims (CO-15 18.7 %, CO-4 16.0 %, CO-11 11.4 % …); 11,559 claims without a code, 0 among denied; Professional denial rate 693 / 6,754 = 10.26 %; all five segments; segments under 30 claims flagged; small-groups caveat |
+| 3 | T3 Providers & network | Where do money and denials go by specialty and network? Who are the top-10 rendering providers? | In-network denial rate 1,095 / 10,370 = 10.56 % vs out-of-network 191 / 1,969 = 9.70 %; each group with count, paid sum, denial and fraud rate; join to the provider directory verified many-to-one, 0 unmatched; top-10 providers by claim count (first: 115 claims, Physical Therapy, in-network); association-not-causation caveat |
+| 4 | T7 High-cost model | Which incoming claims will land in the most expensive 5 %? | 25 % hold-out with seed 42; **threshold $3,198.99 computed on the training split only** (all-data value $3,161.93 would be wrong); positive rate 5.00 % train / 4.67 % test; amount fields, the pre-computed high-cost flag and ids are forbidden features; preprocessing fitted on train only; logistic regression plus a tree model; **ROC-AUC must fall in [0.60, 0.95]** — leakage-free models reach 0.89–0.91, leaky ones 0.997 |
 
-Everything else is unchanged: the same frozen task suite, rubric (152 checks) and golden pack (`freeze_sha256 1566c569…`), the same LangGraph, the same three conditions, `max_retries = 2`, and the stopping rule "pass → finalise". The runtime still makes no model API calls; in this experiment it makes no LLM calls of any kind. Two fixes were made between the first and the reported run and are logged as D-19: the evaluator's caveat-keyword check could be satisfied by the condition name `baseline` appearing in a report's own header (evaluator 1.0 → 1.1), and the learner now learns list *removals* only from exclusion-type feedback. Runs `run_002` and `run_003` are archived; `run_004` is reported.
+76 rubric checks across the four tasks (21 / 17 / 20 / 24), five dimensions (correctness, completeness, reproducibility, statistical discipline, communication), score 0–4, pass = score ≥ 3.5 and no critical check failed. The pack was built by independent reference code, reviewed by the user, and frozen by hash before the run.
 
-## 2. Results — quality on the first attempt (`logs/experiment_events.jsonl`, `status = attempt`, `attempt = 1`)
+### The loop
 
-| condition | T1 | T2 | T3 | T4 | T5 | T6 | T7 | T8 | mean | mean T2–T8 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| baseline | 1.38 | 1.28 | 0.73 | 1.18 | 2.29 | 2.24 | 1.93 | 1.21 | 1.53 | 1.55 |
-| reflection_only | 1.38 | 1.28 | 0.73 | 1.18 | 2.29 | 2.24 | 1.93 | 1.21 | 1.53 | 1.55 |
-| skill_learning | 1.38 | **1.55** | **1.36** | **2.21** | 2.29 | **3.02** | **3.18** | **1.55** | **2.07** | **2.17** |
+Plan (agent picks components and parameters from a fixed catalogue) → Run (deterministic pandas / scikit-learn) → Check (frozen evaluator) → pass: next task · fail: Reflect and Revise (agent) → Run again, up to five attempts. After each attempt the agent is shown **only the three most severe findings**, the scorecard and a count of further failures; the literal parameter fix is withheld (decision D-21).
 
-Baseline and reflection_only are identical on first attempts by construction (neither carries anything between tasks), which is also the check that the evaluator now grades conditions symmetrically. `skill_learning` is identical on T1 (nothing learned yet) and higher on six of the seven later tasks; T5 is unchanged because its first-attempt failures are task-specific (feature lists and a leakage-assessment component) rather than conventions.
+### Three arms
 
-Mean first-attempt score by rubric dimension, T2–T8:
+| Arm | Sees the checker's feedback? | Carries anything between tasks? | Analogue in the literature |
+|---|---|---|---|
+| `reflection_only` — checker, no memory | yes (3 findings per attempt) | no | verification loop / within-rollout refinement |
+| `skill_learning` — checker + skill notebook | yes | yes: after a pass, the agent may write one reusable lesson as a Markdown skill; skills are retrieved before planning later tasks; the library starts **empty** | cross-task accumulation (Reflexion / Voyager-style memory) |
+| `self_refine` — self-review only | **no** — the checker scores every attempt for the record, but the agent only sees its own report and metrics and decides accept / revise | no | Self-Refine (Madaan et al., 2023) |
 
-| dimension | baseline = reflection_only | skill_learning |
-|---|---|---|
-| correctness | 2.47 | 2.47 |
-| completeness | 1.49 | 1.65 |
-| reproducibility | 3.45 | 3.45 |
-| statistical discipline | 0.12 | **0.81** |
-| communication | 0.23 | **2.43** |
+The operator was a fresh, stateless Claude Haiku 4.5 subagent for every decision (46 in total), spawned inside the author's Claude Code session, using an operator definition that carries **no** list of analytical conventions. No API key, no Agent SDK.
 
-The gain is where a convention *is* the requirement — denominators stated, small groups flagged, leakage exclusions, caveats and citations in the report — and absent where correctness depends on task-specific scope (which segments, which sources, which features).
+## 2. What happened
 
-## 3. Results — reliability (`logs/experiment_events.jsonl`)
+### Attempts and scores (frozen checker, every attempt)
 
-| condition | first-attempt passes | retries | execution errors | final score | operator steps (cap 64) |
-|---|---:|---:|---:|---:|---:|
-| baseline | 0 / 8 | 8 | 0 | 4.00 on every task | 16 |
-| reflection_only | 0 / 8 | 8 | 0 | 4.00 on every task | 24 |
-| skill_learning | 0 / 8 | 8 | 0 | 4.00 on every task | 38 |
+| Task | Checker, no memory | Checker + skills | Self-review only |
+|---|---|---|---|
+| 1 Describe the book | 2.16 → 3.13 → **4.00** (3 attempts) | 2.83 → **3.80** (2) | 2.89, agent said "done" → **fail** |
+| 2 Where denials happen | 2.07 → 3.00 → **3.84** (3) | 3.31 ★ → **4.00** (2) | 3.14, agent said "done" → **fail** (critical: denominator) |
+| 3 Providers & network | 2.34 → **3.87** (2) | 2.09 ★ → **3.51** (2) | 1.21 → 1.61, agent said "done" → **fail** |
+| 4 High-cost model | 2.75 → **3.60** (2) | 3.15 → **3.80** (2) | 2.62 → **3.60**, agent said "done" → pass |
+| **Total attempts** | **10** | **8** | 6 (stopped by its own verdict) |
+| Failed checks on first tries | 8 + 8 + 8 + 5 = **29** | 5 + 3 + 10 + 4 = **22** | 5 + 4 + 13 + 6 = 28 |
+| First-attempt mean score | 2.33 | 2.85 | 2.47 |
+| Tasks passed (checker) | 4 / 4 | 4 / 4 | **1 / 4** |
 
-Every task in every condition needed exactly one revision and then passed: the evaluator's feedback carries the exact fix (`related_components`), so the second attempt is always correct. The skills raise where the first attempt *starts*, not yet whether it passes — T6 and T7 reached 3.02 and 3.18 first-attempt in `skill_learning` against a pass threshold of 3.5. Reliability in the sense of fewer retries would need conventions to cover a task's whole rubric, which they do not.
+★ = the learned skill was cited in that plan.
 
-## 4. Results — skills (`logs/skill_events.jsonl`, `skills/evolved/run_004/`)
+### The one skill that was learned
 
-- Proposed 6, validated 6, persisted 6 (one after each of T1–T6; T7's and T8's reflections produced nothing new for ≥ 2 remaining tasks). No rejections of a real proposal; the two `skill_rejected` events at T7/T8 are the validator recording a null proposal.
-- Retrievals 61 (foundational + evolved, top-8 by tag/keyword score), reuse events 22. Reuse counts: skill 001 (after T1: data-contract scope, duplicate keys, date ranges, join pairs, synthetic/sample caveats) 7; 002 (after T2: adjudicated denominator, `service_date_from`, quantiles, `show_denominators`) 5; 003 (after T3: `min_group_size = 30`, both grouping fields, provider ranking, small-group/association caveats) 5; 005 (after T5: leakage assessment, permitted comparison features, `fraud_pattern_type` excluded) 3; 006 (after T6: stratified 25 % split, `fit_on = train_only`, a tree model) 2; **004 (after T4: denial-code scope and the five segments) 0 — never reused, the bloat case the brief asked to be reported.**
-- Validated *useful* skills (persisted, then retrieved and applied on a later task): 001, 002, 003, 005, 006.
-- Over-generalisation observed: the T5 skill's permitted-feature additions (including `allowed_amount` and `paid_amount`, legitimate for a fraud comparison) fire on T7, where amount fields are target-derived. T7 still failed its first attempt in `skill_learning` — at 3.18 rather than baseline's 1.93 — and the T7 feedback corrected it. A convention learned by parameter name can be wrong for a task with a different target; the loop absorbs that through the same feedback path.
+After passing task 1, the `skill_learning` agent wrote `evolved_run_005_001` — *Correct denial-rate denominator selection*: compute denial rates over adjudicated claims (Paid, Denied, Adjusted), exclude Pended, record numerator and denominator definitions, set `denominator_option: adjudicated_claims`. Provenance: feedback ids `T2-denial_rate_denominator`, `T2-denial_rate_value`. The validator asked for one revision (missing `expected_artifacts`), then accepted it. It was retrieved on all three later tasks and cited in the plans of tasks 2 and 3; on task 4 (a model, no denial rate) the agent correctly did not use it. No further skill was proposed: for tasks 2–4 the agent judged that no lesson applied to at least two remaining tasks.
 
-Figures generated from these logs: `artifacts/figures/skill_accumulation.png`, `skill_utility.png`, `skill_lifecycle_graph.png` (observed lifecycle, not the designed topology), `rubric_heatmap.png`, `reliability_curve.png`, `learning_curve.png` (final scores, flat at 4.00 — the informative curve is the first-attempt one above, drawn in `articles/loop-engineering-markdown-skills/assets/first_attempt_by_task.png`).
+Where it bit: on task 2 the no-memory arm's first plan used the wrong denominator and no small-group threshold (8 failed checks, one critical); the skill arm's first plan set `adjudicated_claims` and `min_group_size: 30` (3 failed checks, none critical) and passed one attempt earlier.
 
-## 5. How the decisions happened
+### The self-review arm
 
-No LLM was involved in `run_004`: every plan, reflection and proposal was produced by `rule-learner-v1` (`provider_mode: rule_learner`, `operator: deterministic-rule-learner`, recorded on all 72 experiment events). The run is therefore exactly reproducible (`uv run python -m src.run_experiment run-auto --run-id <new id> --mode rule_learner` regenerates the same numbers) and cost no model tokens. That is also its main limitation: the "intelligence" being demonstrated is the loop and its memory, not a model's reasoning.
+The agent accepted its own first attempt on tasks 1 and 2 with confident summaries ("no analytical errors or missing requirements identified") while the checker recorded a wrong denial rate (1,286 / 12,845 instead of 1,286 / 12,339) and a critical denominator miss. On task 3 it asked itself for one revision (add a synthetic-data caveat, show denominators) and then accepted an output that still lacked the separate specialty and network breakdowns — 11 failed checks, score 1.61. On task 4 it caught the two things that matter most in a first model — the threshold computed on all data and the amount fields leaking the target — revised, and passed at 3.60. Net: four "done" declarations, one checker pass.
 
-## 6. The frozen target
+### By rubric dimension (first attempt → final, mean over the four tasks)
 
-Unchanged from experiment 1: Hugging Face `xpertsystems/hlt008-sample` at revision `7309ddb30e67468748b7aa9182d8517fe28c2f9c` (CC-BY-NC-4.0, fully synthetic); 52 golden values reviewed by the user on 2026-09-07 and frozen by hash; e.g. denial rate 0.104222 = 1,286 / 12,339 adjudicated claims, fraud prevalence 0.050370, high-cost threshold 3,198.99 from the training split. *The agent was measured on whether it produced the expected claims metrics, artifacts, modelling safeguards and caveats — not on whether it thought its own answer was good.*
+| Dimension | Checker, no memory | Checker + skills | Self-review only |
+|---|---|---|---|
+| correctness | 2.07 → 4.00 | 2.18 → 4.00 | 1.77 → 2.27 |
+| completeness | 3.08 → 4.00 | 3.08 → 4.00 | 3.33 → 3.33 |
+| reproducibility | 4.00 → 4.00 | 4.00 → 4.00 | 4.00 → 4.00 |
+| statistical discipline | 1.50 → 4.00 | 1.78 → 3.47 | 1.10 → 1.82 |
+| communication | 1.00 → 3.13 | 3.17 → 3.42 | 2.13 → 2.63 |
 
-## 7. What did not work / surprises
+## 3. Reading the result honestly
 
-1. **The evaluator was not condition-blind** until D-19: a caveat keyword ("baseline" for *model limitations*) matched the condition's own name in the report. Symmetry between baseline and reflection_only on first attempts is now a standing check.
-2. **Reflection without memory is worth nothing here.** With the fix carried by the feedback itself, `reflection_only` costs eight extra operator steps and changes no outcome.
-3. **Conventions transfer, scope does not.** Six of seven later tasks improved on the first attempt, none passed on it. The skill after T4 was never reused because it only encodes T4's segment list.
-4. **Learned removals must be restricted.** Version 1 of the learner "unlearned" caveats that a golden merely did not list; only exclusion-type feedback (leakage, prohibited or protected fields) should teach a removal.
+- **The verification loop now visibly iterates.** With only three findings per attempt and no literal fix, the no-memory arm needed 10 attempts for 4 tasks and its scores climb step by step (experiment 2's loop always closed after one retry because the feedback carried the whole checklist with fixes).
+- **Memory helped where the lesson applied.** The single learned skill was about denominators; it was cited on the two later tasks that compute rates and those tasks passed one attempt earlier or with far fewer first-try failures (task 2: 3 vs 8). The skill arm needed 8 attempts to the no-memory arm's 10 and 22 first-try failures to 29.
+- **But part of the gap is operator variance, not memory.** The two checker arms drew different first plans from a stochastic model: on task 1, with an empty library, the skill arm already scored 2.83 to the no-memory arm's 2.16. With four tasks and one run, the attempt counts are suggestive, not proof. A fair reading: the direction is right, the size is uncertain.
+- **Self-review is not a checker.** The agent declared itself done on every task; the frozen checker failed three of the four. The one it passed is the one where its own review happened to name the same two problems the checker weighs most (leakage, train-only threshold). This is the evaluator-outside-the-loop point made concrete: an audit performed by the auditee is a status report.
+- **Haiku 4.5 was a competent, fallible analyst.** 46 decisions, 0 invalid responses, plans that map feedback onto the catalogue correctly every time; it simply does not know an unwritten house rule until someone tells it — which is the situation the experiment was built to study.
 
-## 8. Limitations
+## 4. Limitations
 
-A rule-based learner with no language understanding; conventions keyed by parameter name only; a single deterministic run (so no variance to report, and no claim of significance); a catalogue-bounded planner; retrieval by tag overlap with `k = 8`; `skill_learning` still bundles access to six foundational skills with evolved-skill accumulation (the foundational skills are inert for this learner, so here the bundle is harmless, but it remains in the design); deterministic, structural evaluation of prose; synthetic data whose distributions come from a generator. Findings are illustrative.
+Single run per arm; a stochastic operator whose variance is comparable to the effect on some tasks; four tasks, one of which (the model) offers no rate-based lesson to reuse; the goldens encode one team's conventions (adjudicated-claims denominator, 30-claim small-group threshold, service-date months) — a different team would freeze different rules; a skill library of one is not a library; the checker is only as good as the 76 rules and the briefs were blinded by the same author who wrote the rubric. Synthetic data throughout: nothing here is evidence about any real payer, provider or member.
 
-## 9. Reproduce it
+## 5. Earlier experiments (archived)
+
+- **Experiment 1, `run_001`** — Fable 5.1 operators with briefs that stated the conventions: every arm 4.00 first attempt on all eight tasks, no feedback, no skills. A ceiling, not a result. `archive/experiment-1_run_001/`.
+- **Experiment 2, `run_004`** — a deterministic rule learner from textbook defaults, full feedback with literal fixes: first-attempt mean 1.55 (no memory) vs 2.17 (skills) over T2–T8, six skills, 22 reuses — but exactly one retry per task, because the feedback handed over the whole fix. `archive/experiment-2_run_004/` (write-up v2 inside).
+
+Experiment 3 is not comparable number-for-number with either: different briefs, tasks, feedback regime, operator and freeze.
+
+## 6. Reproduce
 
 ```bash
-uv sync --extra dev
-uv run python -m src.download_data && uv run python -m src.profile_data
-uv run python -m src.build_goldens --check                              # golden pack reproduces from the data
-uv run python -m src.run_experiment run-auto --run-id run_005 --mode rule_learner
-uv run python scripts/summarize_run.py --run-id run_005
-uv run python articles/loop-engineering-markdown-skills/assets/make_figures.py   # set RUN inside if you change the id
-uv run python scripts/pipeline.py verify
+uv run --extra dev pytest -q                                   # 108 tests
+uv run python -m src.build_goldens --check                     # golden pack reproduces exactly
+uv run python -m src.run_experiment init --run-id run_006 --conditions reflection_only,skill_learning,self_refine --mode manual
+uv run python -m src.run_experiment advance-all --run-id run_006   # then one fresh operator subagent per request (docs/OPERATOR_PROTOCOL.md)
+uv run python scripts/summarize_run.py --run-id run_006
+uv run python articles/loop-engineering-markdown-skills/assets/make_figures.py
 ```
 
-## 10. Draft LinkedIn post (≤ 1,300 characters)
+## Evidence index
 
-Second attempt at "loop engineering" with LangGraph, after the first one ceilinged out (a strong planner never failed, so it never learned).
+`logs/experiment_events.jsonl` (attempt and done records: `score_by_attempt`, `attempts_to_pass`, `n_failed_checks`, `n_feedback_shown`, `skills_applied`, `self_declared_pass`) · `logs/skill_events.jsonl` · `logs/graph_events.jsonl` (`self_evaluate` verdicts next to the frozen score) · `logs/feedback_events.jsonl` (what was shown, with `source`) · `artifacts/manual/run_005/` (46 request/response pairs) · `artifacts/tasks/run_005/` (every attempt's metrics, report and charts) · `skills/evolved/run_005/` · `artifacts/reports/run_summaries.json` · `config/freeze_manifest.json`.
 
-This time the planner is deliberately naive: a rule learner that starts every claims-analysis task from textbook defaults and only changes a choice when the evaluator's feedback tells it to. What it learns, it writes into versioned Markdown skills as conventions — "any denominator means adjudicated claims", "small groups are < 30" — and retrieves on the next task.
+## LinkedIn draft
 
-Eight frozen tasks, three conditions, a golden pack hashed before the run, zero model calls, two minutes end to end.
+I gave a small model four claims-analytics tasks and did not tell it the house rules. Which denominator for a denial rate? Where does the "high cost" threshold come from? It had to learn those from a checker that only ever names the three biggest problems.
 
-Result: first-attempt quality rose from 1.55 to 2.17 (out of 4) on tasks 2–8 with persistent skills, driven almost entirely by statistical discipline (0.12 → 0.81) and communication (0.23 → 2.43). Correctness didn't move — conventions transfer, task-specific scope doesn't — and no task passed first time, so retries stayed at one per task. One learned skill was never reused. Reflection without memory changed nothing.
+Three ways of closing the loop, same tasks, same frozen answer key:
+– checker feedback, no memory: 10 attempts to pass 4 tasks
+– checker feedback + a notebook of lessons it wrote itself: 8 attempts, and the one lesson it kept (adjudicated-claims denominator) showed up in later plans
+– reviewing its own work with no checker: declared "done" four times, actually passed once
 
-Synthetic data, one deterministic run, illustrative. Repo, logs and the full write-up: [link].
+One run, synthetic data, small numbers — but the shape is the point. The loop is the product; the evaluator has to sit outside it.
 
-## Appendix — evidence index
-
-| Claim | Source | Field(s) |
-|---|---|---|
-| First-attempt scores per task and condition | `logs/experiment_events.jsonl` (run_004, `status = attempt`, `attempt = 1`) | `evaluator_score_total`, `evaluator_score_by_dimension` |
-| Retries, errors, final scores, first-attempt passes | `logs/experiment_events.jsonl` (`status = done`) | `retry_count`, `execution_errors`, `first_attempt_passed`, `evaluator_score_total` |
-| Operator steps 16 / 24 / 38 | `logs/runs/run_004.json` | `operator_steps_used` |
-| 6 skills proposed/validated/persisted; 61 retrievals; 22 reuses; per-skill counts | `logs/skill_events.jsonl`; `skills/evolved/run_004/*.md`; `skills/index.json` | `event`, `skill_id`, `reuse_count` |
-| Provider metadata and evaluator version | `logs/experiment_events.jsonl` | `provider_mode`, `operator`, `model_identifier`, `evaluator_version` |
-| Golden values and freeze | `goldens/*.json`, `artifacts/reports/golden_review.md`, `config/freeze_manifest.json` | `expected_metrics`, `freeze_sha256` |
-| Evaluator fix and learner change | `docs/decision-log.md` D-19; `archive/experiment-2_run_00{2,3}_pre-fix/` | — |
-| Experiment 1 (null result) | `archive/experiment-1_run_001/` | — |
+Write-up and code in the comments. #AgenticAI #LangGraph #ClaimsAnalytics #Evaluation

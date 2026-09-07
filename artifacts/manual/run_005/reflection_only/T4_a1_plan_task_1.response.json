@@ -1,0 +1,27 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": ["claim_type", "provider_specialty", "network_status", "place_of_service", "auth_required_flag"]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["descriptive_only"]
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Denial code ranking with scope=denied_claims shows code frequency and share within denied claims, with default quantify_missing=overall addressing missing codes. Denial rate by segment across all five requested dimensions answers rate variation by claim type, specialty, network status, place of service, and auth requirement. Report documents results with descriptive_only caveat."
+}

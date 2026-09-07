@@ -1,0 +1,50 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty",
+          "network_status",
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_005_001"
+  ],
+  "rationale": "Revised plan addresses three feedback findings on missing grouping dimensions. Prior plan grouped only by the composite provider_specialty+network_status. Per reflection guidance, group_by now includes all three available options: provider_specialty alone, network_status alone, and their composite. This produces the missing network_status groups and missing provider_specialty groups identified in failed checks. min_group_size raised from 0 to 30 to enable correct small-group flagging per feedback remediation guidance (small-group flag at 30 claims). All other parameters and components unchanged; retrieved skill on denial-rate denominator selection remains applied.",
+  "changes_summary": "In group_comparison: (1) expanded group_by from single composite ['provider_specialty+network_status'] to three entries ['provider_specialty', 'network_status', 'provider_specialty+network_status'] to generate the missing network_status-only and provider_specialty-only groups; (2) raised min_group_size from 0 to 30 to correctly flag small groups per feedback criteria."
+}

@@ -45,8 +45,8 @@ from src.utils import ARTIFACTS_DIR, CONFIG_DIR, LOGS_DIR, atomic_write_json, en
 # --------------------------------------------------------------------------- constants (one visual system)
 
 # Fixed condition order and colours (Okabe-Ito, colour-blind safe), identical in every figure and in the dashboard.
-CONDITION_ORDER: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning", "foundational_only")
-CONDITION_COLORS: dict[str, str] = {"baseline": "#0072B2", "reflection_only": "#E69F00", "skill_learning": "#009E73", "foundational_only": "#CC79A7"}
+CONDITION_ORDER: tuple[str, ...] = ("baseline", "reflection_only", "skill_learning", "foundational_only", "self_refine")
+CONDITION_COLORS: dict[str, str] = {"baseline": "#0072B2", "reflection_only": "#E69F00", "skill_learning": "#009E73", "foundational_only": "#CC79A7", "self_refine": "#D55E00"}
 # Fills for node-membership groups in the topology diagram, assigned from the largest group (all conditions) down.
 MEMBERSHIP_FILLS: tuple[str, ...] = ("#ffffff", "#fbe7c6", "#e6dcf2", "#c9ebdc", "#dbe7f3", "#f6d6d1")
 OTHER_COLOR = "#8b949e"

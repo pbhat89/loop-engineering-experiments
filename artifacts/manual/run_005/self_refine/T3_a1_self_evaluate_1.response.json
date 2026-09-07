@@ -1,0 +1,16 @@
+{
+  "verdict": "revise",
+  "findings": [
+    {
+      "issue": "Report lacks caveats disclosure that data is synthetic. Network management needs this context to interpret exploratory vs. operational results appropriately.",
+      "severity": "high",
+      "suggested_change": "write_report: set caveats parameter to include 'synthetic_data'"
+    },
+    {
+      "issue": "Denial and fraud rates are shown as decimals (e.g., 0.115) without denominators, obscuring whether a rate represents 1 denied claim in 9 or 115 in 1000. This reduces transparency and actionability for network management decisions about denial patterns.",
+      "severity": "high",
+      "suggested_change": "write_report: set show_denominators to true"
+    }
+  ],
+  "summary": "Plan correctly executes all task requirements and produces required artifacts, but report omits standard caveats and lacks transparency in rate metrics."
+}

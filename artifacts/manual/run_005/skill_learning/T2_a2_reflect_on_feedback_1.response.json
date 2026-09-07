@@ -1,0 +1,20 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T2-paid_amount_quantiles",
+      "correction": "Change the financial_summary component's statistics parameter from 'sum_mean' to 'sum_mean_quantiles' to report median, p90, and p99 percentiles alongside sums and means for paid_amount and other amount columns, fully capturing the distribution of skewed financial data."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When computing a denial rate or similar rate metric, use only adjudicated claims (claim_status in {Paid, Denied, Adjusted}) as the denominator, excluding Pended claims which are not yet decided. Always record both the numerator and denominator definitions and the denominator_option parameter.",
+      "applicable_task_ids": ["T4", "T3"],
+      "source_feedback_ids": ["T2-denial_rate_denominator", "T2-denial_rate_value"]
+    },
+    {
+      "lesson": "When computing monthly trends of claims activity, key the trend on service_date_from (when care occurred) rather than adjudication_date (when claims were processed), as adjudication dates lag service and can introduce inconsistencies in historical trend analysis.",
+      "applicable_task_ids": ["T4", "T3"],
+      "source_feedback_ids": ["T2-monthly_date_column"]
+    }
+  ]
+}

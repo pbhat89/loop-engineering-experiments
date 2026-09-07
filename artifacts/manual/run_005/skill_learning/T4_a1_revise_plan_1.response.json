@@ -1,0 +1,46 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "claim_type",
+          "provider_specialty",
+          "network_status",
+          "place_of_service",
+          "auth_required_flag"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_005_001"
+  ],
+  "rationale": "Revised plan addresses all three evaluation findings. Changed denial_code_ranking scope from 'all_claims' to 'denied_claims' so each code's share is computed relative to denied claims only, making shares sum to 1.0 and representing each code's actual share of denials (corrects T4-code_ranking correctness and T4-code_scope statistical_discipline issues). Changed quantify_missing from 'overall' to 'by_status' to report missing denial codes broken down by claim status (Paid, Denied, Adjusted, Pended), providing the completeness detail required (corrects T4-missing_codes_by_status). Denial rates continue using adjudicated_claims denominator per the evolved skill on denominator selection, excluding Pended claims to accurately reflect denial rate performance.",
+  "changes_summary": "Updated denial_code_ranking scope from 'all_claims' to 'denied_claims' and quantify_missing from 'overall' to 'by_status'. These changes ensure denial codes are ranked among denied claims only (so shares sum to 1.0 representing each code's share of actual denials) and missing codes are reported by claim status, directly addressing the evaluation feedback on correctness and completeness."
+}

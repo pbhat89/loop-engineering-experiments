@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T4-segment_denominator",
+      "correction": "Change denial_rate_by_segment denominator parameter from 'all_claims' to 'adjudicated_claims' (Paid, Denied, Adjusted claims) and record this choice."
+    },
+    {
+      "feedback_id": "T4-min_group_size",
+      "correction": "Change denial_rate_by_segment min_group_size parameter from 0 to 30 to flag segments with fewer than 30 claims as unstable."
+    },
+    {
+      "feedback_id": "T4-segment_rates",
+      "correction": "Recalculate segment denominators and rates with the corrected parameters (denominator='adjudicated_claims', min_group_size=30)."
+    }
+  ],
+  "reusable_lessons": []
+}

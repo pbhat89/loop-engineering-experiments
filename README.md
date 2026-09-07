@@ -1,39 +1,41 @@
 # claims-skill-loop
 
-An educational, reproducible **LangGraph** experiment in loop engineering: a claims-analysis agent plans a task from a fixed component catalogue, deterministic code executes it, a deterministic evaluator scores the output against a **frozen golden pack and rubric**, the agent reflects on the feedback, distils reusable lessons into **versioned Markdown skills**, and retrieves those skills on later tasks. Three conditions — `baseline`, `reflection_only`, `skill_learning` — run the same eight tasks so the effect of persistent skills can be compared.
+An educational, reproducible **LangGraph** experiment in loop engineering on synthetic healthcare claims: a claims-analysis agent plans a task from a fixed component catalogue, deterministic code executes it, a deterministic evaluator scores the output against a **frozen golden pack and rubric**, the agent reflects on the (capped) feedback and retries, distils reusable lessons into **versioned Markdown skills**, and retrieves those skills on later tasks. Three arms run the same tasks so the effect of the verifier and of persistent skills can be compared.
 
 ## Honest framing
 
 - **Synthetic data only.** HLT-008 synthetic healthcare claims sample (CC-BY-NC-4.0). Nothing here is medical, actuarial, fraud, underwriting, pricing, adjudication, legal, regulatory, or operational evidence.
 - **External procedural memory, not training.** The "learning" is Markdown skill files retrieved into the planner's context; no model weights change.
-- **No model API calls.** In `manual` mode the graph pauses on a LangGraph interrupt at each decision node and a fresh, **stateless Claude Code subagent** (Claude Fable 5.1) answers one JSON request (experiment 1). In `rule_learner` mode a deterministic convention learner answers instead — no LLM at all (experiment 2). `stub` mode uses trivial fixtures for tests and is always labelled non-LLM simulation. No API key, Agent SDK, headless-CLI bridge, or session-credential reuse of any kind.
-- **Illustrative results.** One run per condition; comparisons are reported as illustrative, populated only from the recorded logs.
+- **No model API calls.** In `manual` mode the graph pauses on a LangGraph interrupt at each decision node and a fresh, **stateless Claude Code subagent** answers one JSON request (experiment 1: Claude Fable 5.1; experiment 3: Claude Haiku 4.5). In `rule_learner` mode a deterministic convention learner answers instead — no LLM at all (experiment 2). `stub` mode uses trivial fixtures for tests and is always labelled non-LLM simulation. No API key, Agent SDK, headless-CLI bridge, or session-credential reuse of any kind.
+- **Illustrative results.** One run per arm; comparisons are reported as illustrative, populated only from the recorded logs.
 
 ## Results so far
 
-| Experiment | Planner | Headline (first-attempt rubric score, 0–4, T2–T8) | Where |
-|---|---|---|---|
-| 1 — `run_001` | stateless Claude Fable 5.1 subagents, briefs stating the conventions | Ceiling: every condition 4.00 first attempt, 0 retries, 0 feedback → 0 grounded skills (null result) | `archive/experiment-1_run_001/` |
-| 2 — `run_004` | deterministic rule learner starting from textbook defaults | baseline = reflection_only **1.55** vs skill_learning **2.17**; statistical discipline 0.12 → 0.81, communication 0.23 → 2.43; 6 skills persisted, 22 reuses, 1 never reused; still one retry per task | `docs/writeup.md`, `articles/loop-engineering-markdown-skills/` |
+| Experiment | Planner | Suite | Headline | Where |
+|---|---|---|---|---|
+| 1 — `run_001` | stateless Claude Fable 5.1 subagents, briefs stating the conventions | 8 tasks, 3 attempts, full feedback | Ceiling: every condition 4.00 first attempt, 0 retries, 0 feedback → 0 grounded skills (null result) | `archive/experiment-1_run_001/` |
+| 2 — `run_004` | deterministic rule learner from textbook defaults | 8 tasks, 3 attempts, full feedback with literal fixes | baseline = reflection_only **1.55** vs skill_learning **2.17** first-attempt mean (T2–T8); 6 skills, 22 reuses; but every task converged after exactly one retry | `archive/experiment-2_run_004/` |
+| 3 — `run_005` | stateless **Claude Haiku 4.5** subagents, **blinded** briefs and operator, feedback capped to the 3 most severe findings with the fix withheld, 5 attempts, empty starting library | 4 tasks: T2 → T4 → T3 → T7 | **Checker, no memory:** 10 attempts to pass 4 tasks (3, 3, 2, 2), 29 failed checks on first tries. **Checker + skills:** 8 attempts (2, 2, 2, 2), 22 failed checks; one learned skill (adjudicated-claims denominator), applied on 2 of 3 later tasks. **Self-review only:** declared every task done; the frozen checker failed 3 of the 4 (2.89, 3.14, 1.61), passed T7 at 3.60 after the agent caught its own leakage | `docs/writeup.md`, `articles/loop-engineering-markdown-skills/` |
 
-Both are single deterministic or single-operator runs on synthetic data — illustrative, not evidence of anything operational. The article about both experiments (Substack-ready Markdown + a self-contained web version) is in `articles/loop-engineering-markdown-skills/`; read it online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
+All three are single runs on synthetic data — illustrative, not evidence of anything operational. The article about the experiments (Substack-ready Markdown + a self-contained web version) is in `articles/loop-engineering-markdown-skills/`; read it online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
 
 ## Repository layout
 
 ```text
 config/        experiment.yaml, graph.yaml (A1) · tasks.yaml, rubric.yaml (A3) · freeze_manifest.json (L0, Phase 1.5)
 data/          raw/ (git-ignored CSVs) · processed/manifest.json (data contract) · README.md (source, licence, schema)
-docs/          idea, spec, plan (interface contract), tasks (backlog), security-review, decision-log, verification-log, writeup
+docs/          idea, spec, plan (interface contract), tasks (backlog), security-review, decision-log, verification-log, writeup, OPERATOR_PROTOCOL
 goldens/       golden evaluation pack T1–T8, built once by independent reference code and frozen by hash
-skills/        SKILL_SCHEMA.md · foundational/ (6 skills) · evolved/<run_id>/ (learned, immutable) · archived/ · index.json
+skills/        SKILL_SCHEMA.md · foundational/ (6 curated skills, not used in experiment 3) · evolved/<run_id>/ (learned, immutable) · archived/ · index.json
 src/           llm_provider, graph_state, claims_graph, graph_nodes, run_experiment (L0) · download_data, profile_data (A2)
                build_goldens, evaluator (A3) · skill_store, skill_validator (A4) · experiment_logger, dashboard, charts (A5)
-               task_runner + analyses/ (A6) · agent_tracker, utils (L0)
+               task_runner + analyses/ (A6) · rule_learner (experiment 2) · agent_tracker, utils (L0)
 tests/         offline pytest suite (stub mode; data-dependent tests skip without data)
-scripts/       bootstrap.sh, run_all.sh, verify.sh (+ Python equivalents) — provided by the lead in Phase 2
+scripts/       bootstrap.sh, run_all.sh, verify.sh (+ Python equivalents) · summarize_run.py · archive_run.py
 logs/          agent_status.json, agent_events.jsonl, experiment/graph/skill/feedback JSONL, experiment_status.json, checkpoints/
-artifacts/     dashboard/progress.html · figures/ · graphs/ · tasks/<run_id>/… · manual/<run_id>/… · data_profile/ · reports/
-.claude/agents/  seven project subagent definitions (A1–A6 builders + the stateless experiment-operator)
+artifacts/     dashboard/progress.html · figures/ · graphs/ · tasks/<run_id>/… · manual/<run_id>/… (operator transcripts) · data_profile/ · reports/
+archive/       experiments 1 and 2 and the pre-fix / smoke runs, each with a README
+.claude/agents/  the builder subagents plus the two stateless operators (experiment-operator, experiment-operator-blind)
 ```
 
 ## Quickstart
@@ -41,54 +43,64 @@ artifacts/     dashboard/progress.html · figures/ · graphs/ · tasks/<run_id>/
 ```bash
 uv sync --extra dev                      # pinned environment (Python 3.12; pandas 3, scikit-learn 1.9, langgraph 1.2)
 cp .env.example .env                     # optional — defaults already select manual mode, no key needed
-./scripts/bootstrap.sh                   # validate config → one-time dataset download → profile → build goldens   (Phase 2)
-uv run --extra dev pytest -q             # offline tests
-./scripts/run_all.sh                     # config check → data → profile → topology → run conditions → refresh dashboard/charts → verify (Phase 2)
-./scripts/verify.sh                      # tests, log validation, freeze check, security greps                    (Phase 2)
+./scripts/bootstrap.sh                   # validate config → one-time dataset download → profile → build goldens
+uv run --extra dev pytest -q             # offline tests (108)
+./scripts/run_all.sh                     # config check → data → profile → topology → run conditions → refresh dashboard/charts → verify
+./scripts/verify.sh                      # tests, log validation, freeze check, security greps
 ```
 
-Python equivalents: `uv run python -m src.download_data` · `uv run python -m src.profile_data` · `uv run python -m src.build_goldens [--check]` · `uv run python -m src.run_experiment …` · `uv run python -m src.dashboard` · `uv run python -m src.charts --run-id <run_id>`. The `uv run` warning about `VIRTUAL_ENV` is harmless.
+Python equivalents: `uv run python -m src.download_data` · `uv run python -m src.profile_data` · `uv run python -m src.build_goldens [--check]` · `uv run python -m src.run_experiment …` · `uv run python -m src.dashboard` · `uv run python -m src.charts`. The `uv run` warning about `VIRTUAL_ENV` is harmless.
 
 ## Runtime modes
 
 | Mode | Default | What happens | Credentials |
 |---|:-:|---|---|
-| `manual` | **yes** | graph pauses at each LLM-decision node; request JSON written under `artifacts/manual/`; a stateless `experiment-operator` subagent writes the response; the lead resumes | none |
-| `rule_learner` | | a deterministic **convention learner** (`src/rule_learner.py`) answers every decision: textbook catalogue defaults, changed only by evaluator feedback or by a retrieved skill's `param:/list:/component:` tokens, generalised by parameter name; requires the frozen golden pack; experiment 2 | none |
+| `manual` | **yes** | graph pauses at each LLM-decision node; request JSON written under `artifacts/manual/`; a stateless operator subagent writes the response; the lead resumes | none |
+| `rule_learner` | | a deterministic **convention learner** (`src/rule_learner.py`) answers every decision; experiment 2 | none |
 | `stub` | | deterministic fixtures answer every decision; tests and pipeline demos; labelled non-LLM simulation | none |
 | `anthropic_api` | | thin fail-closed adapter around `langchain-anthropic`; refuses to start without `ANTHROPIC_API_KEY`; **not used in this study** | separate Anthropic Console billing, never the Claude Code subscription |
 
 Set with `CLAIMS_SKILL_LOOP_LLM_MODE`; see `.env.example` and `docs/plan.md` §2.
+
+## Experiment 3 in one screen (`config/experiment.yaml`, decision D-21)
+
+| Knob | Value | Why |
+|---|---|---|
+| tasks | `T2, T4, T3, T7` — describe the book, denials by segment, providers & network, high-cost model | four questions an insurance analytics team actually gets asked |
+| briefs | **blinded** — written as a sponsor would ask; no denominators, thresholds, train-only rules or caveats | the loop has to *learn* the house rules from the checker |
+| operator | fresh stateless Claude Haiku 4.5 subagent per request, `experiment-operator-blind.md` (no convention list) | a planner that can fail, without leaking the rubric into its prompt |
+| feedback | the **3 most severe** failed checks per attempt, literal fix withheld; the rest is a count | so the verification loop has to iterate instead of closing after one retry |
+| attempts | up to 5 per task; pass = score ≥ 3.5 and no critical miss | room to watch score-versus-attempt curves |
+| library | starts **empty**; only skills learned in the run are retrievable | learned memory vs none, not curated library vs none |
+| arms | `reflection_only` (checker, no memory) · `skill_learning` (checker + skills) · `self_refine` (agent reviews its own output, never sees the checker) | within-task refinement, cross-task accumulation, and the evaluator-outside-the-loop question |
+| golden change | T7 ROC-AUC target band `[0.60, 0.95]` (was a floor of 0.40) | leakage-free models score 0.89–0.91 here; 0.997+ means the answer leaked into the inputs |
 
 ## The golden-pack step (Phase 1.5) — before any comparative run
 
 1. `uv run python -m src.build_goldens` computes expected metrics, contracts, and checks from the downloaded data with independent pandas code (never the executor's code).
 2. `uv run python -m src.build_goldens --check` reproduces them exactly.
 3. **The user reviews the golden values** (checkpoint).
-4. The lead writes `config/freeze_manifest.json` (SHA-256 of tasks, rubric, goldens, raw data). `init` refuses to start a manual run if any hash drifts, and every evaluation event carries `freeze_sha256`.
+4. The lead writes `config/freeze_manifest.json` (SHA-256 of tasks, rubric, goldens, raw data). `init` refuses to start a manual run if any hash drifts, and every evaluation event carries `freeze_sha256`. Experiment 3 freeze: `64b7292e8214…` (experiments 1–2: `1566c5698a50…`).
 
-## Running the experiment (manual mode)
+## Running the experiment (manual mode, experiment 3)
 
 ```bash
-uv run python -m src.run_experiment run-stub --run-id stub_001                       # full stub run must pass first
-uv run python -m src.run_experiment init    --run-id run_001 --conditions baseline,reflection_only,skill_learning
-uv run python -m src.run_experiment advance --run-id run_001 --condition skill_learning   # prints the pending request path
-#   → lead spawns one fresh experiment-operator subagent with that request path and the matching .response.json path
-uv run python -m src.run_experiment resume  --run-id run_001 --condition skill_learning --response artifacts/manual/run_001/skill_learning/T1_a1_plan_task_1.response.json
-uv run python -m src.run_experiment status  --run-id run_001
+uv run python -m src.run_experiment run-stub --run-id stub_check --conditions reflection_only,skill_learning,self_refine   # pipeline must pass first
+uv run python -m src.run_experiment init        --run-id run_006 --conditions reflection_only,skill_learning,self_refine --mode manual
+uv run python -m src.run_experiment advance-all --run-id run_006      # prints the pending request per condition
+#   → the lead spawns one fresh operator subagent per request (prompt template in docs/OPERATOR_PROTOCOL.md), then advance-all again
+uv run python -m src.run_experiment status      --run-id run_006
+uv run python scripts/summarize_run.py --run-id run_006 --json artifacts/reports/run_summaries.json
+uv run python scripts/archive_run.py --run-id run_006 --folder <name>   # when a run is superseded
 ```
 
-Stopping rules: pass → finalise immediately; `max_retries = 2`; skills proposed only for lessons reusable in ≥ 2 remaining tasks, ≤ 1 revision; hard cap of 64 operator steps per condition; all conditions always run all eight tasks.
+Stopping rules: pass → finalise immediately; `max_retries = 4`; the self-review arm stops when the operator says "accept"; skills proposed only for lessons reusable in ≥ 2 remaining tasks, ≤ 1 revision; hard cap of 64 operator steps per condition; all arms always run all tasks.
 
 ## Running the experiment (rule-learner mode, experiment 2)
 
 ```bash
-uv run python -m src.run_experiment run-auto --run-id run_005 --mode rule_learner   # three conditions, ~2 minutes, no interrupts, no LLM
-uv run python scripts/summarize_run.py --run-id run_005                             # the numbers the write-up cites
-uv run python -m src.charts && uv run python -m src.dashboard                       # figures + dashboard from the logs
+uv run python -m src.run_experiment run-auto --run-id run_007 --mode rule_learner   # deterministic, ~2 minutes, no interrupts, no LLM
 ```
-
-Superseded runs and experiment 1 live under `archive/` with their own READMEs; the goldens, suite, rubric and freeze manifest were never changed between experiments.
 
 ## Where to look while it runs
 
@@ -97,14 +109,16 @@ Superseded runs and experiment 1 live under `archive/` with their own READMEs; t
 | Build tracker + live experiment status (auto-refreshing static HTML) | `artifacts/dashboard/progress.html` |
 | Machine-readable status (current task/node, pending request, steps vs cap, rough ETA) | `logs/experiment_status.json`, `logs/agent_status.json` |
 | Learning curve, reliability curve, rubric heatmap, skill accumulation, skill utility | `artifacts/figures/` |
+| Article figures (score by attempt, attempts and first-try findings, self-review vs checker) | `articles/loop-engineering-markdown-skills/assets/` |
 | LangGraph topology (designed workflow) and observed skill-lifecycle graph (from logs) | `artifacts/graphs/` |
 | Per-attempt task outputs (metrics.json, report.md, charts) | `artifacts/tasks/<run_id>/<condition>/<task_id>/attempt_<n>/` |
+| Operator transcripts (every request and response) | `artifacts/manual/<run_id>/<condition>/` |
 | Learned skills | `skills/evolved/<run_id>/` |
 | Write-up material | `docs/writeup.md`, `artifacts/reports/` |
 
 ## Documentation
 
-`docs/idea.md` (why) · `docs/spec.md` (what, acceptance criteria, stopping rules) · `docs/plan.md` (interface contract every module codes against) · `docs/tasks.md` (weighted backlog driving the dashboard) · `docs/security-review.md` · `docs/decision-log.md` · `docs/verification-log.md` (only checks actually run) · `docs/writeup.md`.
+`docs/idea.md` (why) · `docs/spec.md` (what, acceptance criteria, stopping rules) · `docs/plan.md` (interface contract every module codes against) · `docs/tasks.md` (weighted backlog driving the dashboard) · `docs/OPERATOR_PROTOCOL.md` · `docs/security-review.md` · `docs/decision-log.md` (D-01…D-21) · `docs/verification-log.md` (only checks actually run) · `docs/writeup.md`.
 
 ## Licence and attribution
 

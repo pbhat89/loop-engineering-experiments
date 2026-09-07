@@ -1,0 +1,53 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.rendering_npi->providers.provider_npi"
+        ]
+      }
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "all_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The plan loads tables, validates rendering provider join cardinality, then executes two complementary analyses: group_comparison aggregates volume, paid amounts, denial and fraud rates by specialty and network status jointly (addressing the requirement to compare across both dimensions); provider_ranking identifies the top 10 rendering providers by claim volume with their specialty and network status from the provider directory. Report parameters enforce statistical discipline (show_denominators, cite_artifacts) and data quality (min_group_size=30 for small-group flagging). Caveats acknowledge synthetic data, descriptive scope, and small-group limits."
+}

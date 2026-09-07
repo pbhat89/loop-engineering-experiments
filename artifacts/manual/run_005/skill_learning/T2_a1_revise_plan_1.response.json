@@ -1,0 +1,63 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": [
+          "claim_status"
+        ],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "adjudicated_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": [
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount"
+        ],
+        "statistics": "sum_mean"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "service_date_from",
+        "metrics": [
+          "claim_count"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This revised plan addresses all three feedback items from the evaluation. (1) The denial_rate component now uses 'adjudicated_claims' as the denominator, excluding pending claims and correctly computing the rate over only those claims with final statuses (Paid, Denied, Adjusted). This fixes both the denominator choice and the resulting rate value, aligning with best practices for claims analysis. (2) The monthly_trend component now keys on 'service_date_from' instead of 'adjudication_date', reflecting when care actually occurred rather than when claims were processed, providing a more stable and business-relevant view of historical trends. (3) All other components remain unchanged: claim_volume with status breakdown and figure generation, fraud_prevalence over all claims, financial_summary with billed/allowed/paid amounts and sum/mean statistics, and write_report with denominators visible and citations linking findings to artifacts. All required artifacts continue to be produced: status chart, monthly trend chart and table, financial summary table, and report with embedded metrics.",
+  "changes_summary": "Two parameters corrected per evaluation feedback: (1) denial_rate denominator changed from 'all_claims' to 'adjudicated_claims' to exclude pending claims and compute the correct denial rate (feedback items T2-denial_rate_denominator and T2-denial_rate_value); (2) monthly_trend date_column changed from 'adjudication_date' to 'service_date_from' to key the trend on when care began rather than when claims were adjudicated (feedback item T2-monthly_date_column)."
+}

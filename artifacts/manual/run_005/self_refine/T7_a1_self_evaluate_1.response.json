@@ -1,0 +1,16 @@
+{
+  "verdict": "revise",
+  "findings": [
+    {
+      "issue": "The target threshold (95th percentile of paid_amount) was computed on all_data including the test set, violating train-test separation. The test set should be held out before target definition; including it here inflates performance metrics.",
+      "severity": "high",
+      "suggested_change": "target_definition: threshold_source parameter: change from 'all_data' to 'train_only'"
+    },
+    {
+      "issue": "The feature set includes billed_amount and allowed_amount, which are directly correlated with the target (paid_amount). This represents information leakage; the model learns to predict cost from related cost fields rather than from clinical/operational characteristics available at claim intake, defeating the purpose of an early-warning model.",
+      "severity": "high",
+      "suggested_change": "feature_set: features parameter: remove 'billed_amount' and 'allowed_amount' from the list"
+    }
+  ],
+  "summary": "Two critical methodological issues compromise validity: (1) target threshold computed on test data, and (2) target-correlated amount fields in features. Both must be corrected in revision."
+}

@@ -1,12 +1,16 @@
 # Fixed task suite and plan-component catalogue (A3). Binding contract: docs/LEAD_CATALOGUE_SKELETON.md.
 # Component ids, parameter options, defaults and produced metric keys are frozen; objectives are the analyst
 # brief an operator sees. Defaults are the naive analyst choice and are never automatically the golden choice.
+# Experiment 3 (D-21): task_order is the four-task suite T2 -> T4 -> T3 -> T7 and the briefs of those four tasks are
+# *blinded* - written the way a business sponsor would ask, without the house conventions (denominators, small-group
+# thresholds, train-only fitting, required caveats) that the frozen rubric and goldens enforce. The loop has to learn
+# those from feedback. T1, T5, T6 and T8 keep their experiment-1/2 briefs and are not run.
 # Plan grammar: a param has options + default; `multi: true` params take a list whose items are all in options;
 # option values are matched by string form ("30" matches 30). Omitted params take defaults.
 # `produces` lists the metric keys the executor writes to metrics.json (shape documented as a string);
 # `artifacts` lists the side files a component writes into output_dir.
 suite_version: "1"
-task_order: [T1, T2, T3, T4, T5, T6, T7, T8]
+task_order: [T2, T4, T3, T7]
 
 shared_conventions:
   all_claims: every row of medical_claims
@@ -144,14 +148,10 @@ tasks:
   - task_id: T2
     title: Claims portfolio description
     objective: >-
-      Describe the medical claims portfolio for a payer analytics team. Report claim volume and the status mix.
-      Report the denial rate with its numerator and denominator stated explicitly, computed among claims whose
-      adjudication has concluded (claims still pending have not yet been accepted or denied). Report the
-      prevalence of the synthetic fraud label across the whole portfolio, again with numerator and denominator.
-      Summarise billed, allowed and paid amounts with totals, means and distribution quantiles. Show a monthly
-      volume trend keyed to the month in which the service began, and state how many rows had unparseable
-      dates. Every rate in the report must show its denominator. State that the data is synthetic and that the
-      analysis is descriptive.
+      The head of claims wants a one-page picture of the medical claims book. How many claims do we have and how
+      do they split by status? What is our denial rate? How common is the fraud flag? What do billed, allowed and
+      paid amounts look like in total and per claim? And how has monthly claim volume moved over time? Produce
+      the standard artifacts (status chart, monthly trend chart and table, financial summary table, report).
     tags: [descriptive, portfolio, rates, denominators, financial, trends, status_mix]
     input_tables: [medical_claims]
     golden_file: goldens/T2_portfolio_metrics.json
@@ -264,15 +264,11 @@ tasks:
   - task_id: T3
     title: Provider and network patterns
     objective: >-
-      Compare claim count, total and mean paid amount, denial rate and fraud-label rate across provider
-      specialties and across network status, each as its own comparison, using the claim-level specialty and
-      network fields on the medical claims. Show the size of every group and flag groups too small to support a
-      stable rate (fewer than 30 claims). Keep the denial-rate denominator consistent with the portfolio
-      description (claims whose adjudication has concluded) and show numerator and denominator for every rate.
-      Rank the ten rendering providers with the most claims, with their specialty and network status from the
-      provider directory, and verify the join to the provider directory (cardinality and unmatched keys) before
-      relying on it. Present differences between groups as associations, not causes, and state that the data is
-      synthetic.
+      Network management wants to know where the money and the denials go. Compare volume, paid amounts, denial
+      rate and fraud-flag rate across provider specialties and between in-network and out-of-network claims. List
+      the ten rendering providers with the most claims, with their specialty and network status taken from the
+      provider directory. Produce the standard artifacts (group comparison table and chart, provider ranking
+      table, report).
     tags: [providers, network, specialty, group_comparison, small_groups, rates, denominators, joins, cardinality]
     input_tables: [medical_claims, providers]
     golden_file: goldens/T3_provider_network_metrics.json
@@ -391,13 +387,11 @@ tasks:
   - task_id: T4
     title: Denial analysis
     objective: >-
-      Analyse denials in the medical claims. Rank the denial reason codes found on denied claims and give each
-      code's share of denials (the shares should add up to one). Quantify missing denial codes: how many claims
-      lack a code overall, how many denied claims lack one, and how the missing codes distribute across claim
-      statuses. Compare denial rates across claim type, provider specialty, network status, place of service and
-      authorization requirement, each with its numerator and denominator, computed among claims whose
-      adjudication has concluded, flagging segments with fewer than 30 claims as unstable. Every rate in the
-      report must show its denominator; state that the data is synthetic and that small segments are unstable.
+      The denials team wants to know why claims are being denied and where. Which denial reason codes are most
+      common and what share of denials does each account for? How many claims carry no denial code at all? How
+      does the denial rate differ by claim type, provider specialty, network status, place of service and
+      whether prior authorisation was required? Produce the standard artifacts (denial code ranking table,
+      denial rate by segment table and chart, report).
     tags: [denials, denial_codes, rates, denominators, segments, small_groups, missingness]
     input_tables: [medical_claims]
     golden_file: goldens/T4_denial_analysis_metrics.json
@@ -662,15 +656,12 @@ tasks:
   - task_id: T7
     title: High-cost claim identification
     objective: >-
-      Build a simple experiment that identifies high-cost medical claims. First hold out a quarter of the claims
-      with a plain random split using the run seed. Define "high cost" as a paid amount above the 95th percentile,
-      where the percentile is computed on the training partition alone and then applied to both partitions;
-      report the threshold value and the positive rate in each partition. Use only features that would be known
-      when a claim is submitted: the amount fields (the target is derived from them), the dataset's pre-computed
-      high-cost flag and identifiers must not be features. Fit preprocessing on the training partition only.
-      Train logistic regression plus one tree-based model and report PR-AUC, ROC-AUC and the precision and
-      recall among the top 5 percent of held-out claims ranked by score. Save the threshold and the feature list,
-      and state the limitations: synthetic data, a baseline model, no operational use.
+      Medical management wants an early-warning model: when a claim comes in, how likely is it to end up among
+      the most expensive 5 percent by paid amount, so a nurse reviewer can look at it early? Hold out a quarter
+      of the claims to test on, define "high cost" as paid amount above the 95th percentile, and train a
+      logistic regression plus one tree-based model. Report how well the models rank claims (PR-AUC, ROC-AUC, and
+      precision and recall among the top 5 percent of held-out claims by score). Produce the standard artifacts
+      (model metrics, threshold, feature list, precision-at-k chart, report).
     tags: [modeling, high_cost, threshold, percentile, leakage, splits, seeds, ranking, metrics]
     input_tables: [medical_claims]
     golden_file: goldens/T7_high_cost_model_contract.json
