@@ -1,0 +1,42 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "place_of_service",
+          "network_status",
+          "auth_required_flag"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 50
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_006_002"
+  ],
+  "rationale": "Plan addresses task T9's three required segmentation dimensions (place_of_service, network_status, auth_required_flag) while applying the retrieved skill on denominator standardization. The adjudicated_claims denominator selection implements the skill's core requirement to exclude Pended claims, ensuring accurate denial rate calculations and statistical discipline. Denial code ranking focuses on denied_claims scope to highlight which codes dominate in denials; quantify_missing='by_status' reveals whether Pended claims lack codes. Small group flagging at n=50 identifies segments with fewer than 50 claims. Explicit numerator/denominator reporting and artifact citations ensure transparency and reproducibility."
+}

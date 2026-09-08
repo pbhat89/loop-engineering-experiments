@@ -76,6 +76,62 @@ PREPROCESSING = C(
     requires=["feature_set", "split"],
 )
 
+# Shared by T3 / T10 (provider and specialty analyses) and T4 / T9 (denial analyses): the held-out transfer
+# tasks of experiment 5 reuse the same components, option lists and defaults as the tasks they mirror (D-23),
+# so the catalogue entries are the same objects and cannot drift apart.
+PROVIDER_JOIN = C(
+    "provider_join",
+    False,
+    {
+        "provider_key": P(["rendering_npi", "billing_npi"], "rendering_npi"),
+        "how": P(["inner", "left"], "inner"),
+        "validate": P(["none", "many_to_one"], "none"),
+    },
+)
+GROUP_COMPARISON = C(
+    "group_comparison",
+    True,
+    {
+        "group_by": P(["provider_specialty", "network_status", "provider_specialty+network_status"], ["provider_specialty"], multi=True),
+        "metrics": P(
+            ["claim_count", "paid_amount_sum", "paid_amount_mean", "denial_rate", "fraud_rate"],
+            ["claim_count", "paid_amount_sum"],
+            multi=True,
+        ),
+        "denominator": P(["all_claims", "adjudicated_claims"], "all_claims"),
+        "min_group_size": P([0, 30, 50, 100], 0),
+    },
+)
+PROVIDER_RANKING = C(
+    "provider_ranking",
+    False,
+    {
+        "metric": P(["claim_count", "paid_amount_sum", "denial_rate"], "claim_count"),
+        "top_n": P([5, 10, 20], 10),
+        "min_claims": P([0, 30], 0),
+    },
+)
+DENIAL_CODE_RANKING = C(
+    "denial_code_ranking",
+    True,
+    {"scope": P(["denied_claims", "all_claims"], "all_claims"), "quantify_missing": P(["none", "overall", "by_status"], "overall")},
+)
+DENIAL_RATE_BY_SEGMENT = C(
+    "denial_rate_by_segment",
+    True,
+    {
+        "segments": P(
+            ["claim_type", "provider_specialty", "network_status", "place_of_service", "auth_required_flag"],
+            ["claim_type"],
+            multi=True,
+        ),
+        "denominator": P(["all_claims", "adjudicated_claims"], "all_claims"),
+        "min_group_size": P([0, 30, 50, 100], 0),
+    },
+)
+PROVIDER_ARTIFACTS = ["group_comparison.csv", "group_comparison.png", "provider_ranking.csv", "report.md", "metrics.json"]
+DENIAL_ARTIFACTS = ["denial_code_ranking.csv", "denial_rates_by_segment.csv", "denial_rate_by_segment.png", "report.md", "metrics.json"]
+
 TASK_CATALOGUE: dict[str, dict] = {
     "T1": {
         "title": "Dataset reconnaissance",
@@ -166,78 +222,14 @@ TASK_CATALOGUE: dict[str, dict] = {
     "T3": {
         "title": "Provider and network patterns",
         "input_tables": ["medical_claims", "providers"],
-        "required_artifacts": ["group_comparison.csv", "group_comparison.png", "provider_ranking.csv", "report.md", "metrics.json"],
-        "components": [
-            LOAD_TABLES,
-            JOIN_CHECK,
-            C(
-                "provider_join",
-                False,
-                {
-                    "provider_key": P(["rendering_npi", "billing_npi"], "rendering_npi"),
-                    "how": P(["inner", "left"], "inner"),
-                    "validate": P(["none", "many_to_one"], "none"),
-                },
-            ),
-            C(
-                "group_comparison",
-                True,
-                {
-                    "group_by": P(
-                        ["provider_specialty", "network_status", "provider_specialty+network_status"], ["provider_specialty"], multi=True
-                    ),
-                    "metrics": P(
-                        ["claim_count", "paid_amount_sum", "paid_amount_mean", "denial_rate", "fraud_rate"],
-                        ["claim_count", "paid_amount_sum"],
-                        multi=True,
-                    ),
-                    "denominator": P(["all_claims", "adjudicated_claims"], "all_claims"),
-                    "min_group_size": P([0, 30, 50, 100], 0),
-                },
-            ),
-            C(
-                "provider_ranking",
-                False,
-                {
-                    "metric": P(["claim_count", "paid_amount_sum", "denial_rate"], "claim_count"),
-                    "top_n": P([5, 10, 20], 10),
-                    "min_claims": P([0, 30], 0),
-                },
-            ),
-            WRITE_REPORT,
-        ],
+        "required_artifacts": list(PROVIDER_ARTIFACTS),
+        "components": [LOAD_TABLES, JOIN_CHECK, PROVIDER_JOIN, GROUP_COMPARISON, PROVIDER_RANKING, WRITE_REPORT],
     },
     "T4": {
         "title": "Denial analysis",
         "input_tables": ["medical_claims"],
-        "required_artifacts": [
-            "denial_code_ranking.csv", "denial_rates_by_segment.csv", "denial_rate_by_segment.png", "report.md", "metrics.json",
-        ],
-        "components": [
-            LOAD_TABLES,
-            C(
-                "denial_code_ranking",
-                True,
-                {
-                    "scope": P(["denied_claims", "all_claims"], "all_claims"),
-                    "quantify_missing": P(["none", "overall", "by_status"], "overall"),
-                },
-            ),
-            C(
-                "denial_rate_by_segment",
-                True,
-                {
-                    "segments": P(
-                        ["claim_type", "provider_specialty", "network_status", "place_of_service", "auth_required_flag"],
-                        ["claim_type"],
-                        multi=True,
-                    ),
-                    "denominator": P(["all_claims", "adjudicated_claims"], "all_claims"),
-                    "min_group_size": P([0, 30, 50, 100], 0),
-                },
-            ),
-            WRITE_REPORT,
-        ],
+        "required_artifacts": list(DENIAL_ARTIFACTS),
+        "components": [LOAD_TABLES, DENIAL_CODE_RANKING, DENIAL_RATE_BY_SEGMENT, WRITE_REPORT],
     },
     "T5": {
         "title": "Fraud-pattern exploration",
@@ -332,6 +324,20 @@ TASK_CATALOGUE: dict[str, dict] = {
             ),
             WRITE_REPORT,
         ],
+    },
+    # Experiment 5 (D-23): two held-out transfer tasks that share T4's and T3's components, option lists and
+    # defaults but ask different questions. They are executed by the same handler modules (see TASK_MODULES).
+    "T9": {
+        "title": "Denial hotspots",
+        "input_tables": ["medical_claims"],
+        "required_artifacts": list(DENIAL_ARTIFACTS),
+        "components": [LOAD_TABLES, DENIAL_CODE_RANKING, DENIAL_RATE_BY_SEGMENT, WRITE_REPORT],
+    },
+    "T10": {
+        "title": "Specialty spend and denials",
+        "input_tables": ["medical_claims", "providers"],
+        "required_artifacts": list(PROVIDER_ARTIFACTS),
+        "components": [LOAD_TABLES, JOIN_CHECK, PROVIDER_JOIN, GROUP_COMPARISON, PROVIDER_RANKING, WRITE_REPORT],
     },
 }
 

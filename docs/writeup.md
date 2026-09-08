@@ -1,6 +1,10 @@
-# Write-up v4 — experiment 4: does a plain memory of past comments do what a validated skill does?
+# Write-up v5 — experiments 4 and 5: does a plain memory do what a validated skill does, and does either carry over?
 
-**Reported run:** `run_006` (manual mode, Claude Haiku 4.5 as a fresh stateless subagent per decision, freeze `59fb61d35fe8…`, evaluator 1.3). Experiments 1 (`run_001`), 2 (`run_004`) and 3 (`run_005`) are summarised at the end and archived under `archive/`. Every number below is computed from `logs/*.jsonl` and `artifacts/reports/run_summaries.json`; nothing is estimated. Synthetic data; educational demonstration; nothing here is medical, actuarial, fraud, underwriting, pricing, adjudication, legal, regulatory or operational evidence. **Public article** (Substack-ready, PB voice): `articles/loop-engineering-markdown-skills/article.md` — web version at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
+**Reported runs:** `run_006` (experiment 4, Part A) and `run_007` (experiment 5, Part B) — both manual mode, Claude Haiku 4.5 as a fresh stateless subagent per decision. Experiments 1 (`run_001`), 2 (`run_004`) and 3 (`run_005`) are summarised at the end of Part A and archived under `archive/`. Every number below is computed from `logs/*.jsonl` and `artifacts/reports/run_summaries.json`; nothing is estimated. Synthetic data; educational demonstration; nothing here is medical, actuarial, fraud, underwriting, pricing, adjudication, legal, regulatory or operational evidence. **Public article** (Substack-ready, PB voice): `articles/loop-engineering-markdown-skills/article.md` — web version at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
+
+## Part A — experiment 4: does a plain memory of past comments do what a validated skill does? (`run_006`)
+
+Freeze `59fb61d35fe8…`, evaluator 1.3.
 
 ## 1. What was tested
 
@@ -113,9 +117,98 @@ uv run python scripts/summarize_run.py --run-id run_007
 uv run python articles/loop-engineering-markdown-skills/assets/make_figures.py --run-id run_007
 ```
 
+## Part B — experiment 5: does the memory carry over? (`run_007`)
+
+**Reported run:** `run_007`, manual mode, freeze `74e64e1d38e3…`, evaluator 1.3, model `claude-haiku-4-5-20251001`. Experiment 4 (above) measured whether memory helps *within* a suite the arm was repeatedly corrected on. Experiment 5 asks the harder question decision D-23 poses: does what an arm accumulated in `run_006` transfer to tasks it has never attempted?
+
+### 7. Design
+
+**Four held-out tasks, none attempted by any earlier run**, order T9 → T10 → T5 → T6 (article tasks 7–10). T9 and T10 reuse T4's and T3's components and house conventions but ask different questions; T5 and T6 have never been run before and are blinded here for the first time. Every brief below is quoted verbatim from `config/tasks.yaml`; no convention is stated in any of them.
+
+| # | Task | The sponsor's question (blinded brief, quoted) | What the frozen checker holds (examples of golden values) |
+|---|---|---|---|
+| 7 | T9 Denial hotspots | "The denials team wants to know where denials cluster by setting. How does the denial rate differ by place of service, by whether prior authorisation was required, and by network status? Which denial reason codes dominate? Produce the standard artifacts (denial code ranking table, denial rate by segment table and chart, report)." | denial-code shares over **denied** claims (CO-15 18.7 %/241, CO-4 16.0 %/206, CO-11 11.4 %/147 …); 11,559 claims without a code, 0 among denied; three segments (`place_of_service`, `auth_required_flag`, `network_status`) at `min_group_size` 30; new tolerance check — the largest place-of-service segment (code `22`) denial rate = 545/4,946 = 11.019 %; denominator = adjudicated claims; synthetic-data + small-group caveats required |
+| 8 | T10 Specialty spend and denials | "Finance wants to know which provider specialties account for the most paid spend and how their denial rates compare. Compare claim volume, total and average paid amount and denial rate across specialties, and list the ten rendering providers with the highest paid spend, with their specialty and network status taken from the provider directory." | 25 specialties; the largest by paid spend is Critical Access Hospital — 1,225 claims, $898,337.36 paid, denial rate 137/1,172 = 11.69 %; `provider_ranking` now ranks by `paid_amount_sum` (T3 ranked by claim count), `top_n` 10, `min_claims` 30 — first row NPI 1450094833, Outpatient Clinic, In-Network, 82 claims, $126,138.73; `rendering_npi→providers` join many-to-one, 0 unmatched of 12,845; synthetic-data, small-group and association-not-causation caveats required |
+| 9 | T5 Fraud-pattern exploration | "Explore how claims flagged by the fraud indicator differ from unflagged claims: how common is the flag, and which claim characteristics look different between the two groups? Produce the standard artifacts (comparison table, prevalence chart, report)." | 647/12,845 = 5.04 % prevalence, imbalance ratio 18.85; billed_amount mean $1,692.48 flagged vs $1,652.66 unflagged; `claim_type` shares shift (Professional 52.2 % flagged vs 55.0 % unflagged); `fraud_pattern_type` is a label-derived field and `member_sex`/`member_race_ethnicity`/`member_age_band` are prohibited protected attributes — none may enter the feature comparison; synthetic-data, class-imbalance, association-not-causation and no-operational-use caveats required |
+| 10 | T6 Baseline fraud model | "Train a first model that predicts the fraud flag on medical claims — logistic regression plus one tree-based model — with a quarter of the claims held out for testing, and report how well each model does on the held-out claims." | stratified 75/25 split, seed 42, n_train 9,633 / n_test 3,212; preprocessing fit on train only; ROC-AUC sanity range [0.40, 1.0], PR-AUC ≥ 0.5 × prevalence_test; `prevalence_test` must land in [0.03, 0.07] (actual 0.0504); prohibited fields `fraud_pattern_type`, `claim_id`, `member_id`, `rendering_npi`; synthetic-data, class-imbalance, model-limitations and no-operational-use caveats required |
+
+78 rubric checks across the four tasks (T9 16, T10 22, T5 18, T6 22), same five dimensions, same pass rule (score ≥ 3.5, no critical miss). Goldens for T9 and T10 are new, built by independent reference code that never imports the executor; the eight goldens carried over from experiments 3–4 are byte-identical apart from `built_at`. New freeze `74e64e1d38e3…` (experiment 4: `59fb61d35fe8…`).
+
+**Three arms, two of them warm, no self-review arms** (experiment 4 already answered the self-review question — 6/6 declared done, 1/6 checker passes):
+
+| Arm | Starting state | What it inherits from `run_006` |
+|---|---|---|
+| `reflection_only` — cold | empty | nothing |
+| `feedback_memory` — warm | seeded | 19 raw checker-finding notes, every numeric token redacted |
+| `skill_learning` — warm | seeded | the 2 learned skills, listed read-only from `skills/evolved/run_006/`, never copied |
+
+**Seeding mechanics (D-23).** `config/experiment.yaml` sets `seed_from_run: run_006` and `task_index_offset: 6`. At `init`, `Runner._seed_memory` copies `artifacts/memory/run_006/feedback_memory.jsonl` (19 records) once, read-only, into `artifacts/memory/run_007/feedback_memory.jsonl`, stamping each record `seeded_from: run_006`. `skill_learning` needs no copy: `SkillStore(seed_run_ids=["run_006"])` simply also lists `skills/evolved/run_006/*.md`, so `evolved_run_006_001` and `evolved_run_006_002` are retrievable in `run_007` while new skills persist under `skills/evolved/run_007/`, numbered from `evolved_run_007_001`. `task_index_offset: 6` continues `run_006`'s task numbering (0–5) so a skill written after `run_006` index 0 or 1 stays eligible from `run_007`'s first task.
+
+**Redaction rule.** Every numeric token in a seeded note's `text` and `detail` — digit sequences with optional thousands separators, decimals and a trailing percent sign — is replaced by `[n]`, except `T\d+` (task ids) and the quantile names `p90`/`p99`. Example: `"denial rate 1,286 / 12,339 = 10.42 % on T2, p90"` seeds as `"denial rate [n] / [n] = [n] on T2, p90"`. 24 numeric tokens were redacted across the 19 notes (confirmed live: `logs/runs/run_007.json`'s `seeding` block records `records_seeded: 19`, `numbers_redacted: 24`).
+
+**Leakage audit, re-run for this write-up.** `uv run python scripts/seed_audit.py --run-id run_007 --holdout T9,T10,T5,T6` → **clean**: 181 material golden numbers (≥ 3 significant digits) in 1,833 string forms compared against 58 numeric tokens surviving in the seeded notes and skill files; 0 reachable. The audit also names what redaction *prevented*: 4 golden values from `run_006`'s T4 note — the denial-code counts 241 and 206 and their shares 0.1874 and 0.1602, all of which are T9 goldens — would otherwise have carried straight through. A golden number counts as leakable only at ≥ 3 significant digits (so a skill's `version: 1` or the illustrative `200` in `evolved_run_006_002`'s worked example do not count); no skill file needed editing or exclusion.
+
+### 8. What happened
+
+**Attempts and scores (frozen checker, every attempt), scores by attempt with failed checks on first try in brackets:**
+
+| Task | `reflection_only` (cold) | `feedback_memory` (warm, 19 → 25 notes) | `skill_learning` (warm, 2 seeded skills) |
+|---|---|---|---|
+| T9 Denial hotspots | 3.26 → **4.00** (2) — [3, 0] failed checks | **3.52** (1) — [2] failed, 19 notes on hand | **3.77** (1) — [1] failed, `evolved_run_006_002` (denominator) cited |
+| T10 Specialty spend | 3.09 → **3.69** (2) — [5, 2] failed checks | **3.64** (1) — [2] failed, 21 notes | **3.51** (1) — [3] failed, all three skills cited (incl. the new `evolved_run_007_001`) |
+| T5 Fraud exploration | 3.28 → **4.00** (2) — [3, 0] failed checks | 3.44 → **4.00** (2) — [2, 0] failed, 23 notes | 3.28 → **4.00** (2) — [3, 0] failed; skill `evolved_run_007_001` retrieved, not cited |
+| T6 Fraud model | **3.68** (1) — [2] failed checks | **3.68** (1) — [1] failed, 25 notes | **3.84** (1) — [1] failed, `evolved_run_006_001` (synthetic caveat) cited |
+| **Total attempts** | **7** | **5** | **5** |
+| Failed checks on first tries | 3+5+3+2 = **13** | 2+2+2+1 = **7** | 1+3+3+1 = **8** |
+| First-try passes | 1 / 4 (T6) | 3 / 4 (T9, T10, T6) | 3 / 4 (T9, T10, T6) |
+| Mean first-attempt score | 3.33 | 3.57 | 3.60 |
+| Mean final score | 3.84 | 3.71 | 3.78 |
+| Tasks passed (checker) | **4 / 4** | **4 / 4** | **4 / 4** |
+| Operator steps used | 10 | 6 | 12 |
+
+`skill_learning` wrote one new skill, `evolved_run_007_001` ("min-group-size threshold for segmented rates"), after T9 — rejected once for the same `example_present` check that tripped both `run_006` skills, persisted after one revision; retrieved 7 times, reused 5.
+
+**First-try findings — what transferred, what was new:**
+
+| Task | Failed by the cold arm only (convention transferred to both warm arms) | Failed by a warm arm too (partial transfer or new to this task) | Failed by every arm (no training task taught it) |
+|---|---|---|---|
+| T9 Denial hotspots | `segment_rates`, `largest_place_of_service_denial_rate`, `segment_denominator` — the adjudicated-claims denominator, again | `show_denominators`, `caveat_synthetic` (feedback_memory only); `min_group_size` (skill_learning only) | — |
+| T10 Specialty spend | `groups_specialty`, `top_spend_specialty_denial_rate`, `group_denominator` | `provider_ranking_min_claims`, `join_check_rendering_npi` (both warm arms); `caveat_association` (skill_learning only) | — |
+| T5 Fraud exploration | — | `caveat_synthetic` (cold and skill_learning, not feedback_memory) | `no_leaking_features`, `caveat_no_operational_use` — `fraud_pattern_type` / protected attributes, a convention no training task had taught |
+| T6 Fraud model | `caveat_synthetic` | `caveat_model_limitations` (feedback_memory only) | `caveat_no_operational_use` (cold and skill_learning; feedback_memory alone caught it) |
+
+### 9. Reading the result honestly
+
+- **On every held-out task, both warm arms started at or above the cold arm's first attempt — never below.** The transferred conventions are visible directly in the first-try findings: the cold arm failed the adjudicated-claims-denominator convention on both T9 and T10 (`segment_denominator`, `group_denominator`) while neither warm arm did on either task.
+- **T5 is the control the design was built to produce.** All three arms failed the leakage check on first try (`no_leaking_features`, plus `caveat_no_operational_use` on two of three) — a convention no training task had taught, since T2/T4/T3/T7's briefs never raised protected attributes or label-derived fields. Warm memory transferred conventions it had actually seen; it did not invent ones it hadn't.
+- **The absolute gaps are smaller than on training tasks 4 and 6 (of experiment 4).** The cold arm's first attempts on the held-out tasks were already high (3.09–3.68) rather than the 1.29–2.81 seen on `run_006`'s T3/T8 first attempts — the held-out variants have fewer independent conventions to trip on than T4 and T3 originally did, so there is less gap for memory to close.
+- **Caveats that must travel with every number above:** one run per arm; operator variance of roughly ±0.2–0.4 on a first attempt (seen directly in experiment 4's T1); four held-out tasks, not a large sample; the same author wrote the goldens and the blinded briefs; the leakage audit is only as good as its numeric-token rule, stated in full in §7 above and re-run live for this write-up.
+
+### 10. Limitations
+
+Single run per arm, as in every experiment in this study. Operator variance (~±0.2–0.4 on a first attempt) is not distinguishable from a small memory effect on any one task — the pattern is read across all four tasks together, not any single cell. Four held-out tasks is a small sample, and two of them (T9, T10) are recombinations of T4's and T3's own components rather than fully independent tasks — the transfer they exercise is narrower than T5/T6's. The redaction rule is a regex over digit sequences; it is audited against every number in the four holdout goldens at ≥ 3 significant digits, not proven complete for arbitrary future goldens. `run_006` is not archived, because the article's figures read both runs, which means `run_007` is not a fully independent replication in the filesystem sense (though its evaluation, freeze and goldens are). The same author wrote the blinded briefs, the rubric and the seeding/redaction code, so the audit's negative result (no leakage) is a check on the author's own construction, not an external one. Experiment-5 numbers are not comparable task-for-task with any earlier experiment (D-23) — what is comparable is the three arms against each other inside `run_007`, and each arm's held-out first attempt against its own family task in `run_006`.
+
+### 11. Reproduce
+
+Experiment 5's carry-over mechanics are configuration, not a CLI flag — reproducing a transfer test onto a new held-out suite means setting `config/experiment.yaml`'s `seed_from_run` and `task_index_offset` keys (currently `run_006` / `6`) and the held-out `task_order`/briefs in `config/tasks.yaml`, then running the same loop with a new run id:
+
+```bash
+uv run --extra dev pytest -q                                   # 188 tests
+uv run python -m src.build_goldens --check                     # golden pack reproduces exactly (10 files)
+uv run python -m src.run_experiment init --run-id run_008 --conditions reflection_only,feedback_memory,skill_learning --mode manual
+uv run python scripts/seed_audit.py --run-id run_008 --holdout T9,T10,T5,T6   # or a new held-out set named in config/tasks.yaml
+uv run python -m src.run_experiment advance-all --run-id run_008   # then one fresh operator subagent per request (docs/OPERATOR_PROTOCOL.md)
+uv run python scripts/summarize_run.py --run-id run_008
+uv run python articles/loop-engineering-markdown-skills/assets/make_figures.py --run-id run_008
+```
+
+`seed_from_run: run_007` is **not** how you would rerun this experiment — the config key names the run to seed *from*, and pointing it at `run_007` would seed from a warm, already-transferred memory rather than a fresh baseline; a genuine repeat seeds from `run_006` (or another cold run) exactly as `run_007` did.
+
 ## Evidence index
 
 `logs/experiment_events.jsonl` (attempt and done records: `score_by_attempt`, `attempts_to_pass`, `n_failed_checks`, `n_feedback_shown`, `skills_applied`, `self_declared_pass`, `past_feedback_count`, `evaluator_score_by_dimension`) · `logs/skill_events.jsonl` (`memory_retrieved` / `memory_written` for the two memory arms, plus the skill lifecycle) · `logs/graph_events.jsonl` (`self_evaluate` verdicts next to the frozen score) · `logs/feedback_events.jsonl` (what was shown, with `source`) · `artifacts/manual/run_006/` (115 request/response pairs) · `artifacts/memory/run_006/` (`feedback_memory.jsonl`, 19 notes; `self_refine_memory.jsonl`, 10 notes) · `artifacts/tasks/run_006/` (every attempt's metrics, report and charts) · `skills/evolved/run_006/` (the two persisted skills) · `artifacts/reports/run_summaries.json` · `config/freeze_manifest.json`.
+
+**Experiment 5 (`run_007`) additions:** `logs/runs/run_007.json` (`"seeding"` block — source run, redaction rule, records/tokens redacted, skill listing mode) · `artifacts/memory/run_007/feedback_memory.jsonl` (19 seeded notes stamped `seeded_from: run_006`, growing to 25 by task end) · `skills/evolved/run_007/` (`evolved_run_007_001_v1.md`, the one skill learned in this run) · `skills/evolved/run_006/` (listed read-only into `run_007`'s retrieval, never copied) · `artifacts/manual/run_007/` (28 request/response pairs across the three arms) · `scripts/seed_audit.py --run-id run_007 --holdout T9,T10,T5,T6` (clean; names the 4 golden values the redaction removed) · `archive/experiment-5_stub_005_smoke/` (the stub gate before the manual run) · `goldens/T9_denial_hotspots_metrics.json`, `goldens/T10_specialty_spend_metrics.json` · `artifacts/reports/run_summaries.json` (both `run_006` and `run_007` entries) · `config/freeze_manifest.json` (`74e64e1d38e3…`) · `articles/loop-engineering-markdown-skills/assets/transfer_curve.png`, `results_grid.png` (regenerated from both runs).
 
 ## LinkedIn draft
 
@@ -127,5 +220,7 @@ I gave a small model six claims-analytics tasks — including "here are five raw
 – the same self-review, plus a log of its own past verdicts: no better, sometimes worse
 
 The cheapest possible memory — a log nobody curated — got most of the way to what a validated skill library got. That is either a reason to build simpler memory or a reason to ask harder questions about what the skill schema is actually buying you. One run, synthetic data, small numbers — but the shape is the point.
+
+Then I redacted every number out of that memory and pointed both warm arms at four tasks neither had ever seen — two of them (fraud detection) conventions no training task had even taught. Both warm arms still opened at or above the cold arm on every held-out task, and the one convention nobody had taught — don't leak the protected attributes — tripped all three arms alike. The comments carried the house rules forward; they didn't carry the answers.
 
 Write-up and code in the comments. #AgenticAI #LangGraph #ClaimsAnalytics #Evaluation

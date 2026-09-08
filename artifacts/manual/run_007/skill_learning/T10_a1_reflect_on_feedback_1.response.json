@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T10-provider_ranking_min_claims",
+      "correction": "Set min_claims parameter to 30 in provider_ranking component to exclude providers with fewer than 30 claims from the spend ranking."
+    },
+    {
+      "feedback_id": "T10-join_check_rendering_npi",
+      "correction": "Add join_check step with pair 'medical_claims.rendering_npi->providers.provider_npi' to verify the many-to-one relationship before proceeding."
+    },
+    {
+      "feedback_id": "T10-caveat_association",
+      "correction": "Add 'association_not_causation' to the caveats list in write_report to clarify that observed differences between specialties are associations, not causal relationships."
+    }
+  ],
+  "reusable_lessons": []
+}

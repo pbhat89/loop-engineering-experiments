@@ -357,5 +357,209 @@
         ]
       }
     }
+  },
+  {
+    "run_id": "run_007",
+    "mode": "manual",
+    "provider": {
+      "provider_mode": "manual",
+      "operator": "claude-code-subagent",
+      "model_identifier": "claude-haiku-4-5-20251001"
+    },
+    "freeze_sha256": "74e64e1d38e3888fd54a9c02e64dd6fcee389bee7b6aba14cdfa7c86729f8b58",
+    "task_order": [
+      "T9",
+      "T10",
+      "T5",
+      "T6"
+    ],
+    "conditions": {
+      "reflection_only": {
+        "tasks_done": 4,
+        "tasks": [
+          "T9",
+          "T10",
+          "T5",
+          "T6"
+        ],
+        "final_scores": {
+          "T9": 4.0,
+          "T10": 3.69,
+          "T5": 4.0,
+          "T6": 3.68
+        },
+        "first_attempt_scores": {
+          "T9": 3.26,
+          "T10": 3.09,
+          "T5": 3.28,
+          "T6": 3.68
+        },
+        "first_attempt_passed": {
+          "T9": false,
+          "T10": false,
+          "T5": false,
+          "T6": true
+        },
+        "first_attempt_pass_rate": 0.25,
+        "mean_final_score": 3.843,
+        "mean_first_attempt_score": 3.327,
+        "retries_total": 3,
+        "execution_attempts_total": 7,
+        "execution_errors_total": 0,
+        "operator_steps_used": 10,
+        "operator_requests_logged": 10,
+        "operator_validation_errors": 0,
+        "stop_reasons": {
+          "passed": 4
+        },
+        "skills_retrieved_total": 0,
+        "skills_reused_total": 0,
+        "skills_created": [],
+        "skill_events": {},
+        "skill_rejections": [],
+        "provider_metadata_on_events": [
+          {
+            "provider_mode": "manual",
+            "operator": "claude-code-subagent",
+            "model_identifier": "claude-haiku-4-5-20251001",
+            "records": 11
+          }
+        ]
+      },
+      "skill_learning": {
+        "tasks_done": 4,
+        "tasks": [
+          "T9",
+          "T10",
+          "T5",
+          "T6"
+        ],
+        "final_scores": {
+          "T9": 3.77,
+          "T10": 3.51,
+          "T5": 4.0,
+          "T6": 3.84
+        },
+        "first_attempt_scores": {
+          "T9": 3.77,
+          "T10": 3.51,
+          "T5": 3.28,
+          "T6": 3.84
+        },
+        "first_attempt_passed": {
+          "T9": true,
+          "T10": true,
+          "T5": false,
+          "T6": true
+        },
+        "first_attempt_pass_rate": 0.75,
+        "mean_final_score": 3.78,
+        "mean_first_attempt_score": 3.6,
+        "retries_total": 1,
+        "execution_attempts_total": 5,
+        "execution_errors_total": 0,
+        "operator_steps_used": 12,
+        "operator_requests_logged": 12,
+        "operator_validation_errors": 0,
+        "stop_reasons": {
+          "passed": 4
+        },
+        "skills_retrieved_total": 7,
+        "skills_reused_total": 5,
+        "skills_created": [
+          "evolved_run_007_001"
+        ],
+        "skill_events": {
+          "skill_retrieved": 7,
+          "skill_proposed": 1,
+          "skill_revision_requested": 1,
+          "skill_validated": 1,
+          "skill_persisted": 1,
+          "skill_reused": 5,
+          "skill_proposal_skipped": 3,
+          "skill_rejected": 3
+        },
+        "skill_rejections": [
+          {
+            "task_id": "T10",
+            "proposal": null,
+            "failed_checks": []
+          },
+          {
+            "task_id": "T5",
+            "proposal": null,
+            "failed_checks": []
+          },
+          {
+            "task_id": "T6",
+            "proposal": null,
+            "failed_checks": []
+          }
+        ],
+        "provider_metadata_on_events": [
+          {
+            "provider_mode": "manual",
+            "operator": "claude-code-subagent",
+            "model_identifier": "claude-haiku-4-5-20251001",
+            "records": 9
+          }
+        ]
+      },
+      "feedback_memory": {
+        "tasks_done": 4,
+        "tasks": [
+          "T9",
+          "T10",
+          "T5",
+          "T6"
+        ],
+        "final_scores": {
+          "T9": 3.52,
+          "T10": 3.64,
+          "T5": 4.0,
+          "T6": 3.68
+        },
+        "first_attempt_scores": {
+          "T9": 3.52,
+          "T10": 3.64,
+          "T5": 3.44,
+          "T6": 3.68
+        },
+        "first_attempt_passed": {
+          "T9": true,
+          "T10": true,
+          "T5": false,
+          "T6": true
+        },
+        "first_attempt_pass_rate": 0.75,
+        "mean_final_score": 3.71,
+        "mean_first_attempt_score": 3.57,
+        "retries_total": 1,
+        "execution_attempts_total": 5,
+        "execution_errors_total": 0,
+        "operator_steps_used": 6,
+        "operator_requests_logged": 6,
+        "operator_validation_errors": 0,
+        "stop_reasons": {
+          "passed": 4
+        },
+        "skills_retrieved_total": 0,
+        "skills_reused_total": 0,
+        "skills_created": [],
+        "skill_events": {
+          "memory_retrieved": 4,
+          "memory_written": 4
+        },
+        "skill_rejections": [],
+        "provider_metadata_on_events": [
+          {
+            "provider_mode": "manual",
+            "operator": "claude-code-subagent",
+            "model_identifier": "claude-haiku-4-5-20251001",
+            "records": 9
+          }
+        ]
+      }
+    }
   }
 ]

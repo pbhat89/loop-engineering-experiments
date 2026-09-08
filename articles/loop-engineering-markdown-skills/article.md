@@ -5,7 +5,8 @@ Tags: Loop Engineering, Agentic AI, LangGraph, Self-Improvement, Evaluation, Syn
 Photo credits:
   - assets/hero.png — "Image by Author" (matplotlib). Swap for an Unsplash photo if you prefer; "spiral staircase" fits the theme.
   - assets/loop_diagram.png — "Image by Author" (matplotlib)
-  - assets/results_grid.png — "Image by Author" (matplotlib, from logs/experiment_events.jsonl and logs/skill_events.jsonl, run_006)
+  - assets/results_grid.png — "Image by Author" (matplotlib, from logs/experiment_events.jsonl and logs/skill_events.jsonl, run_006 + run_007)
+  - assets/transfer_curve.png — "Image by Author" (matplotlib, first-attempt scores from run_006 and the held-out run_007)
 -->
 
 # Loop engineering: five ways to close a self-improvement loop, tried on the same six tasks
@@ -36,7 +37,7 @@ Six analysis tasks on the same dataset, in a fixed order, phrased the way a spon
 | 5 | **High-cost model.** When a claim arrives, will it end in the most expensive 5 %? | Threshold **$3,198.99 from the training split only**. Billed and allowed amounts are not allowed as features (the target is derived from paid amount). ROC-AUC between 0.60 and 0.95; 0.997 means the answer leaked in. |
 | 6 | **Executive brief.** One page for the sponsor, built only from the saved results above. | At most 600 words, the required sections, every number cited to a saved result, no causal wording. |
 
-The right-hand column is a *golden pack*: 112 checks computed by independent reference code, reviewed, and frozen by hash before any agent ran. Score 0 to 4; pass is 3.5 or better with no critical miss.
+The right-hand column is a *golden pack*: 112 checks computed by independent reference code, reviewed, and frozen by hash before any agent ran. Score 0 to 4; pass is 3.5 or better with no critical miss. A second run later added four held-out tasks, numbered 7 to 10 below, that reuse these conventions but ask different questions; they get their own section.
 
 ## How does the loop work?
 
@@ -79,7 +80,7 @@ The two "raw log" designs are the cheapest memory imaginable: append the finding
 | Self-review only | 10, stopped by its own verdict | 29 | **1 / 6** |
 | Self-review + raw log | 12, stopped by its own verdict | 39 | **1 / 6** |
 
-Five things I read off that grid.
+Five things I read off the top block of that grid (the bottom block is the held-out test, further down).
 
 **The loop iterates.** With three findings at a time and no fix attached, the checker-only design needed two or three tries on every task. Task 4 went 1.35 → 3.11 → 3.87: the first plan lumped specialty and network into one breakdown, the checker said so, the second plan fixed that and exposed the next layer. That staircase is what a verification loop is supposed to look like.
 
@@ -93,11 +94,30 @@ Five things I read off that grid.
 
 And the caveat that applies to all of it: one run, a model that is not deterministic. On task 1, before any memory existed, the three checker designs started at 3.02, 3.20 and 3.20. Part of every gap is the luck of the first plan. The direction of the results is credible; the size is not.
 
+## Does what was learned carry over?
+
+The six tasks above are where the memory was built, so they cannot show whether it transfers. For that I ran a second, held-out set: four tasks, numbered 7 to 10, that reuse the same conventions but ask different questions — denial hotspots by care setting, specialty spend and denials, how flagged claims differ from unflagged ones, and a fraud-flag model. The two memory designs started with exactly what they held at the end of task 6: the raw log's notes and the two skills. Checker only started cold. Nothing else changed. To make sure no answers travelled with the memory, every number in the seeded notes was replaced by a placeholder, and an audit compared what remained against every value in the held-out answer keys before the run started.
+
+![First-attempt score across the learning tasks and the held-out tasks](assets/transfer_curve.png)
+*Image by Author*
+
+| Held-out tasks 7 to 10 | Checker only, cold | Checker + raw log, warm | Checker + skills, warm |
+|---|---|---|---|
+| Passed on the first attempt | 1 of 4 | 3 of 4 | 3 of 4 |
+| Attempts to pass all four | 7 | 5 | 5 |
+| Failed checks on first tries | 13 | 7 | 8 |
+| Mean first-attempt score | 3.33 | 3.57 | 3.60 |
+
+On every held-out task both warm designs started at or above the cold one, never below — a cleaner pattern than the learning tasks gave. The transfer is visible in *what* failed. The cold design tripped over the adjudicated-claims denominator on tasks 7 and 8, the very convention that task 2 had corrected; neither warm design did. Where a convention was new to everyone — task 9's rule that fields derived from the fraud flag cannot be used to describe it — all three failed it once, warm or cold. The gaps are smaller than on tasks 4 and 6 because these held-out questions have fewer independent conventions to get wrong; the cold design's first attempts already sat between 3.1 and 3.7.
+
+That is the shape of the result, and I think it is the honest one: **memory transfers conventions, not competence.** It removes the mistakes the loop has already been corrected on, and it cannot remove any other. The first meeting with a new convention costs one round no matter what you remember.
+
 ## What I take from it
 
 - **Put the evaluator outside the loop.** The cheapest design to build is the one that produces confident, wrong work. If the thing being improved also decides when it is good enough, you have a demo, not a control.
 - **Feedback that names problems, not fixes, is what makes learning visible.** An earlier version of this experiment handed back the full checklist with fixes attached; everything converged in one retry and taught the loop nothing a good error message would not.
-- **Start with the dumb memory.** A raw log of past findings beat self-written skills on six tasks. Skills are the right long-term structure — a log of thirty comments is already at its cap, and retrieval by trigger scales where "show everything" does not — but the distillation step has to pay for itself, and here it did not yet.
+- **Start with the dumb memory.** A raw log of past findings beat self-written skills on the six learning tasks and tied with them on the held-out ones. Skills are the right long-term structure — a log of thirty comments is already at its cap, and retrieval by trigger scales where "show everything" does not — but the distillation step has to pay for itself, and here it did not yet.
+- **Judge memory by what it stops you repeating.** On the held-out tasks the memory designs did not know more; they made fewer of the mistakes they had already been corrected on. That is the right expectation to set, and the right thing to measure: first-attempt failures on conventions seen before, not overall score.
 
 ## Food for thought
 
@@ -109,7 +129,7 @@ And the caveat that applies to all of it: one run, a model that is not determini
 
 - The feedback regime is a design parameter, not plumbing. Three findings, fix withheld, five attempts — those numbers decide whether you see a loop or a lookup.
 - Blinding matters more than model size. A stronger model reading briefs that stated the conventions passed everything first time and learned nothing; a small model with blinded briefs produced all of the behaviour above.
-- One run per design is a demonstration, not evidence. Next: several seeds per design, a longer task sequence so skills have more to earn, and a retirement rule for memory that stops being cited.
+- One run per design, plus one held-out run, is a demonstration, not evidence. Next: several seeds per design, a longer task sequence so skills have more to earn, and a retirement rule for memory that stops being cited.
 - Synthetic data throughout. Nothing here says anything about any real payer, provider or member; it says something about how to build the loop.
 
 ## References
@@ -123,4 +143,4 @@ And the caveat that applies to all of it: one run, a model that is not determini
 7. LangGraph documentation, human-in-the-loop interrupts and checkpointers — https://docs.langchain.com/oss/python/langgraph/overview
 8. HLT-008 Synthetic Healthcare Claims Dataset (sample), `xpertsystems/hlt008-sample` on Hugging Face, CC BY-NC 4.0 — https://huggingface.co/datasets/xpertsystems/hlt008-sample
 
-The code, the frozen golden pack, all 115 operator requests and responses, the two memory logs, the two learned skills and the logs the figure is drawn from are in the `claims-skill-loop` repository (branch `feat/claims-skill-loop`, run `run_006`). This article is also online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
+The code, the frozen golden packs, all 143 operator requests and responses across the two runs, the memory logs with their redaction audit, the three learned skills and the logs the figures are drawn from are in the `claims-skill-loop` repository (branch `feat/claims-skill-loop`, runs `run_006` and `run_007`). This article is also online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.

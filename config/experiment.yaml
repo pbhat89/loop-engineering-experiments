@@ -3,12 +3,22 @@
 # Every condition reads this same file; per-condition differences are routes and memory only (config/graph.yaml).
 
 seed: 42
-# Experiment 4: five arms. feedback_memory = reflection_only + a raw log of the checker findings it was shown;
-# self_refine_memory = self_refine + a raw log of its own review findings (it still never sees the checker).
-# Both logs are appended verbatim after each task and shown in full before planning later ones - no distillation,
-# no relevance filtering, no skills. baseline / foundational_only remain available but are not run.
-conditions: [reflection_only, feedback_memory, skill_learning, self_refine, self_refine_memory]
-task_order: [T1, T2, T4, T3, T7, T8]    # reconnaissance -> describe the book -> denials -> providers & network -> high-cost model -> executive brief
+# Experiment 5 (D-23): a held-out transfer test. Three arms, four tasks none of the arms has ever seen, and the two
+# memory arms start *warm* - seeded from run_006's memory (feedback_memory) and learned skills (skill_learning).
+# reflection_only is the cold control (checker feedback, no memory). No self-review arms this time.
+conditions: [reflection_only, feedback_memory, skill_learning]
+task_order: [T9, T10, T5, T6]           # denial hotspots -> specialty spend and denials -> fraud exploration -> first fraud model
+# experiment 4 (D-22) order, kept for the record: [T1, T2, T4, T3, T7, T8]
+
+# Carry-over of memory (experiment 5). `seed_from_run` is read-only: nothing in that run's files is modified.
+#   * feedback_memory  <- artifacts/memory/run_006/feedback_memory.jsonl, every numeric token redacted to [n]
+#   * skill_learning   <- skills/evolved/run_006/*.md, listed read-only alongside this run's own skills
+# `task_index_offset` continues the task numbering of run_006 (indices 0-5), so run_007's four tasks are indices
+# 6-9: the seeded skills (created after indices 0 and 1) are eligible from the first task, and the article can
+# number the ten tasks 1-10. `remaining_task_ids` is unaffected.
+seed_from_run: run_006
+task_index_offset: 6
+seed_skill_exclude: []                  # seeded skill ids the leakage audit (scripts/seed_audit.py) forces out
 
 # Stopping rules (brief Addendum B, widened for experiment 3 and unchanged in experiment 4)
 max_retries: 4                          # five attempts per task

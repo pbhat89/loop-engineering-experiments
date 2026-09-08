@@ -17,8 +17,9 @@ An educational, reproducible **LangGraph** experiment in loop engineering on syn
 | 2 — `run_004` | deterministic rule learner from textbook defaults | 8 tasks, 3 attempts, full feedback with literal fixes | baseline = reflection_only **1.55** vs skill_learning **2.17** first-attempt mean (T2–T8); 6 skills, 22 reuses; but every task converged after exactly one retry | `archive/experiment-2_run_004/` |
 | 3 — `run_005` | stateless **Claude Haiku 4.5** subagents, **blinded** briefs and operator, feedback capped to the 3 most severe findings with the fix withheld, 5 attempts, empty starting library | 4 tasks: T2 → T4 → T3 → T7 | **Checker, no memory:** 10 attempts to pass 4 tasks (3, 3, 2, 2), 29 failed checks on first tries. **Checker + skills:** 8 attempts (2, 2, 2, 2), 22 failed checks; one learned skill (adjudicated-claims denominator), applied on 2 of 3 later tasks. **Self-review only:** declared every task done; the frozen checker failed 3 of the 4 (2.89, 3.14, 1.61), passed T7 at 3.60 after the agent caught its own leakage | `archive/experiment-3_run_005/` (writeup at `archive/experiment-3_run_005/docs/writeup_run_005.md`) |
 | 4 — `run_006` | stateless **Claude Haiku 4.5** subagents, **blinded** briefs (T1 and T8 blinded too) and operator, feedback capped to the 3 most severe findings, 5 attempts, **five arms** — two of them a plain raw-memory log instead of the checker/self-review split | 6 tasks: T1 → T2 → T4 → T3 → T7 → T8 | **Checker, no memory:** 14 attempts to pass 6 tasks, 39 first-try failures. **Checker + raw log:** 11 attempts, 20 failures — passed T3 first try with 9 past notes already logged. **Checker + skills:** 13 attempts, 28 failures; 2 learned skills, 5 reuses. **Self-review only:** declared 6/6 done, checker passed 1/6 (T7 only); revised a checker-passing T8 attempt into a fail. **Self-review + raw log:** same pattern; a memory of its own past verdicts did not help (lowest mean final score of all five arms, 2.89) | `docs/writeup.md`, `articles/loop-engineering-markdown-skills/` |
+| 5 — `run_007` | stateless **Claude Haiku 4.5** subagents, **blinded** briefs and operator, a **held-out transfer test** — two arms seeded (read-only) from `run_006`'s memory and skills, one arm cold, feedback capped to the 3 most severe findings, 5 attempts | 4 held-out tasks, none attempted by any earlier run: T9 → T10 → T5 → T6 | **Cold (no memory):** 7 attempts to pass 4 tasks, 13 first-try failures, first-attempt mean 3.33, 1/4 first-try passes. **Warm, raw log (19 notes seeded, numbers redacted):** 5 attempts, 7 failures, first-attempt mean 3.57, 3/4 first-try passes. **Warm, seeded skills (2 inherited, 1 new written):** 5 attempts, 8 failures, first-attempt mean 3.60, 3/4 first-try passes. Both warm arms opened at or above the cold arm on every task; all three arms failed the same untaught leakage check on T5 (fraud exploration) — conventions transfer, values don't | `docs/writeup.md` (Part B), `articles/loop-engineering-markdown-skills/` |
 
-All four are single runs on synthetic data — illustrative, not evidence of anything operational. The article about the experiments (Substack-ready Markdown + a self-contained web version) is in `articles/loop-engineering-markdown-skills/`; read it online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
+All five are single runs on synthetic data — illustrative, not evidence of anything operational. The article about the experiments (Substack-ready Markdown + a self-contained web version) is in `articles/loop-engineering-markdown-skills/`; read it online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
 
 ## Repository layout
 
@@ -26,7 +27,7 @@ All four are single runs on synthetic data — illustrative, not evidence of any
 config/        experiment.yaml, graph.yaml (A1) · tasks.yaml, rubric.yaml (A3) · freeze_manifest.json (L0, Phase 1.5)
 data/          raw/ (git-ignored CSVs) · processed/manifest.json (data contract) · README.md (source, licence, schema)
 docs/          idea, spec, plan (interface contract), tasks (backlog), security-review, decision-log, verification-log, writeup, OPERATOR_PROTOCOL
-goldens/       golden evaluation pack T1–T8, built once by independent reference code and frozen by hash
+goldens/       golden evaluation pack T1–T10, built once by independent reference code and frozen by hash
 skills/        SKILL_SCHEMA.md · foundational/ (6 curated skills, not used in experiment 3) · evolved/<run_id>/ (learned, immutable) · archived/ · index.json
 src/           llm_provider, graph_state, claims_graph, graph_nodes, run_experiment (L0) · download_data, profile_data (A2)
                build_goldens, evaluator (A3) · skill_store, skill_validator (A4) · experiment_logger, dashboard, charts (A5)
@@ -45,7 +46,7 @@ archive/       experiments 1 and 2 and the pre-fix / smoke runs, each with a REA
 uv sync --extra dev                      # pinned environment (Python 3.12; pandas 3, scikit-learn 1.9, langgraph 1.2)
 cp .env.example .env                     # optional — defaults already select manual mode, no key needed
 ./scripts/bootstrap.sh                   # validate config → one-time dataset download → profile → build goldens
-uv run --extra dev pytest -q             # offline tests (185)
+uv run --extra dev pytest -q             # offline tests (188)
 ./scripts/run_all.sh                     # config check → data → profile → topology → run conditions → refresh dashboard/charts → verify
 ./scripts/verify.sh                      # tests, log validation, freeze check, security greps
 ```
@@ -62,6 +63,21 @@ Python equivalents: `uv run python -m src.download_data` · `uv run python -m sr
 | `anthropic_api` | | thin fail-closed adapter around `langchain-anthropic`; refuses to start without `ANTHROPIC_API_KEY`; **not used in this study** | separate Anthropic Console billing, never the Claude Code subscription |
 
 Set with `CLAIMS_SKILL_LOOP_LLM_MODE`; see `.env.example` and `docs/plan.md` §2.
+
+## Experiment 5 in one screen (`config/experiment.yaml`, decision D-23)
+
+A **held-out transfer test**: does what an arm accumulated in run_006 carry over to tasks it has never seen?
+
+| Knob | Value | Why |
+|---|---|---|
+| tasks | `T9, T10, T5, T6` — denial hotspots, specialty spend and denials, fraud exploration, first fraud model (article tasks 7–10) | T9 and T10 are **new** tasks on T4's and T3's components and conventions but different questions; T5 and T6 have never been attempted by any run |
+| briefs | **blinded**, all four; T5's and T6's blinded here for the first time | no convention is stated anywhere in the suite |
+| arms | `reflection_only` (cold: checker feedback, no memory) · `feedback_memory` (**warm**: seeded with run_006's 19 raw notes) · `skill_learning` (**warm**: seeded with run_006's two learned skills) | isolates *transfer* of a raw log vs a distilled procedure; no self-review arms (experiment 4 settled that) |
+| seeding | `seed_from_run: run_006`, read-only. Memory copied once with **every numeric token redacted to `[n]`** (except task ids and `p90`/`p99`); skills merely *listed* from `skills/evolved/run_006/` and never copied | a warm arm may inherit conventions, never a golden value |
+| task numbering | `task_index_offset: 6` — run_007's tasks are indices 6–9, continuing run_006's 0–5 | keeps skills learned after run_006's first tasks eligible from task one; lets the article number the ten tasks 1–10 |
+| leakage audit | `scripts/seed_audit.py --run-id run_007 --holdout T9,T10,T5,T6` — **clean**; it also names the 4 golden values the redaction removed | the no-leakage claim is checkable, not asserted |
+| goldens | two new files (`T9_denial_hotspots_metrics.json`, `T10_specialty_spend_metrics.json`) from independent reference code; the eight existing ones byte-identical apart from `built_at`; new freeze `74e64e1d38e3…` | the earlier pack is untouched |
+| feedback, attempts, library | unchanged from experiments 3–4: 3 most severe findings, fix withheld, 5 attempts, no foundational skills | only the suite and the starting memory change |
 
 ## Experiment 4 in one screen (`config/experiment.yaml`, decision D-22)
 
@@ -82,13 +98,14 @@ Set with `CLAIMS_SKILL_LOOP_LLM_MODE`; see `.env.example` and `docs/plan.md` §2
 1. `uv run python -m src.build_goldens` computes expected metrics, contracts, and checks from the downloaded data with independent pandas code (never the executor's code).
 2. `uv run python -m src.build_goldens --check` reproduces them exactly.
 3. **The user reviews the golden values** (checkpoint).
-4. The lead writes `config/freeze_manifest.json` (SHA-256 of tasks, rubric, goldens, raw data). `init` refuses to start a manual run if any hash drifts, and every evaluation event carries `freeze_sha256`. Experiment 3 freeze: `64b7292e8214…` (experiments 1–2: `1566c5698a50…`).
+4. The lead writes `config/freeze_manifest.json` (SHA-256 of tasks, rubric, goldens, raw data). `init` refuses to start a manual run if any hash drifts, and every evaluation event carries `freeze_sha256`. Experiment 5 freeze: `74e64e1d38e3…` (experiment 4: `59fb61d35fe8…`; experiment 3: `64b7292e8214…`; experiments 1–2: `1566c5698a50…`).
 
-## Running the experiment (manual mode, experiment 4)
+## Running the experiment (manual mode, experiment 5)
 
 ```bash
-uv run python -m src.run_experiment run-stub --run-id stub_check --conditions reflection_only,feedback_memory,skill_learning,self_refine,self_refine_memory   # pipeline must pass first
-uv run python -m src.run_experiment init        --run-id run_007 --conditions reflection_only,feedback_memory,skill_learning,self_refine,self_refine_memory --mode manual
+uv run python -m src.run_experiment run-stub --run-id stub_check --conditions reflection_only,feedback_memory,skill_learning   # pipeline must pass first
+uv run python -m src.run_experiment init        --run-id run_007 --conditions reflection_only,feedback_memory,skill_learning --mode manual
+uv run python scripts/seed_audit.py --run-id run_007 --holdout T9,T10,T5,T6   # no holdout golden number may reach the seeded memory or skills
 uv run python -m src.run_experiment advance-all --run-id run_007      # prints the pending request per condition
 #   → the lead spawns one fresh operator subagent per request (prompt template in docs/OPERATOR_PROTOCOL.md), then advance-all again
 uv run python -m src.run_experiment status      --run-id run_007

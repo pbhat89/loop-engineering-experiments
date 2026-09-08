@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable
 
-from src.graph_state import CONDITIONS, DEFAULT_CONDITIONS, initial_state
+from src.graph_state import CONDITIONS, DEFAULT_CONDITIONS, MEMORY_CONDITIONS, SKILL_RETRIEVING_CONDITIONS, initial_state
 from src.llm_provider import (
     DEFAULT_MODEL_BY_MODE,
     DEFAULT_OPERATOR_BY_MODE,
@@ -93,6 +93,10 @@ class RunConfig:
     feedback_max_items: int | None = None
     reveal_fixes: bool = True
     foundational_skills: bool = True
+    # experiment 5 (D-23): carry-over of memory from an earlier run and the task-index continuation
+    seed_from_run: str | None = None
+    task_index_offset: int = 0
+    seed_skill_exclude: list[str] = field(default_factory=list)
     created_at: str = field(default_factory=utc_now)
 
     @classmethod
@@ -114,6 +118,9 @@ class RunConfig:
             # the fixture and the rule learner apply the literal fix by construction; hiding it only makes sense for a model
             reveal_fixes=bool(cfg.get("reveal_fixes", True)) if mode == "manual" else True,
             foundational_skills=bool(cfg.get("foundational_skills", True)),
+            seed_from_run=(str(cfg["seed_from_run"]) if cfg.get("seed_from_run") else None),
+            task_index_offset=int(cfg.get("task_index_offset", 0) or 0),
+            seed_skill_exclude=[str(x) for x in (cfg.get("seed_skill_exclude") or [])],
         )
 
     def to_dict(self) -> dict:
@@ -198,7 +205,14 @@ def build_services(config: RunConfig):
         provider=provider,
         execute_task=execute_task,
         evaluate=evaluate,
-        skill_store=SkillStore(SKILLS_DIR, run_id=config.run_id, include_foundational=config.foundational_skills),
+        skill_store=SkillStore(
+            SKILLS_DIR,
+            run_id=config.run_id,
+            include_foundational=config.foundational_skills,
+            # experiment 5 (D-23): the seed run's evolved skills are listed read-only alongside this run's own
+            seed_run_ids=[config.seed_from_run] if config.seed_from_run else [],
+            exclude_skill_ids=list(config.seed_skill_exclude or []),
+        ),
         validate_skill=validate_skill,
         logger=ExperimentLogger(LOGS_DIR),
         rubric=read_yaml(CONFIG_DIR / "rubric.yaml"),
@@ -289,9 +303,59 @@ class Runner:
             "created_at": utc_now(),
             "updated_at": utc_now(),
         }
+        if config.seed_from_run:
+            runner.run["seeding"] = runner._seed_memory(config)
         runner._save()
         runner.write_status()
         return runner
+
+    def _seed_memory(self, config: RunConfig) -> dict:
+        """Copy an earlier run's raw memory into this run's memory arms, every numeric token redacted (D-23).
+
+        Read-only with respect to the seed run. Skill carry-over needs no copying at all: the store simply
+        lists ``skills/evolved/<seed_run>/*.md`` as well (see :class:`~src.skill_store.SkillStore`), so the
+        provenance recorded here names the skill files rather than duplicating them.
+        """
+        from src.feedback_memory import MEMORY_ROOT, NUMBER_RE, PROTECTED_RE, FeedbackMemory, redact_record
+
+        source_run = str(config.seed_from_run)
+        provenance: dict = {
+            "source_run": source_run,
+            "seeded_at": utc_now(),
+            "redaction_rule": (
+                f"every numeric token matching {NUMBER_RE.pattern} in the record's `text` and `detail` is replaced "
+                f"by '[n]', except matches of {PROTECTED_RE.pattern} (task ids and the quantile names p90/p99)"
+            ),
+            "memory": {},
+            "skills": {},
+        }
+        for condition in config.conditions:
+            if condition not in MEMORY_CONDITIONS:
+                continue
+            source = MEMORY_ROOT / source_run / f"{condition}.jsonl"
+            entry: dict = {"source_path": rel(source), "records_read": 0, "records_seeded": 0, "numbers_redacted": 0}
+            if source.is_file():
+                records, redacted = [], 0
+                for raw in FeedbackMemory(MEMORY_ROOT, source_run, condition).read_all():
+                    record, k = redact_record({**raw, "source_run": source_run})
+                    records.append(record)
+                    redacted += k
+                entry["records_read"] = len(records)
+                entry["numbers_redacted"] = redacted
+                entry["records_seeded"] = FeedbackMemory(MEMORY_ROOT, self.run_id, condition).seed(records)
+            else:
+                entry["note"] = "no memory log for this condition in the seed run"
+            provenance["memory"][condition] = entry
+        skill_dir = SKILLS_DIR / "evolved" / source_run
+        files = sorted(p.name for p in skill_dir.glob("*.md")) if skill_dir.is_dir() else []
+        provenance["skills"] = {
+            "source_dir": rel(skill_dir),
+            "files": files,
+            "excluded_skill_ids": list(config.seed_skill_exclude or []),
+            "mode": "read-only: listed by SkillStore(seed_run_ids=[...]); never copied, never edited",
+            "available_to": [c for c in config.conditions if c in SKILL_RETRIEVING_CONDITIONS],
+        }
+        return provenance
 
     def _save(self) -> None:
         self.run["updated_at"] = utc_now()
@@ -344,7 +408,8 @@ class Runner:
             run_id=self.run_id,
             condition=condition,
             task_id=task_id,
-            task_index=task_index,
+            # experiment 5 (D-23): continue the seed run's task numbering so skills learned there are eligible
+            task_index=task_index + int(cfg.task_index_offset or 0),
             task_spec=spec,
             dataset_manifest=manifest,
             seed=cfg.seed,

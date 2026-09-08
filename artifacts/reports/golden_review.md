@@ -1,6 +1,6 @@
 # Golden pack review (Phase 1.5 user checkpoint)
 
-Built 2026-09-06T17:10:51+00:00 by `src/build_goldens.py` from dataset revision `7309ddb30e67468748b7aa9182d8517fe28c2f9c` (synthetic HLT-008 sample). Every row is one frozen reference value; the definition states numerator / denominator / filters / seed / split. Review once, then the lead freezes `config/freeze_manifest.json`. Rebuild with `uv run python -m src.build_goldens`; verify with `--check`.
+Built 2026-09-08T07:11:11+00:00 by `src/build_goldens.py` from dataset revision `7309ddb30e67468748b7aa9182d8517fe28c2f9c` (synthetic HLT-008 sample). Every row is one frozen reference value; the definition states numerator / denominator / filters / seed / split. Review once, then the lead freezes `config/freeze_manifest.json`. Rebuild with `uv run python -m src.build_goldens`; verify with `--check`.
 
 | task | metric | value | definition | tolerance | sanity |
 |---|---|---|---|---|---|
@@ -56,3 +56,14 @@ Built 2026-09-06T17:10:51+00:00 by `src/build_goldens.py` from dataset revision 
 | T7 | `target_definition.positive_rate_{train,test}` | train 482/9633 = 0.050036; test 150/3212 = 0.046700 | paid_amount > threshold_value in each partition | 1e-06 | OK: train positive rate about 5 percent |
 | T7 | `split` | n_train 9633; n_test 3212 | plain split, no stratification | exact | OK: sizes sum to total |
 | T8 | `brief contracts` | sources >= {T2,T5,T6,T7} + one of {T3,T4}; 5 sections; cite_artifacts; causal_language avoid; <= 600 words | structural golden (no data values) | n/a | OK: forbidden phrases: causes, drives, leads to, because of |
+| T9 | `denial_code_ranking.codes` | CO-15 241; CO-4 206; CO-11 147; CO-18 138; PR-1 120; CO-27 115; CO-97 99; CO-50 87; CO-29 82; CO-119 51 | value_counts(denial_code_carc) among denied claims; share = n / denied (the T4 convention) | exact (share float) | OK: counts sum to 1286; shares sum to 1 |
+| T9 | `denial_code_ranking.missing_denial_codes` | overall 11559/12845; among denied 0/1286 | denial_code_carc.isna() | exact | OK: missing overall = total - denied; none missing among denied |
+| T9 | `denial_rate_by_segment.segments.place_of_service` | 11 values; rates 0.0874..0.1472; small flags 0 | per value: denied / adjudicated in segment; small if denominator < 30; values keyed by str() | exact counts | OK: numerators sum to 1286, denominators to 12339 |
+| T9 | `denial_rate_by_segment.segments.auth_required_flag` | 2 values; rates 0.0956..0.1057; small flags 0 | per value: denied / adjudicated in segment; small if denominator < 30; values keyed by str() | exact counts | OK: numerators sum to 1286, denominators to 12339 |
+| T9 | `denial_rate_by_segment.segments.network_status` | 2 values; rates 0.0970..0.1056; small flags 0 | per value: denied / adjudicated in segment; small if denominator < 30; values keyed by str() | exact counts | OK: numerators sum to 1286, denominators to 12339 |
+| T9 | `denial_rate_by_segment.segments.place_of_service.22.rate` | 0.110190 | 545 / 4946 (largest place_of_service segment) | 1e-06 | OK: rate in (0, 1) and the segment is the largest |
+| T10 | `group_comparison.groups.provider_specialty` | 25 specialties; n 71..1225; small flags 0 | per specialty: n, claim_count, paid_amount sum and mean, denial numerator/denominator (adjudicated), small_group_flag (n < 30) | exact | OK: n sums to 12845, denied sums to 1286 |
+| T10 | `group_comparison.groups.provider_specialty.Critical Access Hospital` | paid_amount_sum 898337.36; denial 137/1172 = 0.116894 | the specialty with the largest paid_amount total | currency 0.01; rate 1e-06 | OK: the selected specialty is the top spender |
+| T10 | `provider_ranking.rows` | 1450094833 126138.73; 1847081578 108309.73; 1696843572 98833.82; 1434029575 98269.40; 1780163051 97847.53; 1752470395 97662.93; 1168246159 96552.30; 1486164553 96244.07; 1590915516 95888.54; 1991459367 95775.57 | top 10 rendering_npi by total paid_amount among providers with >= 30 claims (ties by npi) | exact (order-insensitive) | OK: no tie at the boundary (10th 95775.57 > 11th 95555.01) |
+| T10 | `provider_ranking.min_claims` | 150 of 150 providers eligible | providers with at least 30 claims | contract | OK: every provider in this sample clears the threshold, so the parameter is recorded, not selective |
+| T10 | `join_check.medical_claims.rendering_npi->providers.provider_npi` | many_to_one, unmatched 0/12845, rows after inner join 12845 | rendering_npi in providers.provider_npi | exact | OK: full match, no row-count change |

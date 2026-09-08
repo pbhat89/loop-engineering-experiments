@@ -1,21 +1,23 @@
 {
-  "frozen_at": "2026-09-07T15:37:00+00:00",
+  "frozen_at": "2026-09-08T07:23:43+00:00",
   "files": {
-    "config/tasks.yaml": "cd1b323d84a33d363aab6e3c46a31ec9471ede5b3fd0a6b15309a8d73396736a",
-    "config/rubric.yaml": "2fb390b456a5698837043d36d87fcc694cda669b6c603848842255c6f5ddcef9",
-    "goldens/T1_data_contract.json": "0a97629031c3fa4868a22540132fa5c967ae3fa974fae32a674fc3ce02d27feb",
-    "goldens/T2_portfolio_metrics.json": "bf292137aeb635253994095c87c1bc7888a53e354534495e07ae4abb4602ee30",
-    "goldens/T3_provider_network_metrics.json": "db9ef9918e9b05df3fa6d3a7c67d607e039e490c5979000d97fdbacb5a9fbe08",
-    "goldens/T4_denial_analysis_metrics.json": "6e6d5cf6367aa9173b6586b6bfd1811053de5ae2a26c45f8f8f5e51fa5893afc",
-    "goldens/T5_fraud_exploration_metrics.json": "8f6f950df2ede7041e6f82b17ea14707d5d99fa010198a94f4abc7eea92a8d64",
-    "goldens/T6_fraud_model_contract.json": "3ef5393ad8f8f27ac9303e6ad23c90f4ce07f924fb7a355d26f16483783489b6",
-    "goldens/T7_high_cost_model_contract.json": "4572e1e730f7d98787e13b792a14f61c9beaf0514ed3833c657586eeb4fada4d",
-    "goldens/T8_executive_brief_rubric.yaml": "a8d2e2d9a10c90ffd92e9ab3445c63ab7d6ddfe6acf84cbeaa84ac06a9f7f755",
+    "config/tasks.yaml": "e1404c9ecbc09d0b494601ccb8c47b5b835a637ebca364d9705f6123041f4be6",
+    "config/rubric.yaml": "ae8e068e2eaaa4b41b6d201e7118f8b182892436eb9b9842b82e6e99c013d7d5",
+    "goldens/T10_specialty_spend_metrics.json": "f5797ffa423139db495309f6df49caba51d26724a79bfdf53b1184d28080e4db",
+    "goldens/T1_data_contract.json": "d1ded8e32e1a852abef7ad906a8f598f85bf7e2fb4651ab7d74d2affb06b3b4c",
+    "goldens/T2_portfolio_metrics.json": "16a05626f942e5be1c4f4f67648e883c76bd2ff7881f33d48cc6c75875d25c7b",
+    "goldens/T3_provider_network_metrics.json": "afbe6e30b036848be1342c481c7d9a4e5860f5305421856b8598f57281ce04fa",
+    "goldens/T4_denial_analysis_metrics.json": "9b289bc5b248a1afb57f3b60f4e97d57d81ad75d0d486d5a4bb9d92916eb5617",
+    "goldens/T5_fraud_exploration_metrics.json": "73642cd8dc4d418f7b625d944e5e5f8f7817f92d426302539fea04810bedb087",
+    "goldens/T6_fraud_model_contract.json": "4049af6e665dea101348637521a24e3326aab1a5b7c78384585ed248f3280d72",
+    "goldens/T7_high_cost_model_contract.json": "a16a55457440f7da14fb607a09ad047524e3a84b36ed88384c15595e4cef281c",
+    "goldens/T8_executive_brief_rubric.yaml": "98012526a0516255aeb411015a98ce396731f1dbc4460e9eac4e8495e8500eab",
+    "goldens/T9_denial_hotspots_metrics.json": "482025e1470c1d80a45aa9e1cfd76b8e105ba61aab4d7a5b78fd179af79ec699",
     "data/raw/adherence.csv": "b89e2343d5f8f8811c99660ef319bda88e4b5f27d772498a39e746e799956653",
     "data/raw/medical_claims.csv": "96ede50f98bbcdc82d0bb251945d794d934c55376cc1a0c45bbf35590578f41d",
     "data/raw/members.csv": "4b5c811048ed5966c17339490a472440cb4a792e23ab4136bd02077e6a694fc1",
     "data/raw/pharmacy_claims.csv": "7341275cee178873267ee608bb1a5df28386fbe5b72ee39fa7b25dffdccc92c6",
     "data/raw/providers.csv": "8a3a41e69ce6bf343066df4a883a52ac8b76d3ae1f935930e5b800dfac9b2551"
   },
-  "freeze_sha256": "59fb61d35fe828be678abff1a9e4d1c87ebaf5582398f1aee424ea88b4ab8a6f"
+  "freeze_sha256": "74e64e1d38e3888fd54a9c02e64dd6fcee389bee7b6aba14cdfa7c86729f8b58"
 }

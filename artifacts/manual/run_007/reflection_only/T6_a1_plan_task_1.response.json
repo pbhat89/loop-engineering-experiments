@@ -1,0 +1,64 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount",
+          "service_units",
+          "er_flag",
+          "high_cost_flag",
+          "auth_required_flag"
+        ]
+      }
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25,
+        "stratify": true
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ],
+        "class_weight": "balanced"
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "class_imbalance",
+          "model_limitations"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Baseline feature set excludes sparse/potentially-leaky fields (fraud_pattern_type is 95% null) and identifiers; focuses on claim attributes available at processing time. Stratified split preserves fraud class balance. Train-only preprocessing prevents data leakage. Standard scaling benefits logistic regression. Balanced class weights address the imbalance inherent in fraud detection."
+}

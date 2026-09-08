@@ -1,0 +1,48 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "paid_amount_mean",
+          "denial_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "paid_amount_sum",
+        "top_n": 10,
+        "min_claims": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "sample_preview",
+          "small_groups",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The plan addresses the finance objective by grouping claims by specialty to compare volume, spend totals, averages, and denial rates over adjudicated claims only (correcting the denominator per feedback). Small-group flagging (threshold: 30 claims) highlights low-volume specialties. Provider ranking identifies the top 10 rendering providers by highest paid spend, excluding low-volume providers. Report generation includes appropriate caveats for synthetic data and descriptive analysis, with denominators shown for rate interpretation and source citations for reproducibility.",
+  "changes_summary": "Changed group_comparison denominator parameter from 'all_claims' to 'adjudicated_claims' to correctly calculate per-specialty denial rates. Denial rates must use only adjudicated claims in the denominator because non-adjudicated claims cannot have a denial or fraud outcome; including them distorts rate calculations. This corrects the specialty denial-rate calculations while keeping all other components and parameters unchanged."
+}

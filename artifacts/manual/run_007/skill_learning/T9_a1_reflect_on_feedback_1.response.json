@@ -1,0 +1,15 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T9-min_group_size",
+      "correction": "Set denial_rate_by_segment min_group_size to 30 instead of 50 to flag segments with fewer than 30 claims as statistically unstable and strengthen statistical discipline."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When computing rates by segmented groups, set min_group_size to 30 to flag segments below that threshold as unreliable. This protects against overinterpreting rates from small sample sizes and maintains statistical discipline across analyses.",
+      "applicable_task_ids": ["T10", "T5"],
+      "source_feedback_ids": ["T9-min_group_size"]
+    }
+  ]
+}

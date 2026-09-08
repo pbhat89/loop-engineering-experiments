@@ -1,0 +1,23 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T10-groups_specialty",
+      "correction": "Change group_comparison denominator from 'all_claims' to 'adjudicated_claims' to calculate correct per-specialty denial rates. Using adjudicated claims reduces denominators (e.g., ASC from 966 to 929) to exclude non-adjudicated claims from the rate."
+    },
+    {
+      "feedback_id": "T10-top_spend_specialty_denial_rate",
+      "correction": "Change group_comparison denominator from 'all_claims' to 'adjudicated_claims'. This corrects specialty denial rates by using only adjudicated claims in the denominator (Critical Access Hospital: 1172 adjudicated claims, not 1225 total claims)."
+    },
+    {
+      "feedback_id": "T10-group_denominator",
+      "correction": "Change group_comparison denominator parameter value from 'all_claims' to 'adjudicated_claims'."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "Always use adjudicated claims as the denominator when calculating claim-based rates (denial, fraud, approval, etc.), whether aggregated by group or at provider level. Non-adjudicated claims cannot have a denial or fraud outcome, so including them in the denominator distorts rate calculations.",
+      "applicable_task_ids": ["T5", "T6"],
+      "source_feedback_ids": ["T10-group_denominator", "T10-top_spend_specialty_denial_rate"]
+    }
+  ]
+}

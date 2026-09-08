@@ -1,0 +1,52 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "class_prevalence"
+    },
+    {
+      "component": "feature_comparison",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "auth_required_flag",
+          "high_cost_flag",
+          "member_sex",
+          "member_race_ethnicity",
+          "member_age_band",
+          "member_payer_type"
+        ]
+      }
+    },
+    {
+      "component": "leakage_assessment"
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "association_not_causation",
+          "class_imbalance"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This plan comprehensively addresses the fraud exploration task objective. Load tables provides baseline manifest review; class_prevalence quantifies the fraud flag distribution and imbalance. Feature_comparison examines 17 claim and member characteristics (excluding the label-derived fraud_pattern_type) to identify differences between flagged and unflagged claims. Leakage_assessment flags label-derived and protected fields for transparency. Write_report documents the analysis with four caveats: synthetic data origin, descriptive interpretation only, associations not causal claims, and class imbalance awareness; show_denominators ensures rates are explicit (numerator/denominator format); cite_artifacts provides reproducibility via source citations."
+}

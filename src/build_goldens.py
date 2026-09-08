@@ -52,7 +52,11 @@ GOLDEN_FILES = {
     "T6": "T6_fraud_model_contract.json",
     "T7": "T7_high_cost_model_contract.json",
     "T8": "T8_executive_brief_rubric.yaml",
+    # experiment 5 (D-23): two held-out transfer tasks built by their own reference code
+    "T9": "T9_denial_hotspots_metrics.json",
+    "T10": "T10_specialty_spend_metrics.json",
 }
+T9_SEGMENTS = ["place_of_service", "auth_required_flag", "network_status"]
 
 # caveat id -> keywords any of which satisfies the caveat in report text (case-insensitive substrings)
 CAVEAT_KEYWORDS = {
@@ -580,6 +584,171 @@ def build_t8(review: Review) -> dict:
 
 
 # --------------------------------------------------------------------------- assembly
+def build_t9(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+    """T9 (denial hotspots): the T4 conventions on three *setting* segments, plus one rate T4 does not check.
+
+    Independent of ``build_t4``: the code ranking is recomputed here and the segments are
+    ``place_of_service``, ``auth_required_flag`` and ``network_status``. The extra tolerance check is on the
+    denial rate of the largest place_of_service segment.
+    """
+    mc = tables["medical_claims"]
+    n = int(len(mc))
+    denied_mask = mc["claim_status"] == "Denied"
+    n_denied = int(denied_mask.sum())
+    code_counts = mc.loc[denied_mask, "denial_code_carc"].value_counts()
+    codes = [{"code": str(c), "n": int(k), "share": rate(int(k), n_denied)} for c, k in sorted(code_counts.items(), key=lambda kv: (-kv[1], kv[0]))]
+    missing = {"overall": int(mc["denial_code_carc"].isna().sum()), "overall_denominator": n,
+               "among_denied": int(mc.loc[denied_mask, "denial_code_carc"].isna().sum()), "among_denied_denominator": n_denied}
+    review.add("T9", "denial_code_ranking.codes", "; ".join(f"{c['code']} {c['n']}" for c in codes),
+               "value_counts(denial_code_carc) among denied claims; share = n / denied (the T4 convention)", "exact (share float)",
+               ok(sum(c["n"] for c in codes) == n_denied and abs(sum(c["share"] for c in codes) - 1) < 1e-9, "counts sum to 1286; shares sum to 1"))
+    review.add("T9", "denial_code_ranking.missing_denial_codes", f"overall {missing['overall']}/{n}; among denied {missing['among_denied']}/{n_denied}",
+               "denial_code_carc.isna()", "exact",
+               ok(missing["overall"] + n_denied == n and missing["among_denied"] == 0, "missing overall = total - denied; none missing among denied"))
+
+    segments: dict[str, dict] = {}
+    for seg in T9_SEGMENTS:
+        seg_vals: dict[str, dict] = {}
+        for value, g in mc.groupby(seg, sort=True):
+            denied = int((g["claim_status"] == "Denied").sum())
+            adjudicated = int(g["claim_status"].isin(ADJUDICATED).sum())
+            seg_vals[str(value)] = {"numerator": denied, "denominator": adjudicated, "rate": rate(denied, adjudicated),
+                                    "small_group_flag": adjudicated < MIN_GROUP_SIZE}
+        segments[seg] = seg_vals
+        num_sum = sum(v["numerator"] for v in seg_vals.values())
+        den_sum = sum(v["denominator"] for v in seg_vals.values())
+        review.add("T9", f"denial_rate_by_segment.segments.{seg}",
+                   f"{len(seg_vals)} values; rates {min(v['rate'] for v in seg_vals.values()):.4f}..{max(v['rate'] for v in seg_vals.values()):.4f}; small flags {sum(v['small_group_flag'] for v in seg_vals.values())}",
+                   "per value: denied / adjudicated in segment; small if denominator < 30; values keyed by str()", "exact counts",
+                   ok(num_sum == 1286 and den_sum == 12339, "numerators sum to 1286, denominators to 12339"))
+    pos_key, pos = max(segments["place_of_service"].items(), key=lambda kv: (kv[1]["denominator"], kv[0]))
+    expected_metrics = {
+        f"denial_rate_by_segment.segments.place_of_service.{pos_key}.rate": metric(
+            pos["rate"], RATE_TOL, numerator=f"denied claims with place_of_service == '{pos_key}'",
+            denominator=f"adjudicated claims with place_of_service == '{pos_key}'",
+            numerator_value=pos["numerator"], denominator_value=pos["denominator"],
+            selection="largest place_of_service segment by adjudicated claims"),
+    }
+    review.add("T9", f"denial_rate_by_segment.segments.place_of_service.{pos_key}.rate", f"{pos['rate']:.6f}",
+               f"{pos['numerator']} / {pos['denominator']} (largest place_of_service segment)", str(RATE_TOL),
+               ok(0 < pos["rate"] < 1 and pos["denominator"] == max(v["denominator"] for v in segments["place_of_service"].values()),
+                  "rate in (0, 1) and the segment is the largest"))
+    exact_segments = {seg: {v: {"numerator": s["numerator"], "denominator": s["denominator"], "small_group_flag": s["small_group_flag"]} for v, s in vals.items()}
+                      for seg, vals in segments.items()}
+    return {
+        "expected_exact": {
+            "denial_code_ranking.codes": codes,
+            "denial_code_ranking.missing_denial_codes": missing,
+            "denial_rate_by_segment.segments": exact_segments,
+        },
+        "expected_metrics": expected_metrics,
+        "contracts": {
+            "denial_code_ranking.scope": "denied_claims",
+            "denial_rate_by_segment.denominator_option": "adjudicated_claims",
+            "denial_rate_by_segment.min_group_size": MIN_GROUP_SIZE,
+            "denial_rate_by_segment.segments": {"includes": list(T9_SEGMENTS)},
+            "report.show_denominators": True,
+        },
+        "metric_ranges": {},
+        "prohibited_fields": [],
+        "required_caveats": caveats("synthetic_data", "small_groups"),
+    }
+
+
+def _directory_label(frame: pd.DataFrame, npi: str):
+    """The provider-directory index label whose string form is ``npi`` (the directory key may be numeric)."""
+    if npi in frame.index:
+        return npi
+    return next(k for k in frame.index if str(k) == npi)
+
+
+def build_t10(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+    """T10 (specialty spend and denials): T3's components asked about spend.
+
+    Per-specialty volume, paid total and mean and denial rate over adjudicated claims, plus a top-10 provider
+    ranking by paid spend restricted to providers with at least ``MIN_GROUP_SIZE`` claims. The ranking is
+    replicated from pandas primitives here (group, filter, sort by total descending then npi ascending) and
+    never imports the executor's code.
+    """
+    mc, pr = tables["medical_claims"], tables["providers"]
+    n = int(len(mc))
+    groups = _group_stats(mc, "provider_specialty")
+    exact_groups = {
+        v: {"n": s["n"], "claim_count": s["claim_count"], "paid_amount_sum": s["paid_amount_sum"], "paid_amount_mean": s["paid_amount_mean"],
+            "denial_rate": {"numerator": s["denial_rate"]["numerator"], "denominator": s["denial_rate"]["denominator"]},
+            "small_group_flag": s["small_group_flag"]}
+        for v, s in groups.items()
+    }
+    spec_key, spec = max(groups.items(), key=lambda kv: (kv[1]["paid_amount_sum"], kv[0]))
+    expected_metrics = {
+        f"group_comparison.groups.provider_specialty.{spec_key}.denial_rate.value": metric(
+            spec["denial_rate"]["value"], RATE_TOL, numerator=f"denied claims with provider_specialty == '{spec_key}'",
+            denominator=f"adjudicated claims with provider_specialty == '{spec_key}'",
+            numerator_value=spec["denial_rate"]["numerator"], denominator_value=spec["denial_rate"]["denominator"],
+            selection="the specialty with the largest paid_amount total"),
+        f"group_comparison.groups.provider_specialty.{spec_key}.paid_amount_sum": metric(
+            spec["paid_amount_sum"], CURRENCY_TOL, statistic="sum of paid_amount", rows=f"provider_specialty == '{spec_key}'", n=spec["n"]),
+    }
+    review.add("T10", "group_comparison.groups.provider_specialty",
+               f"{len(groups)} specialties; n {min(s['n'] for s in groups.values())}..{max(s['n'] for s in groups.values())}; small flags {sum(s['small_group_flag'] for s in groups.values())}",
+               "per specialty: n, claim_count, paid_amount sum and mean, denial numerator/denominator (adjudicated), small_group_flag (n < 30)", "exact",
+               ok(sum(s["n"] for s in groups.values()) == n and sum(s["denial_rate"]["numerator"] for s in groups.values()) == 1286,
+                  "n sums to 12845, denied sums to 1286"))
+    review.add("T10", f"group_comparison.groups.provider_specialty.{spec_key}",
+               f"paid_amount_sum {spec['paid_amount_sum']:.2f}; denial {spec['denial_rate']['numerator']}/{spec['denial_rate']['denominator']} = {spec['denial_rate']['value']:.6f}",
+               "the specialty with the largest paid_amount total", f"currency {CURRENCY_TOL}; rate {RATE_TOL}",
+               ok(spec["paid_amount_sum"] == max(s["paid_amount_sum"] for s in groups.values()), "the selected specialty is the top spender"))
+
+    per_provider = {str(npi): {"n": int(len(g)), "paid_amount_sum": float(g["paid_amount"].sum())} for npi, g in mc.groupby("rendering_npi", sort=True)}
+    eligible = {npi: v for npi, v in per_provider.items() if v["n"] >= MIN_GROUP_SIZE}
+    ordered = sorted(eligible.items(), key=lambda kv: (-kv[1]["paid_amount_sum"], kv[0]))
+    prov = pr.set_index("provider_npi")
+    rows = []
+    for npi, v in ordered[:10]:
+        label = _directory_label(prov, npi)
+        rows.append({"provider_npi": npi, "specialty": str(prov.loc[label, "specialty"]), "network_status": str(prov.loc[label, "network_status"]),
+                     "n": v["n"], "value": v["paid_amount_sum"]})
+    tenth, eleventh = ordered[9][1]["paid_amount_sum"], ordered[10][1]["paid_amount_sum"]
+    review.add("T10", "provider_ranking.rows", "; ".join(f"{r['provider_npi']} {r['value']:.2f}" for r in rows),
+               f"top 10 rendering_npi by total paid_amount among providers with >= {MIN_GROUP_SIZE} claims (ties by npi)", "exact (order-insensitive)",
+               ok(tenth > eleventh, f"no tie at the boundary (10th {tenth:.2f} > 11th {eleventh:.2f})"))
+    review.add("T10", "provider_ranking.min_claims", f"{len(eligible)} of {len(per_provider)} providers eligible",
+               f"providers with at least {MIN_GROUP_SIZE} claims", "contract",
+               ok(len(eligible) == len(per_provider), "every provider in this sample clears the threshold, so the parameter is recorded, not selective"))
+
+    pair = "medical_claims.rendering_npi->providers.provider_npi"
+    right_keys = pr["provider_npi"].dropna()
+    unmatched = int((~mc["rendering_npi"].isin(set(right_keys))).sum())
+    rows_after = int(len(mc.merge(pr[["provider_npi"]].drop_duplicates(), left_on="rendering_npi", right_on="provider_npi", how="inner")))
+    join = {"cardinality": "many_to_one" if rows_after and right_keys.is_unique else "no_match", "rows_left": n, "rows_after_inner_join": rows_after,
+            "unmatched_left": unmatched, "unmatched_left_denominator": n, "right_key_unique": bool(right_keys.is_unique)}
+    review.add("T10", f"join_check.{pair}", f"{join['cardinality']}, unmatched {unmatched}/{n}, rows after inner join {rows_after}",
+               "rendering_npi in providers.provider_npi", "exact", ok(unmatched == 0 and rows_after == n, "full match, no row-count change"))
+    return {
+        "expected_exact": {
+            "group_comparison.groups.provider_specialty": exact_groups,
+            "provider_ranking.rows": rows,
+            f"join_check.{pair}": join,
+        },
+        "expected_metrics": expected_metrics,
+        "contracts": {
+            "group_comparison.denominator_option": "adjudicated_claims",
+            "group_comparison.min_group_size": MIN_GROUP_SIZE,
+            "group_comparison.groups": {"includes": ["provider_specialty"]},
+            "group_comparison.metrics_each_group": {"each_has": ["claim_count", "paid_amount_sum", "paid_amount_mean", "denial_rate"]},
+            "provider_ranking.metric": "paid_amount_sum",
+            "provider_ranking.top_n": 10,
+            "provider_ranking.min_claims": MIN_GROUP_SIZE,
+            "report.show_denominators": True,
+        },
+        "metric_ranges": {},
+        "prohibited_fields": [],
+        "required_caveats": caveats("synthetic_data", "small_groups", "association_not_causation"),
+        "reference": {"eligible_providers": len(eligible), "providers_total": len(per_provider),
+                      "paid_amount_sum_by_specialty": {v: s["paid_amount_sum"] for v, s in groups.items()}},
+    }
+
+
 def build_all() -> tuple[dict[str, dict], str]:
     manifest = read_json(MANIFEST_PATH, default=None)
     if not manifest:
@@ -592,7 +761,8 @@ def build_all() -> tuple[dict[str, dict], str]:
     review = Review()
     built_at = utc_now()
     bodies = {"T1": build_t1(tables, review), "T2": build_t2(tables, review), "T3": build_t3(tables, review), "T4": build_t4(tables, review),
-              "T5": build_t5(tables, review), "T6": build_t6(tables, review), "T7": build_t7(tables, review), "T8": build_t8(review)}
+              "T5": build_t5(tables, review), "T6": build_t6(tables, review), "T7": build_t7(tables, review), "T8": build_t8(review),
+              "T9": build_t9(tables, review), "T10": build_t10(tables, review)}
     goldens: dict[str, dict] = {}
     for tid, body in bodies.items():
         inputs = spec[tid]["input_tables"] or list(tables)

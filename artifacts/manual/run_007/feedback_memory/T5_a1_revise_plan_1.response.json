@@ -1,0 +1,54 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "class_prevalence",
+      "params": {}
+    },
+    {
+      "component": "feature_comparison",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "auth_required_flag",
+          "high_cost_flag",
+          "member_payer_type"
+        ]
+      }
+    },
+    {
+      "component": "leakage_assessment",
+      "params": {}
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "association_not_causation",
+          "class_imbalance",
+          "no_operational_use"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This revised plan addresses the two critical feedback items. First, feature_comparison now excludes the protected attributes (member_sex, member_race_ethnicity, member_age_band) and label-derived field (fraud_pattern_type) that created data leakage risk, retaining only 14 claim-level features and member_payer_type. Second, write_report now includes the 'no_operational_use' caveat alongside the existing four (synthetic_data, descriptive_only, association_not_causation, class_imbalance), explicitly stating that exploratory findings are not suitable for operational decisions. All other components and parameters remain unchanged from the prior plan.",
+  "changes_summary": "Removed 4 prohibited fields (fraud_pattern_type, member_sex, member_race_ethnicity, member_age_band) from feature_comparison features list (14 features retained). Added 'no_operational_use' caveat to write_report caveats (5 caveats total)."
+}

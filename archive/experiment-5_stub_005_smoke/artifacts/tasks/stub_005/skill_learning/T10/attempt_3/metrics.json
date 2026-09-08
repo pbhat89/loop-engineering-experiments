@@ -1,0 +1,487 @@
+{
+  "task_id": "T10",
+  "run_id": "stub_005",
+  "condition": "skill_learning",
+  "attempt": 3,
+  "seed": 42,
+  "generated_at": "2026-09-08T07:25:47+00:00",
+  "plan_sha256": "04b522b01ef3c1d97f0cfa3a06fe1d47d85caf3de3d5ec0016e3b32b980c258f",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "group_comparison",
+        "params": {
+          "group_by": [
+            "provider_specialty"
+          ],
+          "metrics": [
+            "claim_count",
+            "paid_amount_sum",
+            "paid_amount_mean",
+            "denial_rate"
+          ],
+          "denominator": "adjudicated_claims",
+          "min_group_size": 30
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "small_groups",
+            "association_not_causation"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": false
+        }
+      },
+      {
+        "component": "provider_ranking",
+        "params": {
+          "metric": "paid_amount_sum",
+          "top_n": 10,
+          "min_claims": 30
+        }
+      },
+      {
+        "component": "join_check",
+        "params": {
+          "pairs": [
+            "medical_claims.rendering_npi->providers.provider_npi"
+          ]
+        }
+      }
+    ],
+    "skills_applied": [
+      "evolved_run_006_001"
+    ],
+    "rationale": "deterministic fixture: catalogue defaults + skill-referenced components + feedback-recommended components",
+    "changes_summary": "join_check <- T10-join_check_rendering_npi; write_report <- T10-show_denominators; write_report <- T10-caveat_small_groups"
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    },
+    "providers": {
+      "rows": 150,
+      "columns": 7
+    }
+  },
+  "join_check": {
+    "medical_claims.rendering_npi->providers.provider_npi": {
+      "cardinality": "many_to_one",
+      "rows_left": 12845,
+      "rows_after_inner_join": 12845,
+      "unmatched_left": 0,
+      "unmatched_left_denominator": 12845,
+      "right_key_unique": true
+    }
+  },
+  "group_comparison": {
+    "min_group_size": 30,
+    "denominator_option": "adjudicated_claims",
+    "groups": {
+      "provider_specialty": {
+        "ASC": {
+          "n": 966,
+          "claim_count": 966,
+          "paid_amount_sum": 775948.8499999999,
+          "paid_amount_mean": 803.2596790890268,
+          "denial_rate": {
+            "value": 0.10010764262648009,
+            "numerator": 93,
+            "denominator": 929
+          },
+          "small_group_flag": false
+        },
+        "Cardiology": {
+          "n": 157,
+          "claim_count": 157,
+          "paid_amount_sum": 93897.51999999999,
+          "paid_amount_mean": 598.0733757961783,
+          "denial_rate": {
+            "value": 0.13245033112582782,
+            "numerator": 20,
+            "denominator": 151
+          },
+          "small_group_flag": false
+        },
+        "Clinical Laboratory": {
+          "n": 254,
+          "claim_count": 254,
+          "paid_amount_sum": 168400.07,
+          "paid_amount_mean": 662.9924015748031,
+          "denial_rate": {
+            "value": 0.102880658436214,
+            "numerator": 25,
+            "denominator": 243
+          },
+          "small_group_flag": false
+        },
+        "Critical Access Hospital": {
+          "n": 1225,
+          "claim_count": 1225,
+          "paid_amount_sum": 898337.3600000001,
+          "paid_amount_mean": 733.3366204081633,
+          "denial_rate": {
+            "value": 0.11689419795221843,
+            "numerator": 137,
+            "denominator": 1172
+          },
+          "small_group_flag": false
+        },
+        "DME Supplier": {
+          "n": 841,
+          "claim_count": 841,
+          "paid_amount_sum": 634611.68,
+          "paid_amount_mean": 754.5917717003567,
+          "denial_rate": {
+            "value": 0.09888751545117429,
+            "numerator": 80,
+            "denominator": 809
+          },
+          "small_group_flag": false
+        },
+        "Diagnostic Radiology": {
+          "n": 71,
+          "claim_count": 71,
+          "paid_amount_sum": 66168.88,
+          "paid_amount_mean": 931.9560563380282,
+          "denial_rate": {
+            "value": 0.058823529411764705,
+            "numerator": 4,
+            "denominator": 68
+          },
+          "small_group_flag": false
+        },
+        "Endocrinology": {
+          "n": 509,
+          "claim_count": 509,
+          "paid_amount_sum": 419000.4199999999,
+          "paid_amount_mean": 823.1835363457759,
+          "denial_rate": {
+            "value": 0.11410788381742738,
+            "numerator": 55,
+            "denominator": 482
+          },
+          "small_group_flag": false
+        },
+        "Family Medicine": {
+          "n": 586,
+          "claim_count": 586,
+          "paid_amount_sum": 489734.37,
+          "paid_amount_mean": 835.724180887372,
+          "denial_rate": {
+            "value": 0.09965034965034965,
+            "numerator": 57,
+            "denominator": 572
+          },
+          "small_group_flag": false
+        },
+        "Gastroenterology": {
+          "n": 200,
+          "claim_count": 200,
+          "paid_amount_sum": 135994.03999999998,
+          "paid_amount_mean": 679.9701999999999,
+          "denial_rate": {
+            "value": 0.11917098445595854,
+            "numerator": 23,
+            "denominator": 193
+          },
+          "small_group_flag": false
+        },
+        "General Acute Care Hospital": {
+          "n": 619,
+          "claim_count": 619,
+          "paid_amount_sum": 463652.27,
+          "paid_amount_mean": 749.0343618739903,
+          "denial_rate": {
+            "value": 0.08967851099830795,
+            "numerator": 53,
+            "denominator": 591
+          },
+          "small_group_flag": false
+        },
+        "Geriatrics": {
+          "n": 515,
+          "claim_count": 515,
+          "paid_amount_sum": 409148.24,
+          "paid_amount_mean": 794.4626019417476,
+          "denial_rate": {
+            "value": 0.0975609756097561,
+            "numerator": 48,
+            "denominator": 492
+          },
+          "small_group_flag": false
+        },
+        "Home Health": {
+          "n": 358,
+          "claim_count": 358,
+          "paid_amount_sum": 265949.32999999996,
+          "paid_amount_mean": 742.875223463687,
+          "denial_rate": {
+            "value": 0.08405797101449275,
+            "numerator": 29,
+            "denominator": 345
+          },
+          "small_group_flag": false
+        },
+        "Internal Medicine": {
+          "n": 636,
+          "claim_count": 636,
+          "paid_amount_sum": 453841.47000000003,
+          "paid_amount_mean": 713.5872169811321,
+          "denial_rate": {
+            "value": 0.11021069692058347,
+            "numerator": 68,
+            "denominator": 617
+          },
+          "small_group_flag": false
+        },
+        "Nephrology": {
+          "n": 493,
+          "claim_count": 493,
+          "paid_amount_sum": 310059.45999999996,
+          "paid_amount_mean": 628.9238539553752,
+          "denial_rate": {
+            "value": 0.09787234042553192,
+            "numerator": 46,
+            "denominator": 470
+          },
+          "small_group_flag": false
+        },
+        "Neurology": {
+          "n": 271,
+          "claim_count": 271,
+          "paid_amount_sum": 213627.25999999998,
+          "paid_amount_mean": 788.2924723247231,
+          "denial_rate": {
+            "value": 0.06792452830188679,
+            "numerator": 18,
+            "denominator": 265
+          },
+          "small_group_flag": false
+        },
+        "OB/GYN": {
+          "n": 363,
+          "claim_count": 363,
+          "paid_amount_sum": 304013.21,
+          "paid_amount_mean": 837.501955922865,
+          "denial_rate": {
+            "value": 0.08620689655172414,
+            "numerator": 30,
+            "denominator": 348
+          },
+          "small_group_flag": false
+        },
+        "Oncology": {
+          "n": 405,
+          "claim_count": 405,
+          "paid_amount_sum": 287539.79000000004,
+          "paid_amount_mean": 709.9747901234568,
+          "denial_rate": {
+            "value": 0.12239583333333333,
+            "numerator": 47,
+            "denominator": 384
+          },
+          "small_group_flag": false
+        },
+        "Orthopedic Surgery": {
+          "n": 685,
+          "claim_count": 685,
+          "paid_amount_sum": 442598.51,
+          "paid_amount_mean": 646.1292116788321,
+          "denial_rate": {
+            "value": 0.1191553544494721,
+            "numerator": 79,
+            "denominator": 663
+          },
+          "small_group_flag": false
+        },
+        "Outpatient Clinic": {
+          "n": 481,
+          "claim_count": 481,
+          "paid_amount_sum": 365534.05000000005,
+          "paid_amount_mean": 759.94604989605,
+          "denial_rate": {
+            "value": 0.07912087912087912,
+            "numerator": 36,
+            "denominator": 455
+          },
+          "small_group_flag": false
+        },
+        "Pediatrics": {
+          "n": 499,
+          "claim_count": 499,
+          "paid_amount_sum": 414771.48,
+          "paid_amount_mean": 831.205370741483,
+          "denial_rate": {
+            "value": 0.1108786610878661,
+            "numerator": 53,
+            "denominator": 478
+          },
+          "small_group_flag": false
+        },
+        "Physical Therapy": {
+          "n": 399,
+          "claim_count": 399,
+          "paid_amount_sum": 299024.70999999996,
+          "paid_amount_mean": 749.4353634085212,
+          "denial_rate": {
+            "value": 0.13192612137203166,
+            "numerator": 50,
+            "denominator": 379
+          },
+          "small_group_flag": false
+        },
+        "Psychiatry": {
+          "n": 191,
+          "claim_count": 191,
+          "paid_amount_sum": 146237.02000000002,
+          "paid_amount_mean": 765.6388481675393,
+          "denial_rate": {
+            "value": 0.11666666666666667,
+            "numerator": 21,
+            "denominator": 180
+          },
+          "small_group_flag": false
+        },
+        "Pulmonology": {
+          "n": 543,
+          "claim_count": 543,
+          "paid_amount_sum": 407541.67000000004,
+          "paid_amount_mean": 750.5371454880295,
+          "denial_rate": {
+            "value": 0.08986615678776291,
+            "numerator": 47,
+            "denominator": 523
+          },
+          "small_group_flag": false
+        },
+        "SNF": {
+          "n": 964,
+          "claim_count": 964,
+          "paid_amount_sum": 833672.8600000001,
+          "paid_amount_mean": 864.8058713692947,
+          "denial_rate": {
+            "value": 0.11039657020364416,
+            "numerator": 103,
+            "denominator": 933
+          },
+          "small_group_flag": false
+        },
+        "Urology": {
+          "n": 614,
+          "claim_count": 614,
+          "paid_amount_sum": 484111.25,
+          "paid_amount_mean": 788.4548045602606,
+          "denial_rate": {
+            "value": 0.10720268006700168,
+            "numerator": 64,
+            "denominator": 597
+          },
+          "small_group_flag": false
+        }
+      }
+    }
+  },
+  "provider_ranking": {
+    "metric": "paid_amount_sum",
+    "top_n": 10,
+    "min_claims": 30,
+    "rows": [
+      {
+        "provider_npi": "1450094833",
+        "specialty": "Outpatient Clinic",
+        "network_status": "In-Network",
+        "n": 82,
+        "value": 126138.73000000001
+      },
+      {
+        "provider_npi": "1847081578",
+        "specialty": "Urology",
+        "network_status": "Out-of-Network",
+        "n": 84,
+        "value": 108309.73
+      },
+      {
+        "provider_npi": "1696843572",
+        "specialty": "Critical Access Hospital",
+        "network_status": "Out-of-Network",
+        "n": 100,
+        "value": 98833.82
+      },
+      {
+        "provider_npi": "1434029575",
+        "specialty": "Endocrinology",
+        "network_status": "In-Network",
+        "n": 90,
+        "value": 98269.4
+      },
+      {
+        "provider_npi": "1780163051",
+        "specialty": "SNF",
+        "network_status": "In-Network",
+        "n": 91,
+        "value": 97847.53
+      },
+      {
+        "provider_npi": "1752470395",
+        "specialty": "Home Health",
+        "network_status": "In-Network",
+        "n": 104,
+        "value": 97662.93
+      },
+      {
+        "provider_npi": "1168246159",
+        "specialty": "Internal Medicine",
+        "network_status": "In-Network",
+        "n": 77,
+        "value": 96552.3
+      },
+      {
+        "provider_npi": "1486164553",
+        "specialty": "DME Supplier",
+        "network_status": "In-Network",
+        "n": 90,
+        "value": 96244.07
+      },
+      {
+        "provider_npi": "1590915516",
+        "specialty": "Physical Therapy",
+        "network_status": "Out-of-Network",
+        "n": 102,
+        "value": 95888.54
+      },
+      {
+        "provider_npi": "1991459367",
+        "specialty": "Neurology",
+        "network_status": "Out-of-Network",
+        "n": 93,
+        "value": 95775.57
+      }
+    ]
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "small_groups",
+      "association_not_causation"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

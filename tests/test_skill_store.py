@@ -348,3 +348,27 @@ def test_validator_hard_failures_outrank_structural_gaps(repo_store: SkillStore)
     proposal = {**GOOD_PROPOSAL, "example": "", "source_feedback_ids": []}
     result = skill_validator.validate(proposal, repo_store.list_skills(), "T2", REMAINING)
     assert result["decision"] == "rejected" and {"provenance", "example_present"} <= _failed(result)
+
+
+# --------------------------------------------------------------------------- experiment 5 (D-23)
+
+
+def test_seeded_run_skills_are_readable_with_the_task_index_offset(store: SkillStore) -> None:
+    """A later run lists an earlier run's evolved skills read-only, and the task-index offset keeps them eligible."""
+    store.persist(GOOD_PROPOSAL, PROVENANCE)  # learned in run "t" after task index 1
+    warm = SkillStore(root=store.root, run_id="t2", seed_run_ids=["t"])
+    assert [s.skill_id for s in warm.list_skills()] == FOUNDATIONAL_IDS + ["evolved_t_001"]
+    assert (store.root / "evolved" / "t") in warm.seed_dirs
+    # the offset continues the seed run's numbering: run "t2" starts at task index 6, so the seeded skill is eligible
+    assert "evolved_t_001" in [h["skill_id"] for h in warm.retrieve(T2_SPEC, current_task_index=6)]
+    # without the offset a run that started at index 0 would filter it out as "created after this task"
+    assert "evolved_t_001" not in [h["skill_id"] for h in warm.retrieve(T2_SPEC, current_task_index=0)]
+    # seeding is read-only: new skills still land under the current run, ids keep counting from 001
+    second = warm.persist(GOOD_PROPOSAL, {**PROVENANCE, "run_id": "t2", "task_id": "T9", "created_after_task": "T9", "created_after_task_index": 6})
+    assert second.skill_id == "evolved_t2_001"
+    assert second.path == warm.root / "evolved" / "t2" / "evolved_t2_001_v1.md"
+    assert sorted(q.name for q in (warm.root / "evolved" / "t").glob("*.md")) == ["evolved_t_001_v1.md"]
+    # an excluded seed skill disappears from the library without its file being touched
+    fenced = SkillStore(root=store.root, run_id="t2", seed_run_ids=["t"], exclude_skill_ids=["evolved_t_001"])
+    assert "evolved_t_001" not in [s.skill_id for s in fenced.list_skills()]
+    assert (store.root / "evolved" / "t" / "evolved_t_001_v1.md").exists()

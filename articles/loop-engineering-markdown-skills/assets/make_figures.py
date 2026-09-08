@@ -1,15 +1,24 @@
-"""Figures for the article, drawn from one run's logs (default run_006, experiment 4).
+"""Figures for the article, drawn from one run's logs (default run_006, experiment 4)
+plus an optional second run (default run_007, experiment 5) that continues three of
+the five arms onto four held-out tasks.
 
     uv run python articles/loop-engineering-markdown-skills/assets/make_figures.py \
-        [--run-id RUN_ID] [--logs LOGS_DIR] [--out OUT_DIR]
+        [--run-id RUN_ID] [--logs LOGS_DIR] \
+        [--transfer-run TRANSFER_RUN_ID] [--transfer-logs TRANSFER_LOGS_DIR] \
+        [--out OUT_DIR]
 
 Writes into --out (default: this folder):
   hero.png            typographic hero (author-made, unchanged)
   loop_diagram.png     the loop as a plain diagram for a non-technical reader, all five arms
   results_grid.png     attempts-to-pass and final score, one cell per (task, arm) -- the
-                        only results figure the article uses
+                        main results figure; grows a "held-out" block of rows underneath
+                        when --transfer-run has records
+  transfer_curve.png   first-attempt checker score across all ten tasks (six learning +
+                        four held-out) for the three arms that ran on both -- only drawn
+                        when --transfer-run has records; skipped without error otherwise
 Every number comes from <logs>/experiment_events.jsonl, <logs>/skill_events.jsonl and
-<logs>/graph_events.jsonl for the given --run-id.
+<logs>/graph_events.jsonl for --run-id, and the same files under --transfer-logs (default:
+the same directory as --logs) for --transfer-run.
 """
 from __future__ import annotations
 
@@ -63,6 +72,24 @@ ARM_COLOR = {
 }
 MEMORY_ARMS = {"feedback_memory", "self_refine_memory"}
 SKILL_ARM = "skill_learning"
+
+# Experiment 5: run_007 continues three of the five arms onto four held-out tasks that
+# reuse the same conventions but ask different questions. Article numbering continues
+# 7-10 from the six run_006 tasks above.
+TRANSFER_TASKS = ["T9", "T10", "T5", "T6"]
+TRANSFER_TASK_LABEL = {
+    "T9": "7 · Denial hotspots",
+    "T10": "8 · Specialty spend",
+    "T5": "9 · Fraud-flag exploration",
+    "T6": "10 · Fraud-flag model",
+}
+TRANSFER_TASK_SHORT = {
+    "T9": "7 · Denial\nhotspots",
+    "T10": "8 · Specialty\nspend",
+    "T5": "9 · Fraud-flag\nexploration",
+    "T6": "10 · Fraud-flag\nmodel",
+}
+TRANSFER_ARMS = ["reflection_only", "feedback_memory", "skill_learning"]
 INK, INK2, LINE, PAPER = "#1b2a24", "#5b6b65", "#c9d1cc", "#fbfbf8"
 FAIL = "#b3400a"
 
@@ -74,7 +101,7 @@ plt.rcParams.update({
 
 
 # --------------------------------------------------------------------------- data
-def load(run_id: str, logs_dir: Path) -> dict:
+def load(run_id: str, logs_dir: Path, tasks: list[str] = TASKS, arms: list[str] = ARMS) -> dict:
     ev = [r for r in read_jsonl(logs_dir / "experiment_events.jsonl") if r.get("run_id") == run_id]
     sk = [r for r in read_jsonl(logs_dir / "skill_events.jsonl") if r.get("run_id") == run_id]
     attempts: dict[tuple[str, str], list[dict]] = {}
@@ -92,8 +119,8 @@ def load(run_id: str, logs_dir: Path) -> dict:
     # Self-review arms are exactly those whose done record carries a self-declared
     # verdict (see docs/OPERATOR_PROTOCOL.md); check that against the fixed ARM_LABEL
     # names so a future arm rename or reorder can't silently drift out of sync.
-    for arm in ARMS:
-        rows = [done[(arm, t)] for t in TASKS if (arm, t) in done]
+    for arm in arms:
+        rows = [done[(arm, t)] for t in tasks if (arm, t) in done]
         is_self_review = any(r.get("self_declared_pass") is not None for r in rows)
         expected = "self-review" in ARM_LABEL[arm].lower()
         if rows:
@@ -102,17 +129,25 @@ def load(run_id: str, logs_dir: Path) -> dict:
 
 
 # --------------------------------------------------------------------------- figure: results grid
-def fig_results_grid(d: dict, out_dir: Path) -> None:
+def fig_results_grid(d: dict, out_dir: Path, d_transfer: dict | None = None) -> None:
     attempts, done = d["attempts"], d["done"]
     n_arms, n_tasks = len(ARMS), len(TASKS)
-    max_attempts = max([len(v) for v in attempts.values()] + [1])
+    all_attempt_lists = list(attempts.values())
+    if d_transfer:
+        all_attempt_lists += list(d_transfer["attempts"].values())
+    max_attempts = max([len(v) for v in all_attempt_lists] + [1])
 
     label_w, cell_w = 2.55, 1.9
     header_h, row_h, total_h = 1.05, 0.95, 1.05
     grid_w = label_w + n_arms * cell_w
     grid_h = header_h + n_tasks * row_h + total_h
 
-    fig, ax = plt.subplots(figsize=(12, 6.5))
+    n_transfer_tasks = len(TRANSFER_TASKS)
+    divider_gap, group_label_h = 0.18, 0.4
+    if d_transfer:
+        grid_h += divider_gap + group_label_h + n_transfer_tasks * row_h + total_h
+
+    fig, ax = plt.subplots(figsize=(12, 9.5) if d_transfer else (12, 6.5))
     ax.set_xlim(0, grid_w)
     ax.set_ylim(0, grid_h)
     ax.axis("off")
@@ -179,6 +214,71 @@ def fig_results_grid(d: dict, out_dir: Path) -> None:
         ax.text(x + cell_w / 2, ty + total_h / 2, f"{total_attempts} · {n_passed}/{n_tasks}", ha="center", va="center",
                 fontsize=13, fontweight="bold", color=INK)
 
+    # held-out block (experiment 5: run_007 continues three arms onto four new tasks)
+    if d_transfer:
+        attempts_t, done_t = d_transfer["attempts"], d_transfer["done"]
+        divider_y = ty - divider_gap / 2
+        ax.plot([0, grid_w], [divider_y, divider_y], color=LINE, lw=1.4)
+        group_top = ty - divider_gap
+        ax.text(0.02, group_top - group_label_h / 2, "HELD-OUT  ·  run_007", ha="left", va="center",
+                fontsize=9.5, fontweight="bold", color=INK2, style="italic")
+
+        def row_y2(k: int) -> float:
+            return group_top - group_label_h - (k + 1) * row_h
+
+        for k, task in enumerate(TRANSFER_TASKS):
+            y = row_y2(k)
+            ax.text(label_w - 0.2, y + row_h / 2, TRANSFER_TASK_SHORT[task], ha="right", va="center",
+                    fontsize=10.5, fontweight="bold", color=INK, linespacing=1.2)
+            for i, arm in enumerate(ARMS):
+                x = col_x(i)
+                if arm not in TRANSFER_ARMS:
+                    ax.add_patch(Rectangle((x, y), cell_w, row_h, fc=PAPER, ec=LINE, lw=1.0))
+                    ax.text(x + cell_w / 2, y + row_h / 2, "—", ha="center", va="center",
+                            fontsize=17, color=INK2, alpha=0.55)
+                    continue
+                rows = attempts_t.get((arm, task), [])
+                rec = done_t.get((arm, task), {})
+                n = len(rows)
+                frac = 0.0 if max_attempts <= 1 else (n - 1) / (max_attempts - 1)
+                face = tuple(l + (dd - l) * frac for l, dd in zip(light_rgb, dark_rgb))
+                passed = bool(rec.get("passed"))
+                ax.add_patch(Rectangle((x, y), cell_w, row_h, fc=face, ec=LINE, lw=1.0))
+                if not passed:
+                    ax.add_patch(Rectangle((x, y), cell_w, row_h, fc="none", ec=FAIL, lw=1.2, hatch="////"))
+                text_color = "#f2f6fb" if frac > 0.55 else INK
+                label = f"{n}" + ("" if passed else " ✗")
+                ax.text(x + cell_w / 2, y + row_h / 2 + 0.135, label, ha="center", va="center",
+                        fontsize=21, fontweight="bold", color=text_color if passed else FAIL)
+                score = rec.get("evaluator_score_total")
+                if score is not None:
+                    ax.text(x + cell_w / 2, y + row_h / 2 - 0.25, f"{score:.2f}", ha="center", va="center",
+                            fontsize=9.5, color=text_color)
+                if arm == SKILL_ARM and any(a.get("skills_applied") for a in rows):
+                    ax.plot(x + cell_w - 0.24, y + row_h - 0.2, marker="*", ms=13, color="#f2c200",
+                            mec=INK, mew=0.6, zorder=5, clip_on=False)
+                if arm in MEMORY_ARMS and rec.get("past_feedback_count", 0) > 0:
+                    ax.plot(x + cell_w - 0.24, y + row_h - 0.2, marker="D", ms=7, color="#8C564B",
+                            mec=INK, mew=0.5, zorder=5, clip_on=False)
+
+        # held-out totals row
+        ty2 = row_y2(n_transfer_tasks - 1) - total_h
+        ax.add_patch(Rectangle((0, ty2), label_w, total_h, fc=PAPER, ec="none"))
+        ax.text(label_w - 0.2, ty2 + total_h / 2, "Held-out: attempts ·\npassed", ha="right", va="center",
+                fontsize=9.5, fontweight="bold", color=INK2, linespacing=1.2)
+        for i, arm in enumerate(ARMS):
+            x = col_x(i)
+            if arm not in TRANSFER_ARMS:
+                ax.add_patch(Rectangle((x, ty2), cell_w, total_h, fc=PAPER, ec=LINE, lw=1.0))
+                ax.text(x + cell_w / 2, ty2 + total_h / 2, "—", ha="center", va="center",
+                        fontsize=17, color=INK2, alpha=0.55)
+                continue
+            total_attempts = sum(len(attempts_t.get((arm, t), [])) for t in TRANSFER_TASKS)
+            n_passed = sum(1 for t in TRANSFER_TASKS if done_t.get((arm, t), {}).get("passed"))
+            ax.add_patch(Rectangle((x, ty2), cell_w, total_h, fc="#eef1ee", ec=LINE, lw=1.2))
+            ax.text(x + cell_w / 2, ty2 + total_h / 2, f"{total_attempts} · {n_passed}/{n_transfer_tasks}",
+                    ha="center", va="center", fontsize=13, fontweight="bold", color=INK)
+
     # title / subtitle (figure-fraction text sitting in the margin tight_layout reserves above the grid)
     fig.text(0.012, 0.99, "How many tries each loop design needed on each task", fontsize=15.5, fontweight="bold", va="top")
     fig.text(0.012, 0.935,
@@ -190,6 +290,91 @@ def fig_results_grid(d: dict, out_dir: Path) -> None:
 
     fig.tight_layout(rect=(0, 0.005, 1, 0.865))
     fig.savefig(out_dir / "results_grid.png", dpi=170)
+    plt.close(fig)
+
+
+# --------------------------------------------------------------------------- figure: transfer curve
+def fig_transfer_curve(d: dict, d_transfer: dict, out_dir: Path) -> None:
+    """First-attempt checker score across all ten tasks, for the three arms that ran on both runs."""
+    line_arms = ["reflection_only", "feedback_memory", "skill_learning"]
+    markers = {"reflection_only": "o", "feedback_memory": "s", "skill_learning": "D"}
+
+    task_specs = [(t, TASK_SHORT[t], d) for t in TASKS] + \
+                 [(t, TRANSFER_TASK_SHORT[t], d_transfer) for t in TRANSFER_TASKS]
+    n_total = len(task_specs)
+    n_learn = len(TASKS)
+    positions = list(range(1, n_total + 1))
+
+    fig, ax = plt.subplots(figsize=(13, 5.5))
+
+    # gather every arm's first-attempt score per position first, so annotations can be
+    # placed relative to the full stack at that x (never colliding with another arm's
+    # line or marker), and so the y-range can be sized to fit both the data and the labels
+    ys_by_arm: dict[str, list[float | None]] = {}
+    for arm in line_arms:
+        ys = []
+        for t, _, dd in task_specs:
+            rows = dd["attempts"].get((arm, t), [])
+            ys.append(rows[0]["evaluator_score_total"] if rows else None)
+        ys_by_arm[arm] = ys
+
+    all_scores = [v for ys in ys_by_arm.values() for v in ys if v is not None]
+    y_lo = min(all_scores + [0]) - 1.05
+    y_hi = max(all_scores + [4]) + 1.55
+
+    # shaded band over the held-out tasks + section labels pinned near the top of the axes
+    ax.axvspan(n_learn + 0.5, n_total + 0.5, color="#e9e9e3", alpha=0.7, zorder=0)
+    xaxis_frac = ax.get_xaxis_transform()  # x in data coords, y in axes-fraction
+    ax.text((n_learn + 0.5 + n_total + 0.5) / 2, 0.97,
+            "held-out tasks (memory carried over, checker only starts cold)",
+            ha="center", va="top", fontsize=9.5, color=INK2, style="italic", transform=xaxis_frac)
+    ax.text((0.5 + n_learn + 0.5) / 2, 0.97, "learning tasks",
+            ha="center", va="top", fontsize=9.5, color=INK2, style="italic", transform=xaxis_frac)
+
+    # pass mark
+    ax.axhline(3.5, color=INK2, lw=1.2, ls="--", zorder=1)
+    ax.text(n_total + 0.45, 3.5, "pass mark (3.5)", ha="left", va="center", fontsize=9.5, color=INK2,
+            zorder=5, bbox=dict(fc=PAPER, ec="none", pad=1.5))
+
+    for arm in line_arms:
+        ax.plot(positions, ys_by_arm[arm], marker=markers[arm], ms=8.5, lw=2.2, color=ARM_COLOR[arm],
+                mec="white", mew=0.9, label=ARM_LABEL[arm], zorder=3)
+
+    # annotate: "N notes" above the highest line at that position, "N skills" below the
+    # lowest -- so a label never sits on top of a marker or another arm's line
+    for i, (pos, (t, _, dd)) in enumerate(zip(positions, task_specs)):
+        col_vals = [ys_by_arm[a][i] for a in line_arms if ys_by_arm[a][i] is not None]
+        if not col_vals:
+            continue
+        top_v, bot_v = max(col_vals), min(col_vals)
+        if ys_by_arm["feedback_memory"][i] is not None:
+            n_notes = dd["done"].get(("feedback_memory", t), {}).get("past_feedback_count", 0)
+            ax.text(pos, top_v + 0.3, f"{n_notes} notes", ha="center", va="bottom",
+                    fontsize=8, color=ARM_COLOR["feedback_memory"], zorder=4)
+        if ys_by_arm["skill_learning"][i] is not None:
+            n_skills = len(dd["done"].get(("skill_learning", t), {}).get("skills_retrieved") or [])
+            ax.text(pos, bot_v - 0.3, f"{n_skills} skill" + ("s" if n_skills != 1 else ""), ha="center", va="top",
+                    fontsize=8, color=ARM_COLOR["skill_learning"], zorder=4)
+
+    ax.set_xlim(0.4, n_total + 1.15)
+    ax.set_ylim(y_lo, y_hi)
+    ax.set_xticks(positions)
+    ax.set_xticklabels([label for _, label, _ in task_specs], fontsize=9.2, linespacing=1.25)
+    ax.set_yticks([0, 1, 2, 3, 4])
+    ax.set_ylabel("Checker score, first attempt (0-4)")
+    ax.grid(axis="y", color=LINE, lw=0.7, alpha=0.6, zorder=0)
+    ax.tick_params(axis="x", length=0)
+
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=3, frameon=False, fontsize=10.5)
+
+    fig.text(0.012, 0.99, "Does what was learned carry over to new tasks?", fontsize=15.5, fontweight="bold", va="top")
+    fig.text(0.012, 0.935,
+             "Score of the first attempt on each task, before any feedback on that task. Left: the six tasks memory was\n"
+             "built on. Right: four held-out tasks that reuse the conventions but ask different questions.",
+             fontsize=10.3, color=INK2, va="top", linespacing=1.4)
+
+    fig.tight_layout(rect=(0, 0.1, 1, 0.855))
+    fig.savefig(out_dir / "transfer_curve.png", dpi=170)
     plt.close(fig)
 
 
@@ -292,18 +477,28 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", default="run_006")
     parser.add_argument("--logs", default=None, help="override for the logs directory (default: the repo logs/ dir)")
+    parser.add_argument("--transfer-run", default="run_007", help="experiment-5 run that continues onto four held-out tasks")
+    parser.add_argument("--transfer-logs", default=None, help="logs dir for --transfer-run (default: same as --logs)")
     parser.add_argument("--out", default=None, help="override for the output directory (default: this assets folder)")
     args = parser.parse_args()
 
     logs_dir = Path(args.logs) if args.logs else DEFAULT_LOGS_DIR
+    transfer_logs_dir = Path(args.transfer_logs) if args.transfer_logs else logs_dir
     out_dir = Path(args.out) if args.out else HERE
     out_dir.mkdir(parents=True, exist_ok=True)
 
     d = load(args.run_id, logs_dir)
-    fig_results_grid(d, out_dir)
+    d_transfer = load(args.transfer_run, transfer_logs_dir, TRANSFER_TASKS, TRANSFER_ARMS)
+    has_transfer = bool(d_transfer["attempts"]) or bool(d_transfer["done"])
+
+    fig_results_grid(d, out_dir, d_transfer if has_transfer else None)
     fig_loop_diagram(out_dir)
     fig_hero(out_dir)
-    for name in ("hero", "loop_diagram", "results_grid"):
+    names = ["hero", "loop_diagram", "results_grid"]
+    if has_transfer:
+        fig_transfer_curve(d, d_transfer, out_dir)
+        names.append("transfer_curve")
+    for name in names:
         print("wrote", out_dir / f"{name}.png")
     return 0
 

@@ -1,0 +1,45 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "class_prevalence"
+    },
+    {
+      "component": "feature_comparison",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount",
+          "er_flag",
+          "high_cost_flag",
+          "member_age_band",
+          "member_sex"
+        ]
+      }
+    },
+    {
+      "component": "leakage_assessment"
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only",
+          "association_not_causation",
+          "small_groups",
+          "class_imbalance"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This plan executes the fraud-pattern exploration by loading data, computing fraud prevalence and flag counts, and comparing claim characteristics between flagged and unflagged groups across multiple dimensions (claim type, cost, service setting, member demographics). Leakage assessment identifies risks from label-derived fields like fraud_pattern_type. The report includes caveats for descriptive nature, association vs. causation, class imbalance (fraud flag appears rare), and small groups (some segments may lack statistical stability). Showing denominators and citing artifacts ensures reproducibility and transparency."
+}

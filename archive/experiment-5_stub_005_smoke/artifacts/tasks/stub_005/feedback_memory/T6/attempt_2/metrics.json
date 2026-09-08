@@ -1,0 +1,150 @@
+{
+  "task_id": "T6",
+  "run_id": "stub_005",
+  "condition": "feedback_memory",
+  "attempt": 2,
+  "seed": 42,
+  "generated_at": "2026-09-08T07:25:16+00:00",
+  "plan_sha256": "6264dbbdbb5101aa7007cb9f25d45bf98655fd9bffd03bad684da5ff7b4d34f3",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "billed_amount",
+            "allowed_amount",
+            "paid_amount",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "elective_flag",
+            "preventive_flag",
+            "auth_required_flag",
+            "primary_icd10_cm",
+            "drg_present"
+          ]
+        }
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25,
+          "stratify": true
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "train_only",
+          "scaling": "none"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression"
+          ],
+          "class_weight": "none"
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "deterministic fixture: catalogue defaults + feedback-recommended components",
+    "changes_summary": "feature_set <- T6-no_leakage_features; split <- T6-split_stratified; preprocessing <- T6-fit_on_train_only"
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "network_status",
+      "billed_amount",
+      "allowed_amount",
+      "paid_amount",
+      "service_units",
+      "length_of_stay",
+      "er_flag",
+      "elective_flag",
+      "preventive_flag",
+      "auth_required_flag",
+      "primary_icd10_cm",
+      "drg_present"
+    ],
+    "n_categorical": 6,
+    "n_numeric": 10,
+    "id_fields_present": [],
+    "label_derived_present": []
+  },
+  "split": {
+    "test_size": 0.25,
+    "stratify": true,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212,
+    "prevalence_train": 0.05034776289837019,
+    "prevalence_test": 0.050435865504358655
+  },
+  "preprocessing": {
+    "fit_on": "train_only",
+    "scaling": "none",
+    "n_features_out": 106
+  },
+  "models": {
+    "logistic_regression": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "pr_auc": 0.05191897627802371,
+      "roc_auc": 0.49799028536733453,
+      "confusion_matrix": [
+        [
+          3050,
+          0
+        ],
+        [
+          162,
+          0
+        ]
+      ],
+      "threshold": 0.5,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Method"
+    ]
+  }
+}

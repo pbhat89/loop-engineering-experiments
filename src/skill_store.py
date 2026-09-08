@@ -3,7 +3,8 @@
 Layout (see ``skills/SKILL_SCHEMA.md``)::
 
     skills/foundational/*.md                    hand-authored, always visible
-    skills/evolved/<run_id>/<skill_id>_v<n>.md  learned skills, visible only to their own run
+    skills/evolved/<run_id>/<skill_id>_v<n>.md  learned skills, visible to their own run and to any run that
+                                                names <run_id> in ``seed_run_ids`` (read-only carry-over, D-23)
     skills/archived/<same filename>             archived skills (moved, never edited)
     skills/index.json                           the only mutable record: reuse counts, status
 
@@ -495,11 +496,22 @@ def _title_for(raw_name: Any, slug: str) -> str:
 class SkillStore:
     """Read/write access to the skill library for one run (``run_id``) plus the foundational set."""
 
-    def __init__(self, root: Path | str = SKILLS_DIR, run_id: str | None = None, include_foundational: bool = True):
+    def __init__(
+        self,
+        root: Path | str = SKILLS_DIR,
+        run_id: str | None = None,
+        include_foundational: bool = True,
+        seed_run_ids: list[str] | tuple[str, ...] = (),
+        exclude_skill_ids: list[str] | tuple[str, ...] = (),
+    ):
         self.root = Path(root)
         self.run_id = str(run_id) if run_id else None
         # experiment 3 starts from an empty library so every retrieved skill was learned inside the run (D-21)
         self.include_foundational = bool(include_foundational)
+        # experiment 5 (D-23): earlier runs whose evolved skills this run may *read*. New skills still persist
+        # under `run_id` only, and `next_skill_id` is unaffected - a seed run's files are immutable evidence.
+        self.seed_run_ids = [str(r) for r in (seed_run_ids or []) if str(r) and str(r) != self.run_id]
+        self.exclude_skill_ids = frozenset(str(s) for s in (exclude_skill_ids or []) if str(s))
         self.foundational_dir = self.root / "foundational"
         self.evolved_dir = self.root / "evolved"
         self.archived_dir = self.root / "archived"
@@ -519,10 +531,17 @@ class SkillStore:
     def run_dir(self) -> Path | None:
         return self.evolved_dir / self.run_id if self.run_id else None
 
+    @property
+    def seed_dirs(self) -> list[Path]:
+        return [self.evolved_dir / rid for rid in self.seed_run_ids]
+
     def skill_files(self) -> list[Path]:
         files: list[Path] = []
         if self.include_foundational and self.foundational_dir.is_dir():
             files.extend(sorted(self.foundational_dir.glob("*.md")))
+        for seed_dir in self.seed_dirs:  # read-only carry-over from earlier runs (D-23)
+            if seed_dir.is_dir():
+                files.extend(sorted(seed_dir.glob("*.md")))
         if self.run_dir is not None and self.run_dir.is_dir():
             files.extend(sorted(self.run_dir.glob("*.md")))
         return files
@@ -543,7 +562,8 @@ class SkillStore:
         """
         index = self.read_index()
         skills = [self.load(p, index) for p in self.skill_files()]
-        return sorted((s for s in skills if s.status != "archived"), key=lambda s: (s.kind != "foundational", s.skill_id))
+        keep = (s for s in skills if s.status != "archived" and s.skill_id not in self.exclude_skill_ids)
+        return sorted(keep, key=lambda s: (s.kind != "foundational", s.skill_id))
 
     def get(self, skill_id: str) -> Skill | None:
         return next((s for s in self.list_skills() if s.skill_id == skill_id), None)

@@ -1,0 +1,11 @@
+provider_npi,specialty,network_status,n,value
+1450094833,Outpatient Clinic,In-Network,82,126138.73000000001
+1847081578,Urology,Out-of-Network,84,108309.73
+1696843572,Critical Access Hospital,Out-of-Network,100,98833.82
+1434029575,Endocrinology,In-Network,90,98269.4
+1780163051,SNF,In-Network,91,97847.53
+1752470395,Home Health,In-Network,104,97662.93
+1168246159,Internal Medicine,In-Network,77,96552.3
+1486164553,DME Supplier,In-Network,90,96244.07
+1590915516,Physical Therapy,Out-of-Network,102,95888.54
+1991459367,Neurology,Out-of-Network,93,95775.57

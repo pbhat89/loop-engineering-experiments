@@ -1,0 +1,19 @@
+{
+  "evolved_stub_005_001": {
+    "reuse_count": 0,
+    "reused_in": [],
+    "status": "active",
+    "path": "skills/evolved/stub_005/evolved_stub_005_001_v1.md",
+    "name": "wrong_denominator_statistical_discipline",
+    "version": 1,
+    "kind": "evolved",
+    "run_id": "stub_005",
+    "condition": "skill_learning",
+    "created_after_task": "T10",
+    "created_after_task_index": 7,
+    "source_feedback_ids": [
+      "T10-group_denominator"
+    ],
+    "created_at": "2026-09-08T07:25:47+00:00"
+  }
+}

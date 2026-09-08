@@ -1758,3 +1758,437 @@ tasks:
         related_components: [{component: write_report, params: {caveats: [synthetic_data, no_operational_use]}}]
         reusable: false
         applicable_task_ids: []
+
+  # ================================================================================================ T9
+  # Experiment 5 (D-23). Held-out transfer task: T4's components and conventions, three *setting* segments only
+  # ([place_of_service, auth_required_flag, network_status]), plus a tolerance check on the largest place_of_service segment that T4 does not have.
+  # applicable_task_ids is empty for every T9 check: the later tasks of the experiment-5 order (T10, T5, T6) do
+  # not sort after "T9" as task ids, and the rubric's cross-reference test requires a later id.
+  T9:
+    checks:
+      - check_id: T9.code_ranking
+        dimension: correctness
+        weight: 3
+        critical: false
+        kind: exact
+        target: denial_code_ranking.codes
+        issue_type: wrong_denominator
+        remediation: Rank denial codes among denied claims so each code's share is its share of denials (shares sum to 1).
+        related_components: [{component: denial_code_ranking, params: {scope: denied_claims, quantify_missing: overall}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.code_scope
+        dimension: statistical_discipline
+        weight: 2
+        critical: false
+        kind: contract
+        target: denial_code_ranking.scope
+        issue_type: wrong_denominator
+        remediation: Use denied claims as the scope of the denial-code shares; all-claims shares mix in claims that have no reason to carry a code.
+        related_components: [{component: denial_code_ranking, params: {scope: denied_claims}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T9.missing_codes
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: exact
+        target: denial_code_ranking.missing_denial_codes
+        issue_type: wrong_value
+        remediation: Quantify missing denial codes overall and among denied claims with both numerators and denominators.
+        related_components: [{component: denial_code_ranking, params: {quantify_missing: overall}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T9.segment_coverage
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: denial_rate_by_segment.segments
+        issue_type: incomplete_scope
+        remediation: Segment the denial rate by all three requested setting columns (place_of_service, auth_required_flag, network_status).
+        related_components: [{component: denial_rate_by_segment, params: {segments: [place_of_service, auth_required_flag, network_status], denominator: adjudicated_claims, min_group_size: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.segment_rates
+        dimension: correctness
+        weight: 3
+        critical: false
+        kind: exact
+        target: denial_rate_by_segment.segments
+        issue_type: wrong_denominator
+        remediation: Per segment value report numerator and denominator over adjudicated claims with the small-group flag at 30 claims.
+        related_components: [{component: denial_rate_by_segment, params: {segments: [place_of_service, auth_required_flag, network_status], denominator: adjudicated_claims, min_group_size: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.largest_place_of_service_denial_rate
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: tolerance
+        target: denial_rate_by_segment.segments.place_of_service.22.rate
+        issue_type: wrong_denominator
+        remediation: Compute the denial rate of the largest place-of-service segment over adjudicated claims in that segment.
+        related_components: [{component: denial_rate_by_segment, params: {segments: [place_of_service], denominator: adjudicated_claims}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T9.segment_denominator
+        dimension: statistical_discipline
+        weight: 3
+        critical: true
+        kind: contract
+        target: denial_rate_by_segment.denominator_option
+        issue_type: wrong_denominator
+        remediation: Use adjudicated claims (Paid, Denied, Adjusted) as the denominator of every segment denial rate and record the choice.
+        related_components: [{component: denial_rate_by_segment, params: {denominator: adjudicated_claims}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T9.min_group_size
+        dimension: statistical_discipline
+        weight: 2
+        critical: false
+        kind: contract
+        target: denial_rate_by_segment.min_group_size
+        issue_type: small_group_handling
+        remediation: Flag segments with fewer than 30 claims as unstable (min_group_size 30).
+        related_components: [{component: denial_rate_by_segment, params: {min_group_size: 30}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T9.code_ranking_csv
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: denial_code_ranking.csv
+        issue_type: missing_artifact
+        remediation: Save denial_code_ranking.csv from the denial code ranking component.
+        related_components: [{component: denial_code_ranking, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.segment_csv
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: denial_rates_by_segment.csv
+        issue_type: missing_artifact
+        remediation: Save denial_rates_by_segment.csv from the segment component.
+        related_components: [{component: denial_rate_by_segment, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.segment_figure
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: denial_rate_by_segment.png
+        issue_type: missing_artifact
+        remediation: Save denial_rate_by_segment.png from the segment component.
+        related_components: [{component: denial_rate_by_segment, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.metrics_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: metrics.json
+        issue_type: missing_artifact
+        remediation: metrics.json must be written for every attempt.
+        related_components: [{component: load_tables, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.report_artifact
+        dimension: completeness
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: report.md
+        issue_type: missing_artifact
+        remediation: Write report.md via the write_report component.
+        related_components: [{component: write_report, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T9.show_denominators
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: contract
+        target: report.show_denominators
+        issue_type: missing_denominators
+        remediation: Print every rate as numerator / denominator = rate in the report (write_report show_denominators true).
+        related_components: [{component: write_report, params: {show_denominators: true}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T9.caveat_synthetic
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: caveat_keywords
+        target: synthetic_data
+        issue_type: missing_caveat
+        remediation: State in the report that the data is synthetic (add the synthetic_data caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, small_groups]}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T9.caveat_small_groups
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: caveat_keywords
+        target: small_groups
+        issue_type: missing_caveat
+        remediation: State that rates for small segments are unstable (add the small_groups caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, small_groups]}}]
+        reusable: false
+        applicable_task_ids: []
+
+  # ================================================================================================ T10
+  # Experiment 5 (D-23). Held-out transfer task: T3's components asked about spend - per-specialty volume, paid
+  # total and mean and denial rate over adjudicated claims, plus a top-10 provider ranking by paid spend with a
+  # minimum claim count. T5 and T6 follow T10 in the experiment-5 order, so the conventions carry forward.
+  T10:
+    checks:
+      - check_id: T10.groups_specialty
+        dimension: correctness
+        weight: 3
+        critical: false
+        kind: exact
+        target: group_comparison.groups.provider_specialty
+        issue_type: wrong_value
+        remediation: Per specialty report n, claim count, paid-amount total and mean, denial-rate numerator/denominator over adjudicated claims and the small-group flag at 30 claims.
+        related_components: [{component: group_comparison, params: {group_by: [provider_specialty], metrics: [claim_count, paid_amount_sum, paid_amount_mean, denial_rate], denominator: adjudicated_claims, min_group_size: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.top_spend_specialty_denial_rate
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: tolerance
+        target: group_comparison.groups.provider_specialty.Critical Access Hospital.denial_rate.value
+        issue_type: wrong_denominator
+        remediation: Compute each specialty's denial rate over adjudicated claims of that specialty.
+        related_components: [{component: group_comparison, params: {denominator: adjudicated_claims}}]
+        reusable: true
+        applicable_task_ids: [T5]
+      - check_id: T10.top_spend_specialty_paid_amount
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: tolerance
+        target: group_comparison.groups.provider_specialty.Critical Access Hospital.paid_amount_sum
+        issue_type: wrong_value
+        remediation: Report the total paid amount per specialty, not only claim counts.
+        related_components: [{component: group_comparison, params: {metrics: [claim_count, paid_amount_sum, paid_amount_mean, denial_rate]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.group_denominator
+        dimension: statistical_discipline
+        weight: 3
+        critical: false
+        kind: contract
+        target: group_comparison.denominator_option
+        issue_type: wrong_denominator
+        remediation: Use adjudicated claims as the per-specialty denial-rate denominator and record the choice.
+        related_components: [{component: group_comparison, params: {denominator: adjudicated_claims}}]
+        reusable: true
+        applicable_task_ids: [T5, T6]
+      - check_id: T10.min_group_size
+        dimension: statistical_discipline
+        weight: 2
+        critical: false
+        kind: contract
+        target: group_comparison.min_group_size
+        issue_type: small_group_handling
+        remediation: Flag specialties with fewer than 30 claims as unstable (min_group_size 30).
+        related_components: [{component: group_comparison, params: {min_group_size: 30}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T10.group_by_coverage
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: group_comparison.groups
+        issue_type: incomplete_scope
+        remediation: Group the comparison by provider_specialty.
+        related_components: [{component: group_comparison, params: {group_by: [provider_specialty]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.metric_coverage
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: group_comparison.groups.provider_specialty
+        golden_key: group_comparison.metrics_each_group
+        issue_type: incomplete_scope
+        remediation: Compute claim_count, paid_amount_sum, paid_amount_mean and denial_rate for every specialty.
+        related_components: [{component: group_comparison, params: {metrics: [claim_count, paid_amount_sum, paid_amount_mean, denial_rate]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.provider_ranking_rows
+        dimension: correctness
+        weight: 3
+        critical: false
+        kind: exact
+        target: provider_ranking.rows
+        issue_type: wrong_value
+        remediation: Rank the top 10 rendering providers by total paid amount with their specialty and network status from the provider directory.
+        related_components: [{component: provider_ranking, params: {metric: paid_amount_sum, top_n: 10, min_claims: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.provider_ranking_metric
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: contract
+        target: provider_ranking.metric
+        issue_type: wrong_value
+        remediation: Rank the providers by paid spend (metric paid_amount_sum), not by claim count.
+        related_components: [{component: provider_ranking, params: {metric: paid_amount_sum, top_n: 10, min_claims: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.provider_ranking_top_n
+        dimension: completeness
+        weight: 1
+        critical: false
+        kind: contract
+        target: provider_ranking.top_n
+        issue_type: incomplete_scope
+        remediation: List ten providers (top_n 10).
+        related_components: [{component: provider_ranking, params: {metric: paid_amount_sum, top_n: 10, min_claims: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.provider_ranking_min_claims
+        dimension: statistical_discipline
+        weight: 2
+        critical: false
+        kind: contract
+        target: provider_ranking.min_claims
+        issue_type: small_group_handling
+        remediation: Require at least 30 claims before a provider is eligible for the spend ranking, so a single large claim cannot top it.
+        related_components: [{component: provider_ranking, params: {metric: paid_amount_sum, top_n: 10, min_claims: 30}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T10.provider_ranking_executed
+        dimension: completeness
+        weight: 1
+        critical: false
+        kind: component_executed
+        target: provider_ranking
+        issue_type: missing_component
+        remediation: Include the provider ranking component (top 10 by paid spend).
+        related_components: [{component: provider_ranking, params: {metric: paid_amount_sum, top_n: 10, min_claims: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.join_check_rendering_npi
+        dimension: statistical_discipline
+        weight: 2
+        critical: false
+        kind: exact
+        target: join_check.medical_claims.rendering_npi->providers.provider_npi
+        issue_type: missing_check
+        remediation: Verify the medical_claims.rendering_npi -> providers.provider_npi join (many_to_one, 0 unmatched) before using provider attributes.
+        related_components: [{component: join_check, params: {pairs: [medical_claims.rendering_npi->providers.provider_npi]}}]
+        reusable: true
+        applicable_task_ids: [T5]
+      - check_id: T10.group_comparison_csv
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: group_comparison.csv
+        issue_type: missing_artifact
+        remediation: Save group_comparison.csv from the group comparison component.
+        related_components: [{component: group_comparison, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.group_comparison_figure
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: group_comparison.png
+        issue_type: missing_artifact
+        remediation: Save group_comparison.png from the group comparison component.
+        related_components: [{component: group_comparison, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.provider_ranking_csv
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: provider_ranking.csv
+        issue_type: missing_artifact
+        remediation: Save provider_ranking.csv from the provider ranking component.
+        related_components: [{component: provider_ranking, params: {metric: paid_amount_sum, top_n: 10, min_claims: 30}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.metrics_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: metrics.json
+        issue_type: missing_artifact
+        remediation: metrics.json must be written for every attempt.
+        related_components: [{component: load_tables, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.report_artifact
+        dimension: completeness
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: report.md
+        issue_type: missing_artifact
+        remediation: Write report.md via the write_report component.
+        related_components: [{component: write_report, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.show_denominators
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: contract
+        target: report.show_denominators
+        issue_type: missing_denominators
+        remediation: Print every rate as numerator / denominator = rate in the report (write_report show_denominators true).
+        related_components: [{component: write_report, params: {show_denominators: true}}]
+        reusable: true
+        applicable_task_ids: [T5, T6]
+      - check_id: T10.caveat_synthetic
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: caveat_keywords
+        target: synthetic_data
+        issue_type: missing_caveat
+        remediation: State in the report that the data is synthetic (add the synthetic_data caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, small_groups, association_not_causation]}}]
+        reusable: true
+        applicable_task_ids: [T5, T6]
+      - check_id: T10.caveat_small_groups
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: caveat_keywords
+        target: small_groups
+        issue_type: missing_caveat
+        remediation: State that rates for small specialties are unstable (add the small_groups caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, small_groups, association_not_causation]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T10.caveat_association
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: caveat_keywords
+        target: association_not_causation
+        issue_type: missing_caveat
+        remediation: State that differences between specialties are associations, not causal effects (add the association_not_causation caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, small_groups, association_not_causation]}}]
+        reusable: true
+        applicable_task_ids: [T5]

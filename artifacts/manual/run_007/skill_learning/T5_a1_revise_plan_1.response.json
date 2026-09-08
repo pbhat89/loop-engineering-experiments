@@ -1,0 +1,49 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "class_prevalence",
+      "params": {}
+    },
+    {
+      "component": "feature_comparison",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount",
+          "er_flag",
+          "high_cost_flag"
+        ]
+      }
+    },
+    {
+      "component": "leakage_assessment",
+      "params": {}
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "association_not_causation",
+          "small_groups",
+          "class_imbalance",
+          "no_operational_use"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "This revised plan addresses all three feedback items from the prior evaluation. The critical leakage issue is resolved by removing member_sex, member_age_band, and fraud_pattern_type from the feature_comparison features, retaining only permitted claim-level features for comparison. The communication gaps are closed by adding synthetic_data and no_operational_use caveats to the report, clearly stating that this analysis uses synthetic data and must not inform operational fraud decisions.",
+  "changes_summary": "Removed member_sex, member_age_band, and fraud_pattern_type from feature_comparison features to eliminate leakage of protected attributes and label-derived fields. Added synthetic_data and no_operational_use to write_report caveats to address missing communications about data provenance and operational constraints. All other components and parameters remain unchanged."
+}

@@ -103,6 +103,20 @@ memory:
   recall_limit: 30
   distillation: none                  # appended verbatim, never filtered for relevance, never turned into a skill
 
+# Carry-over of memory across runs (experiment 5, decision D-23). No topology change: the seeded arms travel
+# exactly the routes above. What changes is where their memory starts.
+seeding:
+  source_run: run_006                 # config/experiment.yaml `seed_from_run`; read-only, nothing there is modified
+  task_index_offset: 6                # run_007's four tasks are indices 6-9, continuing run_006's 0-5
+  arms:
+    reflection_only: "cold control - no memory, no skills, nothing carried in"
+    feedback_memory: "warm - artifacts/memory/run_006/feedback_memory.jsonl copied into artifacts/memory/run_007/feedback_memory.jsonl, every numeric token redacted, each record stamped seeded_from: run_006"
+    skill_learning: "warm - skills/evolved/run_006/*.md listed read-only next to run_007's own skills (SkillStore seed_run_ids); new skills still persist under skills/evolved/run_007/"
+  redaction: '`\d[\d,]*(?:\.\d+)?%?` -> `[n]` in each record''s `text` and `detail`, except task ids `T\d+` and the quantile names p90 / p99'
+  written_by: "src.run_experiment.Runner.init -> Runner._seed_memory; provenance under `seeding` in logs/runs/<run_id>.json"
+  audit: "scripts/seed_audit.py --run-id run_007 --holdout T9,T10,T5,T6 (exits 1 if a holdout golden number is reachable from the seeded notes or skills)"
+  skill_files_are_immutable: true     # a seed skill that carried a golden number would be excluded via `seed_skill_exclude`, never edited
+
 # What the operator is shown per attempt (experiment 3, decision D-21; values duplicated from experiment.yaml)
 feedback:
   feedback_max_items: 3            # the three most severe failed checks (critical first, then rubric weight); the rest is a count
