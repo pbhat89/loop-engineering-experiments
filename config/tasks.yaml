@@ -5,16 +5,21 @@
 # (denominators, small-group thresholds, train-only fitting, required caveats) that the frozen rubric and goldens
 # enforce. The loop has to learn those from feedback.
 # Experiment 4 (D-22) ran the six-task suite T1 -> T2 -> T4 -> T3 -> T7 -> T8.
-# Experiment 5 (D-23) is a held-out transfer test: task_order is [T9, T10, T5, T6] - two brand-new tasks that share
-# T4's and T3's components and conventions but ask different questions (T9 denial hotspots, T10 specialty spend and
-# denials) followed by the two never-run tasks T5 and T6, whose briefs are blinded here for the first time. Nothing in
-# the four briefs states a convention; the two memory arms start seeded from run_006 (see config/experiment.yaml).
+# Experiment 5 v1 (D-23) was a held-out transfer test over [T9, T10, T5, T6] - two brand-new tasks sharing T4's and
+# T3's components (T9 denial hotspots, T10 specialty spend and denials) plus the never-run T5 and T6. It hit a
+# ceiling: the cold arm's first attempts already scored 3.09-3.68, so memory had almost no room to show.
+# Experiment 5 v2 (D-24) replaces it with task_order [T11, T12, T13] - three *convention-dense* held-out tasks whose
+# house rules are all covered by the run_006 memory: T11 "Portfolio deep-dive" (T2's components), T12 "High-cost
+# model, wider net" (T7's components at the 90th percentile) and T13 "Brief for the CFO" (T8's components, sourced
+# only from T11 and T12). Nothing in the three briefs states a convention; the two memory arms start seeded from
+# run_006 and the memory is *frozen* for the duration of the test (memory_read_only, see config/experiment.yaml).
 # Plan grammar: a param has options + default; `multi: true` params take a list whose items are all in options;
 # option values are matched by string form ("30" matches 30). Omitted params take defaults.
 # `produces` lists the metric keys the executor writes to metrics.json (shape documented as a string);
 # `artifacts` lists the side files a component writes into output_dir.
 suite_version: "1"
-task_order: [T9, T10, T5, T6]          # experiment 5 (D-23): held-out transfer test, article tasks 7-10
+task_order: [T11, T12, T13]            # experiment 5 v2 (D-24): convention-dense held-out test, frozen memory
+# experiment 5 v1 (D-23) order, kept for the record: [T9, T10, T5, T6]
 # experiment 4 (D-22) order, kept for the record: [T1, T2, T4, T3, T7, T8]
 
 shared_conventions:
@@ -1011,6 +1016,318 @@ tasks:
           - key: provider_ranking
             shape: "{metric: str, top_n: int, min_claims: int, rows: [{provider_npi: str, specialty: str, network_status: str, n: int, value: float}]}"
         artifacts: [provider_ranking.csv]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T11
+  # Experiment 5 v2 (D-24). Held-out convention-dense task: T2's components, option lists and defaults verbatim
+  # (module t2_*), asked about distributions and paid spend as well as volume.
+  - task_id: T11
+    title: Portfolio deep-dive
+    objective: >-
+      The head of claims wants a fuller picture of the medical book than a status count. How do claims split by
+      status and what is our denial rate? How common is the fraud flag? What do billed, allowed and paid amounts
+      look like — not just totals, but how they are distributed? And how have both claim volume and paid spend
+      moved month by month? Produce the standard artifacts (status chart, monthly trend chart and table,
+      financial summary table, report).
+    tags: [descriptive, portfolio, rates, denominators, financial, trends, quantiles, status_mix]
+    input_tables: [medical_claims]
+    golden_file: goldens/T11_portfolio_deep_dive_metrics.json
+    required_artifacts: [claims_status_distribution.png, monthly_claim_volume.png, financial_summary.csv, monthly_trend.csv, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: claim_volume
+        description: Total claim count and count/share breakdowns by one or more categorical columns.
+        default_selected: true
+        params:
+          by:
+            description: Which categorical columns to break the volume down by.
+            multi: true
+            options: [claim_status, claim_type, cpt_category, place_of_service, network_status, provider_specialty]
+            default: [claim_status]
+          figure:
+            description: Whether to draw the status distribution figure (when claim_status is among the breakdowns).
+            options: [true, false]
+            default: true
+        produces:
+          - key: claim_volume
+            shape: "{total_claims: int, by: {column: {value: {n: int, share: float}}}}"
+        artifacts: [claims_status_distribution.png]
+      - id: denial_rate
+        description: Denied claims divided by a stated denominator, with both counts and their definitions recorded.
+        default_selected: true
+        params:
+          denominator:
+            description: Which claims form the denominator of the denial rate.
+            options: [all_claims, adjudicated_claims, paid_and_denied]
+            default: all_claims
+        produces:
+          - key: denial_rate
+            shape: "{value: float, numerator: int, denominator: int, numerator_definition: str, denominator_definition: str, denominator_option: str}"
+      - id: fraud_prevalence
+        description: Share of claims carrying the synthetic fraud label over a stated denominator.
+        default_selected: false
+        params:
+          denominator:
+            description: Which claims form the denominator of the fraud-label prevalence.
+            options: [all_claims, adjudicated_claims]
+            default: all_claims
+        produces:
+          - key: fraud_prevalence
+            shape: "{value: float, numerator: int, denominator: int, denominator_option: str}"
+      - id: financial_summary
+        description: Count, sum, mean and optionally median/p90/p99 for selected amount columns.
+        default_selected: true
+        params:
+          amount_columns:
+            description: Which amount columns to summarise.
+            multi: true
+            options: [billed_amount, allowed_amount, paid_amount, member_oop, cob_amount]
+            default: [paid_amount]
+          statistics:
+            description: Whether to report only sum and mean or also the median, 90th and 99th percentiles.
+            options: [sum_mean, sum_mean_quantiles]
+            default: sum_mean
+        produces:
+          - key: financial_summary
+            shape: "{column: {n: int, sum: float, mean: float, median?: float, p90?: float, p99?: float}}"
+        artifacts: [financial_summary.csv]
+      - id: monthly_trend
+        description: Monthly series of claim counts and/or paid totals keyed on a chosen date column.
+        default_selected: true
+        params:
+          date_column:
+            description: Which date column defines the month of each claim.
+            options: [service_date_from, service_date_to, adjudication_date]
+            default: adjudication_date
+          metrics:
+            description: Which monthly series to produce.
+            multi: true
+            options: [claim_count, paid_amount_sum]
+            default: [claim_count]
+        produces:
+          - key: monthly_trend
+            shape: "{date_column: str, n_months: int, first_month: 'YYYY-MM', last_month: 'YYYY-MM', unparseable_dates: int, series: {metric: {'YYYY-MM': value}}}"
+        artifacts: [monthly_claim_volume.png, monthly_trend.csv]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T12
+  # Experiment 5 v2 (D-24). Held-out convention-dense task: T7's components, option lists and defaults verbatim
+  # (module t7_*), with the target at the 90th percentile of paid amount instead of the 95th.
+  - task_id: T12
+    title: High-cost model, wider net
+    objective: >-
+      Medical management wants the early-warning idea extended to a wider net: when a claim arrives, how likely is
+      it to end up in the most expensive 10 percent by paid amount? Hold out a quarter of the claims for testing,
+      train a logistic regression plus one tree-based model on what is known when a claim is submitted, and report
+      how well the models rank claims (PR-AUC, ROC-AUC, and precision and recall among the top 5 percent of
+      held-out claims by score). Produce the standard artifacts (model metrics, threshold, feature list,
+      precision-at-k chart, report).
+    tags: [modeling, high_cost, threshold, percentile, leakage, splits, seeds, ranking, metrics, p90]
+    input_tables: [medical_claims]
+    golden_file: goldens/T12_high_cost_p90_model_contract.json
+    required_artifacts: [model_metrics.json, threshold.json, feature_list.json, precision_at_k.png, report.md, metrics.json]
+    components:
+      - id: load_tables
+        description: Load the task's input tables with the project dtype policy and record row and column counts.
+        default_selected: true
+        params: {}
+        produces:
+          - key: tables
+            shape: "{table: {rows: int, columns: int}}"
+      - id: split
+        description: Plain random train/test split of row indices with the run seed (no stratification; the target is defined afterwards).
+        default_selected: true
+        params:
+          test_size:
+            description: Share of rows held out for testing.
+            options: [0.2, 0.25, 0.3]
+            default: 0.25
+        produces:
+          - key: split
+            shape: "{test_size: float, seed: int, n_train: int, n_test: int}"
+      - id: target_definition
+        description: Define the high-cost target as amount above a percentile threshold computed on a chosen set of rows.
+        default_selected: true
+        params:
+          amount_column:
+            description: Which amount column defines cost.
+            options: [paid_amount, billed_amount, allowed_amount]
+            default: paid_amount
+          percentile:
+            description: Which percentile of the amount column sets the threshold.
+            options: [90, 95, 99]
+            default: 95
+          threshold_source:
+            description: Which rows the percentile is computed on.
+            options: [train_only, all_data]
+            default: all_data
+        produces:
+          - key: target_definition
+            shape: "{amount_column: str, percentile: int, threshold_source: str, threshold_value: float, positive_rate_train: float, positive_rate_test: float, n_positive_train: int, n_positive_test: int} (threshold_value = numpy.percentile(values, percentile); positive = amount > threshold_value)"
+        artifacts: [threshold.json]
+      - id: feature_set
+        description: Select model features and record which identifier or target-derived fields the selection contains.
+        default_selected: true
+        params:
+          features:
+            description: Which columns enter the model as features (drg_present = drg_code.notna()).
+            multi: true
+            options: [claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, er_flag, elective_flag,
+                      preventive_flag, auth_required_flag, primary_icd10_cm, drg_present, billed_amount, allowed_amount, paid_amount, member_oop, cob_amount,
+                      high_cost_flag, claim_id, member_id]
+            default: [claim_type, billed_amount, allowed_amount]
+        produces:
+          - key: feature_set
+            shape: "{features: [str], n_categorical: int, n_numeric: int, id_fields_present: [str], target_derived_present: [str]}"
+        artifacts: [feature_list.json]
+      - id: preprocessing
+        description: One-hot encode categoricals and optionally scale numerics, fitted on a chosen partition.
+        default_selected: true
+        params:
+          fit_on:
+            description: Which rows the encoder and scaler are fitted on.
+            options: [train_only, all_data]
+            default: all_data
+          scaling:
+            description: Whether numeric features are standardised.
+            options: [none, standard]
+            default: none
+        produces:
+          - key: preprocessing
+            shape: "{fit_on: str, scaling: str, n_features_out: int}"
+      - id: models
+        description: Fit the chosen classifiers and report held-out ranking metrics (top 5 percent of test rows by score).
+        default_selected: true
+        params:
+          models:
+            description: Which classifiers to train.
+            multi: true
+            options: [logistic_regression, random_forest, gradient_boosting]
+            default: [logistic_regression]
+        produces:
+          - key: models
+            shape: "{name: {pr_auc: float, roc_auc: float, precision_at_top_5pct: float, recall_at_top_5pct: float, n_test: int}}"
+        artifacts: [model_metrics.json, precision_at_k.png]
+      - id: write_report
+        description: Write report.md with summary, results, artifacts, caveats and method sections.
+        default_selected: true
+        params:
+          caveats:
+            description: Which fixed caveat statements to include in the report's Caveats section.
+            multi: true
+            options: [synthetic_data, sample_preview, descriptive_only, association_not_causation, small_groups,
+                      class_imbalance, model_limitations, no_operational_use]
+            default: []
+          show_denominators:
+            description: Whether every rate in the report is printed as numerator / denominator = rate.
+            options: [true, false]
+            default: false
+          cite_artifacts:
+            description: "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key."
+            options: [true, false]
+            default: false
+        produces:
+          - key: report
+            shape: "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+        artifacts: [report.md]
+
+  # ------------------------------------------------------------------------------------------------ T13
+  # Experiment 5 v2 (D-24). Held-out synthesis task: T8's components (module t8_*), sourced only from the two
+  # tasks that precede it in this set, so the brief cannot lean on a run the arm has not done.
+  - task_id: T13
+    title: Brief for the CFO
+    objective: >-
+      Write a one-page brief (no more than 600 words) for the chief financial officer using only the saved results
+      of the two tasks just completed in this set — the portfolio deep-dive and the wider-net high-cost model.
+      Cover the key findings, how the model performed, the limitations and what to do next. Produce the standard
+      artifacts (executive brief, findings table, report).
+    tags: [communication, executive_brief, traceability, caveats, synthesis, limitations]
+    input_tables: []
+    golden_file: goldens/T13_cfo_brief_rubric.yaml
+    required_artifacts: [executive_brief.md, findings.json, report.md, metrics.json]
+    components:
+      - id: collect_findings
+        description: Extract headline metrics from the final attempt of chosen source tasks under the same run and condition; missing sources are recorded, never invented.
+        default_selected: true
+        params:
+          sources:
+            description: Which earlier tasks' saved metrics feed the brief.
+            multi: true
+            options: [T11, T12]
+            default: [T11]
+        produces:
+          - key: findings
+            shape: "[{task_id: str, metric_key: str, label: str, value, numerator?: int, denominator?: int, source_path: str}] or {task_id, status: missing}"
+        artifacts: [findings.json]
+      - id: brief_sections
+        description: Compose executive_brief.md from the collected findings with chosen sections, language style and citation policy.
+        default_selected: true
+        params:
+          sections:
+            description: Which sections the brief contains.
+            multi: true
+            options: [key_findings, model_results, limitations, synthetic_caveats, next_steps, methodology]
+            default: [key_findings, model_results]
+          causal_language:
+            description: Whether the brief may phrase relationships causally ("X drives Y") or only associatively ("X is associated with Y").
+            options: [avoid, allow]
+            default: allow
+          cite_artifacts:
+            description: "Whether every numeric statement ends with a [source: <path>] citation."
+            options: [true, false]
+            default: false
+        produces:
+          - key: brief
+            shape: "{sections: [str], causal_language: str, cite_artifacts: bool, word_count: int, n_numeric_statements: int, n_cited_statements: int}"
+        artifacts: [executive_brief.md]
       - id: write_report
         description: Write report.md with summary, results, artifacts, caveats and method sections.
         default_selected: true

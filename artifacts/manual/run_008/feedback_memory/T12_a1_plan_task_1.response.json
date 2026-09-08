@@ -1,0 +1,72 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 90,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "no_operational_use",
+          "model_limitations"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan follows T12 objective to predict top 10% (90th percentile) high-cost claims using logistic regression and tree-based model on submission-time features. Applied T7 feedback constraints: excluded amount fields, identifiers, and pre-computed flags; fit threshold and preprocessing on train only to prevent leakage. Enabled reproducibility citations and included synthetic_data and no_operational_use caveats per prior feedback pattern on similar modeling task."
+}

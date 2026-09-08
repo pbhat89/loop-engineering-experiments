@@ -2192,3 +2192,722 @@ tasks:
         related_components: [{component: write_report, params: {caveats: [synthetic_data, small_groups, association_not_causation]}}]
         reusable: true
         applicable_task_ids: [T5]
+
+  # ================================================================================================ T11
+  # Experiment 5 v2 (D-24). Held-out convention-dense task: T2's checks, retargeted to T11, plus four the
+  # portfolio description does not have - the second monthly series (claim_count *and* paid_amount_sum), that
+  # series' values month by month, and the allowed-amount median and billed-amount p99, so "how are the amounts
+  # distributed" is scored and not only "what do they total".
+  T11:
+    checks:
+      - check_id: T11.total_claims
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: exact
+        target: claim_volume.total_claims
+        issue_type: wrong_value
+        remediation: Report the total medical claim count over all rows (12845).
+        related_components: [{component: claim_volume, params: {by: [claim_status]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.status_mix
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: exact
+        target: claim_volume.by.claim_status
+        issue_type: wrong_value
+        remediation: Break claim volume down by claim_status with exact counts per status.
+        related_components: [{component: claim_volume, params: {by: [claim_status]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.denial_rate_value
+        dimension: correctness
+        weight: 3
+        critical: true
+        kind: tolerance
+        target: denial_rate
+        issue_type: wrong_denominator
+        remediation: Compute the denial rate over adjudicated claims (Paid, Denied, Adjusted; Pended claims are not yet decided) and state numerator and denominator.
+        related_components: [{component: denial_rate, params: {denominator: adjudicated_claims}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.denial_rate_denominator
+        dimension: statistical_discipline
+        weight: 3
+        critical: true
+        kind: contract
+        target: denial_rate.denominator_option
+        issue_type: wrong_denominator
+        remediation: Use adjudicated claims as the denial-rate denominator and record the choice; including pending claims understates the rate.
+        related_components: [{component: denial_rate, params: {denominator: adjudicated_claims}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.fraud_prevalence_value
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: tolerance
+        target: fraud_prevalence
+        issue_type: wrong_value
+        remediation: Report fraud-label prevalence as positives over all medical claims (647 / 12845).
+        related_components: [{component: fraud_prevalence, params: {denominator: all_claims}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.fraud_prevalence_executed
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: component_executed
+        target: fraud_prevalence
+        issue_type: missing_component
+        remediation: Include the fraud-label prevalence component; the brief asks for it explicitly.
+        related_components: [{component: fraud_prevalence, params: {denominator: all_claims}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.financial_columns
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: financial_summary
+        issue_type: incomplete_scope
+        remediation: Summarise billed, allowed and paid amounts (not paid alone) with sums, means and quantiles.
+        related_components: [{component: financial_summary, params: {amount_columns: [billed_amount, allowed_amount, paid_amount], statistics: sum_mean_quantiles}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.paid_amount_sum
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: tolerance
+        target: financial_summary.paid_amount.sum
+        issue_type: wrong_value
+        remediation: Report the total paid amount over all rows.
+        related_components: [{component: financial_summary, params: {amount_columns: [billed_amount, allowed_amount, paid_amount], statistics: sum_mean_quantiles}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.paid_amount_quantiles
+        dimension: statistical_discipline
+        weight: 1
+        critical: false
+        kind: tolerance
+        target: financial_summary.paid_amount.p90
+        issue_type: incomplete_scope
+        remediation: Report distribution quantiles (median, p90, p99) alongside sums and means; amounts are skewed.
+        related_components: [{component: financial_summary, params: {amount_columns: [billed_amount, allowed_amount, paid_amount], statistics: sum_mean_quantiles}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.monthly_date_column
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: contract
+        target: monthly_trend.date_column
+        issue_type: wrong_date_column
+        remediation: Key the monthly volume trend on service_date_from (when care began); adjudication dates lag service and 36 are inconsistent.
+        related_components: [{component: monthly_trend, params: {date_column: service_date_from, metrics: [claim_count]}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.monthly_counts
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: exact
+        target: monthly_trend.series.claim_count
+        issue_type: wrong_value
+        remediation: Produce the monthly claim-count series keyed on service_date_from (36 months, 2021-01 to 2023-12).
+        related_components: [{component: monthly_trend, params: {date_column: service_date_from, metrics: [claim_count]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.status_figure
+        dimension: reproducibility
+        weight: 2
+        critical: true
+        kind: artifact_exists
+        target: claims_status_distribution.png
+        issue_type: missing_artifact
+        remediation: Save the claim-status distribution figure (claim_volume with claim_status in by and figure true).
+        related_components: [{component: claim_volume, params: {by: [claim_status], figure: true}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.trend_figure
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: monthly_claim_volume.png
+        issue_type: missing_artifact
+        remediation: Save the monthly claim volume figure from the monthly trend component.
+        related_components: [{component: monthly_trend, params: {date_column: service_date_from}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.financial_csv
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: financial_summary.csv
+        issue_type: missing_artifact
+        remediation: Save financial_summary.csv from the financial summary component.
+        related_components: [{component: financial_summary, params: {amount_columns: [billed_amount, allowed_amount, paid_amount]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.trend_csv
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: monthly_trend.csv
+        issue_type: missing_artifact
+        remediation: Save monthly_trend.csv from the monthly trend component.
+        related_components: [{component: monthly_trend, params: {date_column: service_date_from}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.metrics_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: metrics.json
+        issue_type: missing_artifact
+        remediation: metrics.json must be written for every attempt.
+        related_components: [{component: load_tables, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.report_artifact
+        dimension: completeness
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: report.md
+        issue_type: missing_artifact
+        remediation: Write report.md via the write_report component.
+        related_components: [{component: write_report, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.show_denominators
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: contract
+        target: report.show_denominators
+        issue_type: missing_denominators
+        remediation: Print every rate as numerator / denominator = rate in the report (write_report show_denominators true).
+        related_components: [{component: write_report, params: {show_denominators: true}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.denominator_format
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: report_structure
+        target: report.md#pattern:denominator_format
+        issue_type: missing_denominators
+        remediation: The report text must show at least one rate as "numerator / denominator = rate".
+        related_components: [{component: write_report, params: {show_denominators: true}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.caveat_synthetic
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: caveat_keywords
+        target: synthetic_data
+        issue_type: missing_caveat
+        remediation: State in the report that the data is synthetic (add the synthetic_data caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, descriptive_only]}}]
+        reusable: true
+        applicable_task_ids: [T12, T13]
+      - check_id: T11.caveat_descriptive
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: caveat_keywords
+        target: descriptive_only
+        issue_type: missing_caveat
+        remediation: State that the analysis is descriptive and supports no causal or operational conclusion (add the descriptive_only caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, descriptive_only]}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T11.monthly_metrics
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: monthly_trend.series
+        issue_type: incomplete_scope
+        remediation: The monthly trend must carry both series the brief asks for - claim volume and paid spend (monthly_trend metrics [claim_count, paid_amount_sum]).
+        related_components: [{component: monthly_trend, params: {date_column: service_date_from, metrics: [claim_count, paid_amount_sum]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.monthly_paid_series
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: tolerance
+        target: monthly_trend.series.paid_amount_sum
+        issue_type: wrong_value
+        remediation: Produce the monthly paid-amount series keyed on service_date_from alongside the claim-count series (36 months, 2021-01 to 2023-12).
+        related_components: [{component: monthly_trend, params: {date_column: service_date_from, metrics: [claim_count, paid_amount_sum]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.allowed_amount_median
+        dimension: correctness
+        weight: 1
+        critical: false
+        kind: tolerance
+        target: financial_summary.allowed_amount.median
+        issue_type: incomplete_scope
+        remediation: Report the median of allowed_amount; amounts are skewed, so the middle of the distribution has to be shown as well as the mean.
+        related_components: [{component: financial_summary, params: {amount_columns: [billed_amount, allowed_amount, paid_amount], statistics: sum_mean_quantiles}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T11.billed_amount_p99
+        dimension: statistical_discipline
+        weight: 1
+        critical: false
+        kind: tolerance
+        target: financial_summary.billed_amount.p99
+        issue_type: incomplete_scope
+        remediation: Report the 99th percentile of billed_amount so the tail of the distribution is visible, not only the total and the average.
+        related_components: [{component: financial_summary, params: {amount_columns: [billed_amount, allowed_amount, paid_amount], statistics: sum_mean_quantiles}}]
+        reusable: false
+        applicable_task_ids: []
+
+  # ================================================================================================ T12
+  # Experiment 5 v2 (D-24). Held-out convention-dense task: T7's checks, retargeted to T12, with the target at
+  # the 90th percentile of paid amount. Every convention is T7's: threshold on the training split only,
+  # leakage-free submission-time features, train-only preprocessing, complete ranking metrics, the ROC-AUC band
+  # [0.60, 0.95] and the three model caveats.
+  T12:
+    checks:
+      - check_id: T12.threshold_source
+        dimension: statistical_discipline
+        weight: 4
+        critical: true
+        kind: contract
+        target: target_definition.threshold_source
+        issue_type: wrong_threshold_source
+        remediation: Compute the 90th-percentile threshold on the training partition only (threshold_source train_only); a threshold from all rows leaks the test distribution into the target.
+        related_components: [{component: target_definition, params: {amount_column: paid_amount, percentile: 90, threshold_source: train_only}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.threshold_value
+        dimension: correctness
+        weight: 3
+        critical: false
+        kind: tolerance
+        target: target_definition.threshold_value
+        issue_type: wrong_threshold_source
+        remediation: With seed 42, test_size 0.25 and the training-only 90th percentile of paid_amount the threshold is fixed; check the amount column, percentile, split and source.
+        related_components: [{component: target_definition, params: {amount_column: paid_amount, percentile: 90, threshold_source: train_only}}, {component: split, params: {test_size: 0.25}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.amount_column
+        dimension: correctness
+        weight: 1
+        critical: false
+        kind: contract
+        target: target_definition.amount_column
+        issue_type: wrong_convention
+        remediation: Define cost by paid_amount as the brief asks.
+        related_components: [{component: target_definition, params: {amount_column: paid_amount}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.percentile
+        dimension: correctness
+        weight: 1
+        critical: false
+        kind: contract
+        target: target_definition.percentile
+        issue_type: wrong_convention
+        remediation: Use the 90th percentile as the brief asks (the most expensive 10 percent).
+        related_components: [{component: target_definition, params: {percentile: 90}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.no_target_leakage
+        dimension: statistical_discipline
+        weight: 4
+        critical: true
+        kind: field_excluded
+        target: feature_set.features
+        issue_type: leakage
+        remediation: Exclude every amount field (billed_amount, allowed_amount, paid_amount, member_oop, cob_amount), the pre-computed high_cost_flag and the identifiers claim_id and member_id; use submission-time features only.
+        related_components: [{component: feature_set, params: {features: [claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, er_flag, elective_flag, preventive_flag, auth_required_flag, primary_icd10_cm, drg_present]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.fit_on_train_only
+        dimension: statistical_discipline
+        weight: 3
+        critical: true
+        kind: contract
+        target: preprocessing.fit_on
+        issue_type: preprocessing_leakage
+        remediation: Fit the encoder and scaler on the training partition only (fit_on train_only).
+        related_components: [{component: preprocessing, params: {fit_on: train_only}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.split_test_size
+        dimension: reproducibility
+        weight: 2
+        critical: false
+        kind: contract
+        target: split.test_size
+        issue_type: wrong_split
+        remediation: Hold out a quarter of the rows (test_size 0.25) with the run seed.
+        related_components: [{component: split, params: {test_size: 0.25}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.split_sizes
+        dimension: reproducibility
+        weight: 1
+        critical: false
+        kind: exact
+        target: split
+        issue_type: wrong_split
+        remediation: With test_size 0.25 on 12845 rows the split must yield n_train 9633 and n_test 3212.
+        related_components: [{component: split, params: {test_size: 0.25}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.seed_recorded
+        dimension: reproducibility
+        weight: 1
+        critical: false
+        kind: exact
+        target: seed
+        issue_type: missing_metric_fields
+        remediation: Record the run seed (42) in metrics.json.
+        related_components: [{component: split, params: {test_size: 0.25}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.logistic_regression_present
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: models
+        golden_key: models_logistic
+        issue_type: missing_component
+        remediation: Train logistic regression as the reference model.
+        related_components: [{component: models, params: {models: [logistic_regression, random_forest]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.tree_model_present
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: models
+        golden_key: models_tree
+        issue_type: missing_component
+        remediation: Train one tree-based model (random_forest or gradient_boosting) alongside logistic regression.
+        related_components: [{component: models, params: {models: [logistic_regression, random_forest]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.metrics_complete
+        dimension: completeness
+        weight: 2
+        critical: false
+        kind: contract
+        target: models
+        golden_key: models_metrics
+        issue_type: missing_metric_fields
+        remediation: Report pr_auc, roc_auc, precision_at_top_5pct and recall_at_top_5pct for every model.
+        related_components: [{component: models, params: {models: [logistic_regression, random_forest]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.roc_auc_range
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: metric_range
+        target: models.*.roc_auc
+        issue_type: metric_out_of_range
+        remediation: Every model's held-out ROC-AUC must lie in [0.5, 1.0].
+        related_components: [{component: models, params: {models: [logistic_regression, random_forest]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.pr_auc_range
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: metric_range
+        target: models.*.pr_auc
+        issue_type: metric_out_of_range
+        remediation: Every model's held-out PR-AUC must lie between the test positive rate and 1.0; report positive_rate_test.
+        related_components: [{component: target_definition, params: {threshold_source: train_only}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.precision_at_k_range
+        dimension: correctness
+        weight: 1
+        critical: false
+        kind: metric_range
+        target: models.*.precision_at_top_5pct
+        issue_type: metric_out_of_range
+        remediation: Precision among the top 5 percent of test rows must be a proportion in [0, 1].
+        related_components: [{component: models, params: {models: [logistic_regression, random_forest]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.model_metrics_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: model_metrics.json
+        issue_type: missing_artifact
+        remediation: Save model_metrics.json from the models component.
+        related_components: [{component: models, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.threshold_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: threshold.json
+        issue_type: missing_artifact
+        remediation: Save threshold.json from the target definition component.
+        related_components: [{component: target_definition, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.feature_list_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: feature_list.json
+        issue_type: missing_artifact
+        remediation: Save feature_list.json from the feature set component.
+        related_components: [{component: feature_set, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.precision_at_k_figure
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: precision_at_k.png
+        issue_type: missing_artifact
+        remediation: Save precision_at_k.png from the models component.
+        related_components: [{component: models, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.metrics_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: metrics.json
+        issue_type: missing_artifact
+        remediation: metrics.json must be written for every attempt.
+        related_components: [{component: load_tables, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.report_artifact
+        dimension: completeness
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: report.md
+        issue_type: missing_artifact
+        remediation: Write report.md via the write_report component.
+        related_components: [{component: write_report, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T12.caveat_synthetic
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: caveat_keywords
+        target: synthetic_data
+        issue_type: missing_caveat
+        remediation: State that the data is synthetic (add the synthetic_data caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, model_limitations, no_operational_use]}}]
+        reusable: true
+        applicable_task_ids: [T13]
+      - check_id: T12.caveat_model_limitations
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: caveat_keywords
+        target: model_limitations
+        issue_type: missing_caveat
+        remediation: State the model's limitations as a baseline (add the model_limitations caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, model_limitations, no_operational_use]}}]
+        reusable: true
+        applicable_task_ids: []
+      - check_id: T12.caveat_no_operational_use
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: caveat_keywords
+        target: no_operational_use
+        issue_type: missing_caveat
+        remediation: State that the ranking must not be used operationally (add the no_operational_use caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, model_limitations, no_operational_use]}}]
+        reusable: true
+        applicable_task_ids: [T13]
+
+  # ================================================================================================ T13
+  # Experiment 5 v2 (D-24). Held-out synthesis task: T8's checks, retargeted to T13, sourced from T11 and T12
+  # only. T8's "include at least one segment analysis" check has no counterpart with two sources and is dropped.
+  T13:
+    checks:
+      - check_id: T13.core_sources
+        dimension: completeness
+        weight: 3
+        critical: false
+        kind: contract
+        target: findings
+        golden_key: findings_core_sources
+        issue_type: incomplete_scope
+        remediation: Collect findings from both tasks just completed in this set - the portfolio deep-dive (T11) and the wider-net high-cost model (T12).
+        related_components: [{component: collect_findings, params: {sources: [T11, T12]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.sections
+        dimension: completeness
+        weight: 3
+        critical: false
+        kind: contract
+        target: brief.sections
+        issue_type: missing_section
+        remediation: Include key findings, model results, limitations, synthetic-data caveats and next steps as sections of the brief.
+        related_components: [{component: brief_sections, params: {sections: [key_findings, model_results, limitations, synthetic_caveats, next_steps], causal_language: avoid, cite_artifacts: true}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.cite_artifacts
+        dimension: reproducibility
+        weight: 2
+        critical: true
+        kind: contract
+        target: brief.cite_artifacts
+        issue_type: missing_citation
+        remediation: Cite the source artifact or metrics key after every numeric statement (brief_sections cite_artifacts true).
+        related_components: [{component: brief_sections, params: {cite_artifacts: true}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.all_numbers_cited
+        dimension: reproducibility
+        weight: 3
+        critical: true
+        kind: contract
+        target: brief.n_cited_statements
+        issue_type: missing_citation
+        remediation: "Every numeric statement in the brief must carry a [source: ...] citation (n_cited_statements must equal n_numeric_statements)."
+        related_components: [{component: brief_sections, params: {cite_artifacts: true}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.citation_pattern
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: report_structure
+        target: executive_brief.md#pattern:source_citation
+        issue_type: missing_citation
+        remediation: "The brief text must contain [source: ...] citations."
+        related_components: [{component: brief_sections, params: {cite_artifacts: true}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.no_causal_language
+        dimension: communication
+        weight: 3
+        critical: false
+        kind: report_structure
+        target: executive_brief.md#forbidden_phrases
+        issue_type: causal_language
+        remediation: Describe relationships as associations; remove causal phrasing such as "causes", "drives", "leads to" and "because of" (brief_sections causal_language avoid).
+        related_components: [{component: brief_sections, params: {causal_language: avoid}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.causal_language_setting
+        dimension: statistical_discipline
+        weight: 2
+        critical: false
+        kind: contract
+        target: brief.causal_language
+        issue_type: causal_language
+        remediation: Set causal_language to avoid; a descriptive study of synthetic data supports no causal claim.
+        related_components: [{component: brief_sections, params: {causal_language: avoid}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.word_limit
+        dimension: correctness
+        weight: 2
+        critical: false
+        kind: report_structure
+        target: executive_brief.md#max_words:600
+        issue_type: report_structure
+        remediation: Keep the brief to one page (at most 600 words).
+        related_components: [{component: brief_sections, params: {sections: [key_findings, model_results, limitations, synthetic_caveats, next_steps]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.brief_artifact
+        dimension: completeness
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: executive_brief.md
+        issue_type: missing_artifact
+        remediation: Write executive_brief.md via the brief sections component.
+        related_components: [{component: brief_sections, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.findings_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: findings.json
+        issue_type: missing_artifact
+        remediation: Save findings.json from the collect findings component.
+        related_components: [{component: collect_findings, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.metrics_artifact
+        dimension: reproducibility
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: metrics.json
+        issue_type: missing_artifact
+        remediation: metrics.json must be written for every attempt.
+        related_components: [{component: collect_findings, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.report_artifact
+        dimension: completeness
+        weight: 1
+        critical: true
+        kind: artifact_exists
+        target: report.md
+        issue_type: missing_artifact
+        remediation: Write report.md via the write_report component.
+        related_components: [{component: write_report, params: {}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.caveat_synthetic
+        dimension: communication
+        weight: 2
+        critical: false
+        kind: caveat_keywords
+        target: synthetic_data
+        issue_type: missing_caveat
+        remediation: State that the data and findings are synthetic and illustrative (add the synthetic_data caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, no_operational_use]}}]
+        reusable: false
+        applicable_task_ids: []
+      - check_id: T13.caveat_no_operational_use
+        dimension: communication
+        weight: 1
+        critical: false
+        kind: caveat_keywords
+        target: no_operational_use
+        issue_type: missing_caveat
+        remediation: State that the findings are not for operational use (add the no_operational_use caveat).
+        related_components: [{component: write_report, params: {caveats: [synthetic_data, no_operational_use]}}]
+        reusable: false
+        applicable_task_ids: []

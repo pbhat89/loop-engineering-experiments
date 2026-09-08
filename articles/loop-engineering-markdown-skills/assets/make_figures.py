@@ -1,6 +1,6 @@
 """Figures for the article, drawn from one run's logs (default run_006, experiment 4)
 plus an optional second run (default run_007, experiment 5) that continues three of
-the five arms onto four held-out tasks.
+the five arms onto three held-out tasks (run_008, memory frozen).
 
     uv run python articles/loop-engineering-markdown-skills/assets/make_figures.py \
         [--run-id RUN_ID] [--logs LOGS_DIR] \
@@ -73,21 +73,19 @@ ARM_COLOR = {
 MEMORY_ARMS = {"feedback_memory", "self_refine_memory"}
 SKILL_ARM = "skill_learning"
 
-# Experiment 5: run_007 continues three of the five arms onto four held-out tasks that
+# Experiment 5: run_007 continues three of the five arms onto three held-out tasks (run_008, memory frozen) that
 # reuse the same conventions but ask different questions. Article numbering continues
 # 7-10 from the six run_006 tasks above.
-TRANSFER_TASKS = ["T9", "T10", "T5", "T6"]
+TRANSFER_TASKS = ["T11", "T12", "T13"]
 TRANSFER_TASK_LABEL = {
-    "T9": "7 · Denial hotspots",
-    "T10": "8 · Specialty spend",
-    "T5": "9 · Fraud-flag exploration",
-    "T6": "10 · Fraud-flag model",
+    "T11": "7 · Portfolio deep-dive",
+    "T12": "8 · High-cost model, top 10 %",
+    "T13": "9 · Brief for the CFO",
 }
 TRANSFER_TASK_SHORT = {
-    "T9": "7 · Denial\nhotspots",
-    "T10": "8 · Specialty\nspend",
-    "T5": "9 · Fraud-flag\nexploration",
-    "T6": "10 · Fraud-flag\nmodel",
+    "T11": "7 · Portfolio\ndeep-dive",
+    "T12": "8 · High-cost\nmodel (top 10 %)",
+    "T13": "9 · Brief for\nthe CFO",
 }
 TRANSFER_ARMS = ["reflection_only", "feedback_memory", "skill_learning"]
 INK, INK2, LINE, PAPER = "#1b2a24", "#5b6b65", "#c9d1cc", "#fbfbf8"
@@ -220,7 +218,7 @@ def fig_results_grid(d: dict, out_dir: Path, d_transfer: dict | None = None) -> 
         divider_y = ty - divider_gap / 2
         ax.plot([0, grid_w], [divider_y, divider_y], color=LINE, lw=1.4)
         group_top = ty - divider_gap
-        ax.text(0.02, group_top - group_label_h / 2, "HELD-OUT  ·  run_007", ha="left", va="center",
+        ax.text(0.02, group_top - group_label_h / 2, "HELD-OUT TEST  ·  run_008  ·  memory frozen", ha="left", va="center",
                 fontsize=9.5, fontweight="bold", color=INK2, style="italic")
 
         def row_y2(k: int) -> float:
@@ -326,7 +324,7 @@ def fig_transfer_curve(d: dict, d_transfer: dict, out_dir: Path) -> None:
     ax.axvspan(n_learn + 0.5, n_total + 0.5, color="#e9e9e3", alpha=0.7, zorder=0)
     xaxis_frac = ax.get_xaxis_transform()  # x in data coords, y in axes-fraction
     ax.text((n_learn + 0.5 + n_total + 0.5) / 2, 0.97,
-            "held-out tasks (memory carried over, checker only starts cold)",
+            "held-out test: memory carried over and frozen; checker only starts cold",
             ha="center", va="top", fontsize=9.5, color=INK2, style="italic", transform=xaxis_frac)
     ax.text((0.5 + n_learn + 0.5) / 2, 0.97, "learning tasks",
             ha="center", va="top", fontsize=9.5, color=INK2, style="italic", transform=xaxis_frac)
@@ -370,7 +368,7 @@ def fig_transfer_curve(d: dict, d_transfer: dict, out_dir: Path) -> None:
     fig.text(0.012, 0.99, "Does what was learned carry over to new tasks?", fontsize=15.5, fontweight="bold", va="top")
     fig.text(0.012, 0.935,
              "Score of the first attempt on each task, before any feedback on that task. Left: the six tasks memory was\n"
-             "built on. Right: four held-out tasks that reuse the conventions but ask different questions.",
+             "built on. Right: three held-out tasks that reuse the conventions but ask different questions, with the memory frozen.",
              fontsize=10.3, color=INK2, va="top", linespacing=1.4)
 
     fig.tight_layout(rect=(0, 0.1, 1, 0.855))
@@ -477,7 +475,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", default="run_006")
     parser.add_argument("--logs", default=None, help="override for the logs directory (default: the repo logs/ dir)")
-    parser.add_argument("--transfer-run", default="run_007", help="experiment-5 run that continues onto four held-out tasks")
+    parser.add_argument("--transfer-run", default="run_008", help="experiment-5 held-out test run (three tasks, memory frozen)")
     parser.add_argument("--transfer-logs", default=None, help="logs dir for --transfer-run (default: same as --logs)")
     parser.add_argument("--out", default=None, help="override for the output directory (default: this assets folder)")
     args = parser.parse_args()

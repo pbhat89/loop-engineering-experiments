@@ -129,6 +129,90 @@ DENIAL_RATE_BY_SEGMENT = C(
         "min_group_size": P([0, 30, 50, 100], 0),
     },
 )
+# Shared by T2 / T11 (portfolio descriptions), T7 / T12 (high-cost models) and T8 / T13 (executive briefs):
+# experiment 5 v2's convention-dense held-out tasks reuse the same components, option lists and defaults as the
+# tasks they mirror (D-24), so the catalogue entries are the same objects and cannot drift apart.
+PORTFOLIO_COMPONENTS = [
+    LOAD_TABLES,
+    C(
+        "claim_volume",
+        True,
+        {
+            "by": P(
+                ["claim_status", "claim_type", "cpt_category", "place_of_service", "network_status", "provider_specialty"],
+                ["claim_status"],
+                multi=True,
+            ),
+            "figure": P(BOOL, True),
+        },
+    ),
+    C("denial_rate", True, {"denominator": P(["all_claims", "adjudicated_claims", "paid_and_denied"], "all_claims")}),
+    C("fraud_prevalence", False, {"denominator": P(["all_claims", "adjudicated_claims"], "all_claims")}),
+    C(
+        "financial_summary",
+        True,
+        {
+            "amount_columns": P(
+                ["billed_amount", "allowed_amount", "paid_amount", "member_oop", "cob_amount"], ["paid_amount"], multi=True
+            ),
+            "statistics": P(["sum_mean", "sum_mean_quantiles"], "sum_mean"),
+        },
+    ),
+    C(
+        "monthly_trend",
+        True,
+        {
+            "date_column": P(["service_date_from", "service_date_to", "adjudication_date"], "adjudication_date"),
+            "metrics": P(["claim_count", "paid_amount_sum"], ["claim_count"], multi=True),
+        },
+    ),
+    WRITE_REPORT,
+]
+HIGH_COST_COMPONENTS = [
+    LOAD_TABLES,
+    C("split", True, {"test_size": P([0.2, 0.25, 0.3], 0.25)}),
+    C(
+        "target_definition",
+        True,
+        {
+            "amount_column": P(["paid_amount", "billed_amount", "allowed_amount"], "paid_amount"),
+            "percentile": P([90, 95, 99], 95),
+            "threshold_source": P(["train_only", "all_data"], "all_data"),
+        },
+        requires=["split"],
+    ),
+    C("feature_set", True, {"features": P(T7_FEATURES, ["claim_type", "billed_amount", "allowed_amount"], multi=True)}),
+    PREPROCESSING,
+    C(
+        "models",
+        True,
+        {"models": P(MODELS, ["logistic_regression"], multi=True)},
+        requires=["split", "target_definition", "feature_set", "preprocessing"],
+    ),
+    WRITE_REPORT,
+]
+BRIEF_SECTIONS = C(
+    "brief_sections",
+    True,
+    {
+        "sections": P(
+            ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps", "methodology"],
+            ["key_findings", "model_results"],
+            multi=True,
+        ),
+        "causal_language": P(["avoid", "allow"], "allow"),
+        "cite_artifacts": P(BOOL, False),
+    },
+    requires=["collect_findings"],
+)
+PORTFOLIO_ARTIFACTS = [
+    "claims_status_distribution.png", "monthly_claim_volume.png", "financial_summary.csv",
+    "monthly_trend.csv", "report.md", "metrics.json",
+]
+HIGH_COST_ARTIFACTS = [
+    "model_metrics.json", "threshold.json", "feature_list.json", "precision_at_k.png", "report.md", "metrics.json",
+]
+BRIEF_ARTIFACTS = ["executive_brief.md", "findings.json", "report.md", "metrics.json"]
 PROVIDER_ARTIFACTS = ["group_comparison.csv", "group_comparison.png", "provider_ranking.csv", "report.md", "metrics.json"]
 DENIAL_ARTIFACTS = ["denial_code_ranking.csv", "denial_rates_by_segment.csv", "denial_rate_by_segment.png", "report.md", "metrics.json"]
 
@@ -178,46 +262,8 @@ TASK_CATALOGUE: dict[str, dict] = {
     "T2": {
         "title": "Claims portfolio description",
         "input_tables": ["medical_claims"],
-        "required_artifacts": [
-            "claims_status_distribution.png", "monthly_claim_volume.png", "financial_summary.csv",
-            "monthly_trend.csv", "report.md", "metrics.json",
-        ],
-        "components": [
-            LOAD_TABLES,
-            C(
-                "claim_volume",
-                True,
-                {
-                    "by": P(
-                        ["claim_status", "claim_type", "cpt_category", "place_of_service", "network_status", "provider_specialty"],
-                        ["claim_status"],
-                        multi=True,
-                    ),
-                    "figure": P(BOOL, True),
-                },
-            ),
-            C("denial_rate", True, {"denominator": P(["all_claims", "adjudicated_claims", "paid_and_denied"], "all_claims")}),
-            C("fraud_prevalence", False, {"denominator": P(["all_claims", "adjudicated_claims"], "all_claims")}),
-            C(
-                "financial_summary",
-                True,
-                {
-                    "amount_columns": P(
-                        ["billed_amount", "allowed_amount", "paid_amount", "member_oop", "cob_amount"], ["paid_amount"], multi=True
-                    ),
-                    "statistics": P(["sum_mean", "sum_mean_quantiles"], "sum_mean"),
-                },
-            ),
-            C(
-                "monthly_trend",
-                True,
-                {
-                    "date_column": P(["service_date_from", "service_date_to", "adjudication_date"], "adjudication_date"),
-                    "metrics": P(["claim_count", "paid_amount_sum"], ["claim_count"], multi=True),
-                },
-            ),
-            WRITE_REPORT,
-        ],
+        "required_artifacts": list(PORTFOLIO_ARTIFACTS),
+        "components": list(PORTFOLIO_COMPONENTS),
     },
     "T3": {
         "title": "Provider and network patterns",
@@ -275,53 +321,16 @@ TASK_CATALOGUE: dict[str, dict] = {
     "T7": {
         "title": "High-cost claim identification",
         "input_tables": ["medical_claims"],
-        "required_artifacts": [
-            "model_metrics.json", "threshold.json", "feature_list.json", "precision_at_k.png", "report.md", "metrics.json",
-        ],
-        "components": [
-            LOAD_TABLES,
-            C("split", True, {"test_size": P([0.2, 0.25, 0.3], 0.25)}),
-            C(
-                "target_definition",
-                True,
-                {
-                    "amount_column": P(["paid_amount", "billed_amount", "allowed_amount"], "paid_amount"),
-                    "percentile": P([90, 95, 99], 95),
-                    "threshold_source": P(["train_only", "all_data"], "all_data"),
-                },
-                requires=["split"],
-            ),
-            C("feature_set", True, {"features": P(T7_FEATURES, ["claim_type", "billed_amount", "allowed_amount"], multi=True)}),
-            PREPROCESSING,
-            C(
-                "models",
-                True,
-                {"models": P(MODELS, ["logistic_regression"], multi=True)},
-                requires=["split", "target_definition", "feature_set", "preprocessing"],
-            ),
-            WRITE_REPORT,
-        ],
+        "required_artifacts": list(HIGH_COST_ARTIFACTS),
+        "components": list(HIGH_COST_COMPONENTS),
     },
     "T8": {
         "title": "Executive brief",
         "input_tables": [],
-        "required_artifacts": ["executive_brief.md", "findings.json", "report.md", "metrics.json"],
+        "required_artifacts": list(BRIEF_ARTIFACTS),
         "components": [
             C("collect_findings", True, {"sources": P(["T1", "T2", "T3", "T4", "T5", "T6", "T7"], ["T2", "T6"], multi=True)}),
-            C(
-                "brief_sections",
-                True,
-                {
-                    "sections": P(
-                        ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps", "methodology"],
-                        ["key_findings", "model_results"],
-                        multi=True,
-                    ),
-                    "causal_language": P(["avoid", "allow"], "allow"),
-                    "cite_artifacts": P(BOOL, False),
-                },
-                requires=["collect_findings"],
-            ),
+            BRIEF_SECTIONS,
             WRITE_REPORT,
         ],
     },
@@ -338,6 +347,32 @@ TASK_CATALOGUE: dict[str, dict] = {
         "input_tables": ["medical_claims", "providers"],
         "required_artifacts": list(PROVIDER_ARTIFACTS),
         "components": [LOAD_TABLES, JOIN_CHECK, PROVIDER_JOIN, GROUP_COMPARISON, PROVIDER_RANKING, WRITE_REPORT],
+    },
+    # Experiment 5 v2 (D-24): three convention-dense held-out tasks sharing T2's, T7's and T8's components, option
+    # lists and defaults while asking different questions. They are executed by the same handler modules (see
+    # TASK_MODULES). T13's `collect_findings` is the one component whose options differ: its only sources are the
+    # two tasks that precede it in this set.
+    "T11": {
+        "title": "Portfolio deep-dive",
+        "input_tables": ["medical_claims"],
+        "required_artifacts": list(PORTFOLIO_ARTIFACTS),
+        "components": list(PORTFOLIO_COMPONENTS),
+    },
+    "T12": {
+        "title": "High-cost model, wider net",
+        "input_tables": ["medical_claims"],
+        "required_artifacts": list(HIGH_COST_ARTIFACTS),
+        "components": list(HIGH_COST_COMPONENTS),
+    },
+    "T13": {
+        "title": "Brief for the CFO",
+        "input_tables": [],
+        "required_artifacts": list(BRIEF_ARTIFACTS),
+        "components": [
+            C("collect_findings", True, {"sources": P(["T11", "T12"], ["T11"], multi=True)}),
+            BRIEF_SECTIONS,
+            WRITE_REPORT,
+        ],
     },
 }
 

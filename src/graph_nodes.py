@@ -57,6 +57,11 @@ class Services:
     reveal_fixes: bool = True  # False hides `related_components` (the literal parameter fix) from the operator
     # Experiment 4 (D-22): builds the raw cross-task memory log for the memory arms; None disables memory entirely.
     memory_factory: Callable[[str, str], Any] | None = None  # (run_id, condition) -> FeedbackMemory-like
+    # Experiment 5 v2 (D-24): freeze the carried-over memory for the whole run. Recall and skill retrieval are
+    # untouched; nothing is written. ``finalize_task`` appends no note (it logs ``memory_write_skipped`` instead)
+    # and ``skill_learning`` routes to ``completed`` rather than ``learn``, so no skill is reflected on, proposed,
+    # validated or persisted. The run then measures only what an earlier run left behind.
+    memory_read_only: bool = False
 
 
 # --------------------------------------------------------------------------- operator instructions
@@ -632,7 +637,9 @@ class ClaimsNodes:
         passed = bool(evaluation.get("passed"))
         can_retry = state.get("retry_count", 0) < state.get("max_retries", 0) and not self._budget_exhausted(state)
         if state["condition"] == "skill_learning":
-            next_route = "learn" if passed or not can_retry else "retry"
+            # D-24: with the memory frozen there is nothing to learn into, so the task ends instead of reflecting
+            done_route = "completed" if self.s.memory_read_only else "learn"
+            next_route = done_route if passed or not can_retry else "retry"
         elif self_refine:
             next_route = "self_evaluate" if can_retry else "completed"
         else:
@@ -995,10 +1002,22 @@ class ClaimsNodes:
                 if state["condition"] in SELF_REVIEW_CONDITIONS
                 else self._task_feedback(state)
             )
-            written = memory.append(state["task_id"], (state.get("task_spec") or {}).get("title", ""), items)
-            self.s.logger.log_skill_event(
-                {**self._meta(state), "timestamp": utc_now(), "event": "memory_written", "count": written}
-            )
+            if self.s.memory_read_only:  # D-24: the carried-over log is evidence for this run, never extended by it
+                self.s.logger.log_skill_event(
+                    {
+                        **self._meta(state),
+                        "timestamp": utc_now(),
+                        "event": "memory_write_skipped",
+                        "count": 0,
+                        "withheld": len(items),
+                        "reason": "read_only",
+                    }
+                )
+            else:
+                written = memory.append(state["task_id"], (state.get("task_spec") or {}).get("title", ""), items)
+                self.s.logger.log_skill_event(
+                    {**self._meta(state), "timestamp": utc_now(), "event": "memory_written", "count": written}
+                )
         history = list(state.get("evaluation_history") or [])
         first_attempt_passed = bool(history[0].get("passed")) if history else False
         attempts_to_pass = next((i for i, e in enumerate(history, 1) if e.get("passed")), None)
@@ -1024,6 +1043,7 @@ class ClaimsNodes:
             "score_by_attempt": [e.get("score_total") for e in history],
             "self_declared_pass": self_accepted if state["condition"] in SELF_REVIEW_CONDITIONS else None,
             "past_feedback_count": len(state.get("past_feedback") or []),  # memory items this task was planned with
+            "memory_read_only": bool(self.s.memory_read_only),  # D-24: True means this task wrote nothing back
             "artifact_paths": list(state.get("artifacts") or []),
             "operator_steps_used": state.get("operator_steps_used", 0),
             "stop_reason": stop_reason,

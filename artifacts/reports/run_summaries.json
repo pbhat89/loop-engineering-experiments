@@ -359,58 +359,53 @@
     }
   },
   {
-    "run_id": "run_007",
+    "run_id": "run_008",
     "mode": "manual",
     "provider": {
       "provider_mode": "manual",
       "operator": "claude-code-subagent",
       "model_identifier": "claude-haiku-4-5-20251001"
     },
-    "freeze_sha256": "74e64e1d38e3888fd54a9c02e64dd6fcee389bee7b6aba14cdfa7c86729f8b58",
+    "freeze_sha256": "bab215a5fbccbd60a7108f7417d3b8a2a40a05e06f6353221b40d800f788bbdd",
     "task_order": [
-      "T9",
-      "T10",
-      "T5",
-      "T6"
+      "T11",
+      "T12",
+      "T13"
     ],
     "conditions": {
       "reflection_only": {
-        "tasks_done": 4,
+        "tasks_done": 3,
         "tasks": [
-          "T9",
-          "T10",
-          "T5",
-          "T6"
+          "T11",
+          "T12",
+          "T13"
         ],
         "final_scores": {
-          "T9": 4.0,
-          "T10": 3.69,
-          "T5": 4.0,
-          "T6": 3.68
+          "T11": 3.73,
+          "T12": 3.8,
+          "T13": 4.0
         },
         "first_attempt_scores": {
-          "T9": 3.26,
-          "T10": 3.09,
-          "T5": 3.28,
-          "T6": 3.68
+          "T11": 2.85,
+          "T12": 3.15,
+          "T13": 2.44
         },
         "first_attempt_passed": {
-          "T9": false,
-          "T10": false,
-          "T5": false,
-          "T6": true
+          "T11": false,
+          "T12": false,
+          "T13": false
         },
-        "first_attempt_pass_rate": 0.25,
+        "first_attempt_pass_rate": 0.0,
         "mean_final_score": 3.843,
-        "mean_first_attempt_score": 3.327,
+        "mean_first_attempt_score": 2.813,
         "retries_total": 3,
-        "execution_attempts_total": 7,
+        "execution_attempts_total": 6,
         "execution_errors_total": 0,
-        "operator_steps_used": 10,
-        "operator_requests_logged": 10,
+        "operator_steps_used": 9,
+        "operator_requests_logged": 9,
         "operator_validation_errors": 0,
         "stop_reasons": {
-          "passed": 4
+          "passed": 3
         },
         "skills_retrieved_total": 0,
         "skills_reused_total": 0,
@@ -422,133 +417,50 @@
             "provider_mode": "manual",
             "operator": "claude-code-subagent",
             "model_identifier": "claude-haiku-4-5-20251001",
-            "records": 11
-          }
-        ]
-      },
-      "skill_learning": {
-        "tasks_done": 4,
-        "tasks": [
-          "T9",
-          "T10",
-          "T5",
-          "T6"
-        ],
-        "final_scores": {
-          "T9": 3.77,
-          "T10": 3.51,
-          "T5": 4.0,
-          "T6": 3.84
-        },
-        "first_attempt_scores": {
-          "T9": 3.77,
-          "T10": 3.51,
-          "T5": 3.28,
-          "T6": 3.84
-        },
-        "first_attempt_passed": {
-          "T9": true,
-          "T10": true,
-          "T5": false,
-          "T6": true
-        },
-        "first_attempt_pass_rate": 0.75,
-        "mean_final_score": 3.78,
-        "mean_first_attempt_score": 3.6,
-        "retries_total": 1,
-        "execution_attempts_total": 5,
-        "execution_errors_total": 0,
-        "operator_steps_used": 12,
-        "operator_requests_logged": 12,
-        "operator_validation_errors": 0,
-        "stop_reasons": {
-          "passed": 4
-        },
-        "skills_retrieved_total": 7,
-        "skills_reused_total": 5,
-        "skills_created": [
-          "evolved_run_007_001"
-        ],
-        "skill_events": {
-          "skill_retrieved": 7,
-          "skill_proposed": 1,
-          "skill_revision_requested": 1,
-          "skill_validated": 1,
-          "skill_persisted": 1,
-          "skill_reused": 5,
-          "skill_proposal_skipped": 3,
-          "skill_rejected": 3
-        },
-        "skill_rejections": [
-          {
-            "task_id": "T10",
-            "proposal": null,
-            "failed_checks": []
-          },
-          {
-            "task_id": "T5",
-            "proposal": null,
-            "failed_checks": []
-          },
-          {
-            "task_id": "T6",
-            "proposal": null,
-            "failed_checks": []
-          }
-        ],
-        "provider_metadata_on_events": [
-          {
-            "provider_mode": "manual",
-            "operator": "claude-code-subagent",
-            "model_identifier": "claude-haiku-4-5-20251001",
             "records": 9
           }
         ]
       },
-      "feedback_memory": {
-        "tasks_done": 4,
+      "skill_learning": {
+        "tasks_done": 3,
         "tasks": [
-          "T9",
-          "T10",
-          "T5",
-          "T6"
+          "T11",
+          "T12",
+          "T13"
         ],
         "final_scores": {
-          "T9": 3.52,
-          "T10": 3.64,
-          "T5": 4.0,
-          "T6": 3.68
+          "T11": 3.6,
+          "T12": 3.8,
+          "T13": 4.0
         },
         "first_attempt_scores": {
-          "T9": 3.52,
-          "T10": 3.64,
-          "T5": 3.44,
-          "T6": 3.68
+          "T11": 3.6,
+          "T12": 2.95,
+          "T13": 4.0
         },
         "first_attempt_passed": {
-          "T9": true,
-          "T10": true,
-          "T5": false,
-          "T6": true
+          "T11": true,
+          "T12": false,
+          "T13": true
         },
-        "first_attempt_pass_rate": 0.75,
-        "mean_final_score": 3.71,
-        "mean_first_attempt_score": 3.57,
+        "first_attempt_pass_rate": 0.6666666666666666,
+        "mean_final_score": 3.8,
+        "mean_first_attempt_score": 3.517,
         "retries_total": 1,
-        "execution_attempts_total": 5,
+        "execution_attempts_total": 4,
         "execution_errors_total": 0,
-        "operator_steps_used": 6,
-        "operator_requests_logged": 6,
+        "operator_steps_used": 5,
+        "operator_requests_logged": 5,
         "operator_validation_errors": 0,
         "stop_reasons": {
-          "passed": 4
+          "passed": 3
         },
-        "skills_retrieved_total": 0,
-        "skills_reused_total": 0,
+        "skills_retrieved_total": 4,
+        "skills_reused_total": 3,
         "skills_created": [],
         "skill_events": {
-          "memory_retrieved": 4,
-          "memory_written": 4
+          "skill_retrieved": 4,
+          "skill_reused": 3
         },
         "skill_rejections": [],
         "provider_metadata_on_events": [
@@ -556,7 +468,58 @@
             "provider_mode": "manual",
             "operator": "claude-code-subagent",
             "model_identifier": "claude-haiku-4-5-20251001",
-            "records": 9
+            "records": 7
+          }
+        ]
+      },
+      "feedback_memory": {
+        "tasks_done": 3,
+        "tasks": [
+          "T11",
+          "T12",
+          "T13"
+        ],
+        "final_scores": {
+          "T11": 3.87,
+          "T12": 4.0,
+          "T13": 4.0
+        },
+        "first_attempt_scores": {
+          "T11": 3.87,
+          "T12": 4.0,
+          "T13": 2.86
+        },
+        "first_attempt_passed": {
+          "T11": true,
+          "T12": true,
+          "T13": false
+        },
+        "first_attempt_pass_rate": 0.6666666666666666,
+        "mean_final_score": 3.957,
+        "mean_first_attempt_score": 3.577,
+        "retries_total": 1,
+        "execution_attempts_total": 4,
+        "execution_errors_total": 0,
+        "operator_steps_used": 5,
+        "operator_requests_logged": 5,
+        "operator_validation_errors": 0,
+        "stop_reasons": {
+          "passed": 3
+        },
+        "skills_retrieved_total": 0,
+        "skills_reused_total": 0,
+        "skills_created": [],
+        "skill_events": {
+          "memory_retrieved": 3,
+          "memory_write_skipped": 3
+        },
+        "skill_rejections": [],
+        "provider_metadata_on_events": [
+          {
+            "provider_mode": "manual",
+            "operator": "claude-code-subagent",
+            "model_identifier": "claude-haiku-4-5-20251001",
+            "records": 7
           }
         ]
       }

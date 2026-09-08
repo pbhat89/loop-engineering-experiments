@@ -1,8 +1,12 @@
-"""T8 — Executive brief: collect findings from the final attempts of source tasks and write a <= 600-word brief.
+"""T8 / T13 — Executive brief: collect findings from the final attempts of source tasks and write a <= 600-word brief.
 
 Values are read from each source task's ``metrics.json`` (highest ``attempt_<n>`` under the same
 ``artifacts/tasks/<run_id>/<condition>/``); nothing is recomputed and nothing is invented - a missing
 source is recorded as ``{"task_id": ..., "status": "missing"}``.
+
+Experiment 5 v2 (D-24) adds T13, whose sources are the convention-dense held-out tasks T11 (T2's components)
+and T12 (T7's components). ``SOURCE_FAMILY`` maps those ids onto the extraction rules of the tasks they mirror,
+so a finding keeps its own task id while being read with the right rules.
 """
 from __future__ import annotations
 
@@ -25,6 +29,11 @@ SECTION_TITLES = {
 }
 WORD_LIMIT = 600
 DIGIT = re.compile(r"\d")
+# Held-out tasks read with the extraction rules of the task whose components they share (D-24).
+SOURCE_FAMILY = {"T11": "T2", "T12": "T7"}
+# Which section of the brief a source task's findings belong in.
+DESCRIPTIVE_SOURCES = ("T1", "T2", "T3", "T4", "T5", "T11")
+MODEL_SOURCES = ("T6", "T7", "T12")
 
 
 # --------------------------------------------------------------------------- #
@@ -71,52 +80,55 @@ def _rate_finding(task_id: str, key: str, label: str, d: dict | None, src: str) 
 
 
 def extract(task_id: str, m: dict, src: str) -> list[dict]:
+    """Findings from one source task's metrics. ``task_id`` labels them; its family chooses the rules."""
     out: list[dict] = []
-    if task_id == "T1":
+    family = SOURCE_FAMILY.get(task_id, task_id)
+    if family == "T1":
         for name, info in (m.get("tables") or {}).items():
             if isinstance(info, dict) and info.get("rows") is not None:
-                out.append(_finding("T1", f"tables.{name}.rows", f"{name} row count", info["rows"], src))
-    elif task_id == "T2":
+                out.append(_finding(task_id, f"tables.{name}.rows", f"{name} row count", info["rows"], src))
+    elif family == "T2":
         dr = m.get("denial_rate")
-        out += _rate_finding("T2", "denial_rate", f"Denial rate (denominator: {_get(dr, 'denominator_option') or 'unspecified'})", dr, src)
+        out += _rate_finding(task_id, "denial_rate", f"Denial rate (denominator: {_get(dr, 'denominator_option') or 'unspecified'})", dr, src)
         total = _get(m, "claim_volume", "total_claims")
         if total is not None:
-            out.append(_finding("T2", "claim_volume.total_claims", "Total medical claims", total, src))
+            out.append(_finding(task_id, "claim_volume.total_claims", "Total medical claims", total, src))
         paid = _get(m, "financial_summary", "paid_amount", "sum")
         if paid is not None:
-            out.append(_finding("T2", "financial_summary.paid_amount.sum", "Total paid amount", paid, src))
+            out.append(_finding(task_id, "financial_summary.paid_amount.sum", "Total paid amount", paid, src))
         fp = m.get("fraud_prevalence")
-        out += _rate_finding("T2", "fraud_prevalence", f"Fraud prevalence (denominator: {_get(fp, 'denominator_option') or 'unspecified'})", fp, src)
-    elif task_id == "T3":
+        out += _rate_finding(task_id, "fraud_prevalence", f"Fraud prevalence (denominator: {_get(fp, 'denominator_option') or 'unspecified'})", fp, src)
+    elif family == "T3":
         groups = _get(m, "group_comparison", "groups", "network_status") or {}
         for value, info in groups.items():
-            out += _rate_finding("T3", f"group_comparison.groups.network_status.{value}.denial_rate", f"Denial rate, network_status = {value}", _get(info, "denial_rate"), src)
-    elif task_id == "T4":
+            out += _rate_finding(task_id, f"group_comparison.groups.network_status.{value}.denial_rate", f"Denial rate, network_status = {value}", _get(info, "denial_rate"), src)
+    elif family == "T4":
         codes = _get(m, "denial_code_ranking", "codes") or []
         if codes:
             top = codes[0]
             share, n = top.get("share"), top.get("n")
             den = int(round(n / share)) if share and n is not None else None
-            out.append(_finding("T4", "denial_code_ranking.codes[0]", f"Top denial code {top.get('code')} (scope: {_get(m, 'denial_code_ranking', 'scope')})", share, src, n, den))
-    elif task_id == "T5":
+            out.append(_finding(task_id, "denial_code_ranking.codes[0]", f"Top denial code {top.get('code')} (scope: {_get(m, 'denial_code_ranking', 'scope')})", share, src, n, den))
+    elif family == "T5":
         cp = m.get("class_prevalence")
         if isinstance(cp, dict) and cp.get("prevalence") is not None:
-            out.append(_finding("T5", "class_prevalence.prevalence", "Fraud label prevalence", cp["prevalence"], src, cp.get("positives"), cp.get("total")))
-    elif task_id == "T6":
+            out.append(_finding(task_id, "class_prevalence.prevalence", "Fraud label prevalence", cp["prevalence"], src, cp.get("positives"), cp.get("total")))
+    elif family == "T6":
         for name, r in (m.get("models") or {}).items():
             for metric in ("roc_auc", "pr_auc"):
                 if isinstance(r, dict) and r.get(metric) is not None:
-                    out.append(_finding("T6", f"models.{name}.{metric}", f"Fraud model {name} {metric.replace('_', '-').upper()}", r[metric], src))
+                    out.append(_finding(task_id, f"models.{name}.{metric}", f"Fraud model {name} {metric.replace('_', '-').upper()}", r[metric], src))
         feats = _get(m, "feature_set", "features")
         if isinstance(feats, list):
-            out.append(_finding("T6", "feature_set.features", "Fraud model feature count", len(feats), src))
-    elif task_id == "T7":
+            out.append(_finding(task_id, "feature_set.features", "Fraud model feature count", len(feats), src))
+    elif family == "T7":
         td = m.get("target_definition")
         if isinstance(td, dict) and td.get("threshold_value") is not None:
-            out.append(_finding("T7", "target_definition.threshold_value", f"High-cost threshold ({td.get('amount_column')} p{td.get('percentile')}, {td.get('threshold_source')})", td["threshold_value"], src))
+            out.append(_finding(task_id, "target_definition.threshold_value", f"High-cost threshold ({td.get('amount_column')} p{td.get('percentile')}, {td.get('threshold_source')})", td["threshold_value"], src))
         for name, r in (m.get("models") or {}).items():
-            if isinstance(r, dict) and r.get("pr_auc") is not None:
-                out.append(_finding("T7", f"models.{name}.pr_auc", f"High-cost model {name} PR-AUC", r["pr_auc"], src))
+            for metric in ("pr_auc", "roc_auc"):
+                if isinstance(r, dict) and r.get(metric) is not None:
+                    out.append(_finding(task_id, f"models.{name}.{metric}", f"High-cost model {name} {metric.replace('_', '-').upper()}", r[metric], src))
     return out
 
 
@@ -177,7 +189,7 @@ def _build_statements(findings: list[dict], missing: list[str], sections: list[s
     valued = [f for f in findings if "value" in f]
     if "key_findings" in sections:
         for f in valued:
-            if f["task_id"] in ("T1", "T2", "T3", "T4", "T5"):
+            if f["task_id"] in DESCRIPTIVE_SOURCES:
                 by_section["key_findings"].append({"text": _fmt(f), "source": f["source_path"], "priority": _priority(f)})
         net = [f for f in valued if f["metric_key"].startswith("group_comparison.groups.network_status.")]
         if len(net) >= 2:
@@ -190,7 +202,7 @@ def _build_statements(findings: list[dict], missing: list[str], sections: list[s
             by_section["key_findings"].append({"text": "No descriptive findings were available from the selected source tasks.", "source": None, "priority": 0})
     if "model_results" in sections:
         for f in valued:
-            if f["task_id"] in ("T6", "T7"):
+            if f["task_id"] in MODEL_SOURCES:
                 by_section["model_results"].append({"text": _fmt(f), "source": f["source_path"], "priority": _priority(f)})
         if by_section["model_results"]:
             by_section["model_results"].append({"text": _causal(mode, "The selected claim attribute set", "the fraud and high-cost scores reported above; the models are baselines fitted on one random split"), "source": None, "priority": 2})

@@ -1,6 +1,6 @@
 # Golden pack review (Phase 1.5 user checkpoint)
 
-Built 2026-09-08T07:11:11+00:00 by `src/build_goldens.py` from dataset revision `7309ddb30e67468748b7aa9182d8517fe28c2f9c` (synthetic HLT-008 sample). Every row is one frozen reference value; the definition states numerator / denominator / filters / seed / split. Review once, then the lead freezes `config/freeze_manifest.json`. Rebuild with `uv run python -m src.build_goldens`; verify with `--check`.
+Built 2026-09-08T09:35:59+00:00 by `src/build_goldens.py` from dataset revision `7309ddb30e67468748b7aa9182d8517fe28c2f9c` (synthetic HLT-008 sample). Every row is one frozen reference value; the definition states numerator / denominator / filters / seed / split. Review once, then the lead freezes `config/freeze_manifest.json`. Rebuild with `uv run python -m src.build_goldens`; verify with `--check`.
 
 | task | metric | value | definition | tolerance | sanity |
 |---|---|---|---|---|---|
@@ -67,3 +67,17 @@ Built 2026-09-08T07:11:11+00:00 by `src/build_goldens.py` from dataset revision 
 | T10 | `provider_ranking.rows` | 1450094833 126138.73; 1847081578 108309.73; 1696843572 98833.82; 1434029575 98269.40; 1780163051 97847.53; 1752470395 97662.93; 1168246159 96552.30; 1486164553 96244.07; 1590915516 95888.54; 1991459367 95775.57 | top 10 rendering_npi by total paid_amount among providers with >= 30 claims (ties by npi) | exact (order-insensitive) | OK: no tie at the boundary (10th 95775.57 > 11th 95555.01) |
 | T10 | `provider_ranking.min_claims` | 150 of 150 providers eligible | providers with at least 30 claims | contract | OK: every provider in this sample clears the threshold, so the parameter is recorded, not selective |
 | T10 | `join_check.medical_claims.rendering_npi->providers.provider_npi` | many_to_one, unmatched 0/12845, rows after inner join 12845 | rendering_npi in providers.provider_npi | exact | OK: full match, no row-count change |
+| T11 | `claim_volume.total_claims` | 12845 | all rows of medical_claims | exact | OK: A2 row count |
+| T11 | `claim_volume.by.claim_status` | Paid 10511, Denied 1286, Adjusted 542, Pended 506 | value_counts(claim_status) | exact | OK: status counts sum to total |
+| T11 | `denial_rate` | 0.104222 | 1286 denied / 12339 adjudicated (Paid+Denied+Adjusted) | 1e-06 | OK: adjudicated = total - Pended |
+| T11 | `fraud_prevalence` | 0.050370 | 647 fraud_label==1 / 12845 all claims | 1e-06 | OK: A2 reported 647 |
+| T11 | `financial_summary.billed_amount` | sum 21254208.81; mean 1654.67; median 429.52; p90 4279.02; p99 21256.58 | sum/mean/median/p90/p99 over all rows | 0.01 | OK: median <= p90 <= p99 |
+| T11 | `financial_summary.allowed_amount` | sum 12175223.45; mean 947.86; median 241.90; p90 2359.65; p99 11562.75 | sum/mean/median/p90/p99 over all rows | 0.01 | OK: median <= p90 <= p99 |
+| T11 | `financial_summary.paid_amount` | sum 9783415.77; mean 761.65; median 124.90; p90 2043.85; p99 10911.44 | sum/mean/median/p90/p99 over all rows | 0.01 | OK: median <= p90 <= p99 |
+| T11 | `monthly_trend.series.claim_count` | 36 months 2021-01..2023-12; min 302, max 405 per month | count per %Y-%m of service_date_from | exact per month | OK: monthly counts + unparseable = total |
+| T11 | `monthly_trend.series.paid_amount_sum` | 36 months 2021-01..2023-12; total 9783415.77 | sum of paid_amount per %Y-%m of service_date_from | 0.01 per month | OK: monthly paid totals sum to the all-rows paid total 9783415.77 (no unparseable dates to lose) |
+| T12 | `target_definition.threshold_value` | 2074.3460 | numpy.percentile(paid_amount[train], 90) with train from train_test_split(np.arange(12845), test_size=0.25, random_state=42, shuffle=True) | 0.01 | OK: differs from the all-data percentile 2043.8540, so the check discriminates |
+| T12 | `target_definition.positive_rate_{train,test}` | train 964/9633 = 0.100073; test 293/3212 = 0.091220 | paid_amount > threshold_value in each partition | 1e-06 | OK: train positive rate about 10 percent |
+| T12 | `split` | n_train 9633; n_test 3212 | plain split, no stratification | exact | OK: sizes sum to total |
+| T12 | `reference.leakage_free_reference.roc_auc_test` | 0.916489 | independent logistic regression on submission-time features only, fitted on the training split (seed 42) | band [0.6, 0.95] | OK: inside the band, so a leakage-free model can pass models.*.roc_auc |
+| T13 | `brief contracts` | sources >= {T11, T12}; 5 sections; cite_artifacts; causal_language avoid; <= 600 words | structural golden (no data values) | n/a | OK: forbidden phrases: causes, drives, leads to, because of |

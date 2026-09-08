@@ -1,0 +1,165 @@
+{
+  "task_id": "T12",
+  "golden_version": "1",
+  "built_at": "2026-09-08T09:35:59+00:00",
+  "builder": "src/build_goldens.py",
+  "dataset_revision": "7309ddb30e67468748b7aa9182d8517fe28c2f9c",
+  "data_sha256": {
+    "medical_claims.csv": "96ede50f98bbcdc82d0bb251945d794d934c55376cc1a0c45bbf35590578f41d"
+  },
+  "required_artifacts": [
+    "model_metrics.json",
+    "threshold.json",
+    "feature_list.json",
+    "precision_at_k.png",
+    "report.md",
+    "metrics.json"
+  ],
+  "expected_exact": {
+    "split": {
+      "n_train": 9633,
+      "n_test": 3212
+    },
+    "seed": 42
+  },
+  "expected_metrics": {
+    "target_definition.threshold_value": {
+      "value": 2074.346000000002,
+      "tolerance": 0.01,
+      "definition": {
+        "amount_column": "paid_amount",
+        "percentile": 90,
+        "threshold_source": "train_only",
+        "split": "train_test_split(np.arange(n), test_size=0.25, random_state=42, shuffle=True)",
+        "method": "numpy.percentile linear interpolation",
+        "all_data_threshold_for_reference": 2043.8540000000007
+      }
+    },
+    "target_definition.positive_rate_train": {
+      "value": 0.1000726668742863,
+      "tolerance": 1e-06,
+      "definition": {
+        "numerator": "train rows with paid_amount > threshold_value",
+        "denominator": "n_train",
+        "numerator_value": 964,
+        "denominator_value": 9633
+      }
+    },
+    "target_definition.positive_rate_test": {
+      "value": 0.09122042341220424,
+      "tolerance": 1e-06,
+      "definition": {
+        "numerator": "test rows with paid_amount > threshold_value",
+        "denominator": "n_test",
+        "numerator_value": 293,
+        "denominator_value": 3212
+      }
+    }
+  },
+  "contracts": {
+    "target_definition.threshold_source": "train_only",
+    "target_definition.amount_column": "paid_amount",
+    "target_definition.percentile": 90,
+    "preprocessing.fit_on": "train_only",
+    "split.test_size": 0.25,
+    "models_logistic": {
+      "includes": [
+        "logistic_regression"
+      ]
+    },
+    "models_tree": {
+      "any_of": [
+        "random_forest",
+        "gradient_boosting"
+      ]
+    },
+    "models_metrics": {
+      "each_has": [
+        "pr_auc",
+        "roc_auc",
+        "precision_at_top_5pct",
+        "recall_at_top_5pct"
+      ]
+    }
+  },
+  "metric_ranges": {
+    "models.*.roc_auc": {
+      "min": 0.6,
+      "max": 0.95
+    },
+    "models.*.pr_auc": {
+      "min": {
+        "ref": "target_definition.positive_rate_test",
+        "factor": 0.5
+      },
+      "max": 1.0
+    },
+    "models.*.precision_at_top_5pct": {
+      "min": 0.0,
+      "max": 1.0
+    }
+  },
+  "prohibited_fields": [
+    "billed_amount",
+    "allowed_amount",
+    "paid_amount",
+    "member_oop",
+    "cob_amount",
+    "high_cost_flag",
+    "claim_id",
+    "member_id"
+  ],
+  "required_caveats": [
+    {
+      "id": "synthetic_data",
+      "any_of": [
+        "synthetic",
+        "simulated"
+      ]
+    },
+    {
+      "id": "model_limitations",
+      "any_of": [
+        "baseline",
+        "limitation"
+      ]
+    },
+    {
+      "id": "no_operational_use",
+      "any_of": [
+        "operational",
+        "not be used",
+        "must not be used"
+      ]
+    }
+  ],
+  "reference": {
+    "n_positive_train": 964,
+    "n_positive_test": 293,
+    "all_data_threshold": 2043.8540000000007,
+    "leakage_free_reference": {
+      "model": "LogisticRegression(max_iter=2000, random_state=42) on train-only one-hot + standardised features",
+      "features": [
+        "claim_type",
+        "cpt_category",
+        "place_of_service",
+        "provider_specialty",
+        "network_status",
+        "primary_icd10_cm",
+        "service_units",
+        "length_of_stay",
+        "er_flag",
+        "elective_flag",
+        "preventive_flag",
+        "auth_required_flag",
+        "drg_present"
+      ],
+      "roc_auc_test": 0.9164886520817476,
+      "band": [
+        0.6,
+        0.95
+      ],
+      "purpose": "evidence that the ROC-AUC band is reachable by an honest model and does not require leakage"
+    }
+  }
+}

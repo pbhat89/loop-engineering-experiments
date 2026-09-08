@@ -1,0 +1,70 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 90,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present",
+          "billed_amount",
+          "allowed_amount"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "none"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "gradient_boosting"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": ["evolved_run_006_001"],
+  "rationale": "Plan addresses the high-cost prediction task by: (1) using paid_amount at p90 (top 10%) threshold computed on training data only to prevent leakage; (2) selecting 15 features available at claim submission (claim type, place of service, provider specialty, utilization and clinical indicators, billed/allowed amounts) while excluding paid_amount, member_oop, cob_amount, identifiers, and target-derived fields; (3) fitting preprocessing on training data only; (4) training logistic regression and gradient boosting as required; (5) including synthetic_data caveat per retrieved skill evolved_run_006_001; (6) showing denominators and artifact citations for transparency and reproducibility across the standard artifacts (model_metrics, threshold, feature_list, precision_at_k, report, metrics)."
+}

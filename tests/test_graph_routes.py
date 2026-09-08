@@ -613,3 +613,75 @@ def test_feedback_memory_store_appends_verbatim_and_recalls_newest_first(tmp_pat
     assert [r["task_id"] for r in memory.recall("T3")] == ["T2"]
     assert len(memory.recall("T4", limit=1)) == 1
     assert memory.append("T4", "Task T4", []) == 0
+
+
+# --------------------------------------------------------------------------- frozen memory (D-24)
+def read_only_services(provider, memories, store=None, logger=None) -> Services:
+    """A run whose carried-over memory is frozen: recall and retrieval work, nothing is ever written."""
+    services = make_services(provider, store=store, logger=logger)
+    services.memory_factory = memories
+    services.memory_read_only = True
+    return services
+
+
+def test_memory_read_only_recalls_the_seeded_log_but_never_appends():
+    memories, logger = FakeMemories(), FakeLogger()
+    seeded = memories("run_t", "feedback_memory")
+    seeded.records.append(
+        {"task_id": "T2", "task_title": "Task T2", "attempt": 1, "source": "checker", "severity": "high",
+         "criterion": "statistical_discipline", "text": "state the denominator", "detail": None, "verdict": None,
+         "seeded_from": "run_006"}
+    )
+    graph = build_claims_skill_graph(read_only_services(stub(), memories, logger=logger))
+    out = graph.invoke(make_state("feedback_memory", task_id="T3", task_index=2, remaining=("T4",)))
+
+    # the seeded note was recalled and planned with ...
+    assert [r["text"] for r in out["past_feedback"]] == ["state the denominator"]
+    assert logger.experiment[-1]["past_feedback_count"] == 1
+    # ... and nothing was written back: the log still holds exactly the one seeded record
+    assert len(seeded.records) == 1 and seeded.records[0]["seeded_from"] == "run_006"
+    events = [e for e in logger.skill if e["event"].startswith("memory_")]
+    assert [e["event"] for e in events] == ["memory_retrieved", "memory_write_skipped"]
+    skipped = events[-1]
+    assert skipped["reason"] == "read_only" and skipped["count"] == 0 and skipped["withheld"] > 0
+    assert not any(e["event"] == "memory_written" for e in logger.skill)
+    assert logger.experiment[-1]["memory_read_only"] is True
+
+
+def test_memory_read_only_skill_learning_retrieves_but_never_proposes():
+    store, logger, memories = FakeStore(), FakeLogger(), FakeMemories()
+    store.skills.append(
+        {
+            "skill_id": "evolved_run_006_001",
+            "name": "state_the_denominator",
+            "kind": "evolved",
+            "version": 1,
+            "tags": ["rates"],
+            "sections": {"required_checks": ["denial_rate.denominator=adjudicated_claims and state it"]},
+            "created_after_task_index": 0,
+            "path": "skills/evolved/run_006/state_the_denominator_v1.md",
+        }
+    )
+    graph = build_claims_skill_graph(read_only_services(stub(), memories, store=store, logger=logger))
+    out = graph.invoke(make_state("skill_learning", task_id="T3", task_index=6, remaining=("T4",)))
+
+    # the seeded skill is still retrieved and offered to the planner ...
+    assert [s["skill_id"] for s in out["retrieved_skills"]] == ["evolved_run_006_001"]
+    # ... but the learn path is closed: no reflect-for-learning, no proposal, no new skill
+    assert out["route_history"][-1] == "finalize_task"
+    assert "propose_skill" not in out["route_history"] and "validate_skill" not in out["route_history"]
+    assert out["skills_created"] == [] and len(store.skills) == 1
+    assert not any(e["event"].startswith("skill_pro") or e["event"] == "skill_persisted" for e in logger.skill)
+    assert logger.experiment[-1]["memory_read_only"] is True
+    # skill_learning carries no raw memory log, so no memory event is recorded either way
+    assert not any(e["event"].startswith("memory_") for e in logger.skill)
+
+
+def test_run_config_reads_memory_read_only_from_experiment_yaml():
+    from src.run_experiment import RunConfig
+    from src.utils import CONFIG_DIR
+
+    cfg = RunConfig.from_experiment_yaml("run_x", "manual", ["reflection_only"], path=CONFIG_DIR / "experiment.yaml")
+    assert cfg.memory_read_only is True and cfg.seed_from_run == "run_006" and cfg.task_index_offset == 6
+    assert cfg.task_order == ["T11", "T12", "T13"]
+    assert "memory_read_only" in cfg.to_dict()  # so it lands in logs/runs/<run_id>.json

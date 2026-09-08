@@ -1,0 +1,162 @@
+{
+  "task_id": "T12",
+  "run_id": "run_008",
+  "condition": "feedback_memory",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-08T09:49:32+00:00",
+  "plan_sha256": "638f8bf9d2d0b12d169d305778e1a8293dd3d8ad0da6f8eea884155b60065a09",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25
+        }
+      },
+      {
+        "component": "target_definition",
+        "params": {
+          "amount_column": "paid_amount",
+          "percentile": 90,
+          "threshold_source": "train_only"
+        }
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "elective_flag",
+            "preventive_flag",
+            "auth_required_flag",
+            "primary_icd10_cm",
+            "drg_present"
+          ]
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "train_only",
+          "scaling": "standard"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression",
+            "random_forest"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "no_operational_use",
+            "model_limitations"
+          ],
+          "show_denominators": false,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Plan follows T12 objective to predict top 10% (90th percentile) high-cost claims using logistic regression and tree-based model on submission-time features. Applied T7 feedback constraints: excluded amount fields, identifiers, and pre-computed flags; fit threshold and preprocessing on train only to prevent leakage. Enabled reproducibility citations and included synthetic_data and no_operational_use caveats per prior feedback pattern on similar modeling task.",
+    "changes_summary": null
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "split": {
+    "test_size": 0.25,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212
+  },
+  "target_definition": {
+    "amount_column": "paid_amount",
+    "percentile": 90,
+    "threshold_source": "train_only",
+    "threshold_value": 2074.346000000002,
+    "positive_rate_train": 0.1000726668742863,
+    "positive_rate_test": 0.09122042341220424,
+    "n_positive_train": 964,
+    "n_positive_test": 293
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "network_status",
+      "service_units",
+      "length_of_stay",
+      "er_flag",
+      "elective_flag",
+      "preventive_flag",
+      "auth_required_flag",
+      "primary_icd10_cm",
+      "drg_present"
+    ],
+    "n_categorical": 6,
+    "n_numeric": 7,
+    "id_fields_present": [],
+    "target_derived_present": []
+  },
+  "preprocessing": {
+    "fit_on": "train_only",
+    "scaling": "standard",
+    "n_features_out": 103
+  },
+  "models": {
+    "logistic_regression": {
+      "pr_auc": 0.3933153059019225,
+      "roc_auc": 0.917397140308231,
+      "precision_at_top_5pct": 0.40993788819875776,
+      "recall_at_top_5pct": 0.22525597269624573,
+      "n_test": 3212
+    },
+    "random_forest": {
+      "pr_auc": 0.3875433572486803,
+      "roc_auc": 0.9077159530298725,
+      "precision_at_top_5pct": 0.39751552795031053,
+      "recall_at_top_5pct": 0.21843003412969283,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "no_operational_use",
+      "model_limitations"
+    ],
+    "show_denominators": false,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

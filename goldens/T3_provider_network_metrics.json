@@ -1,7 +1,7 @@
 {
   "task_id": "T3",
   "golden_version": "1",
-  "built_at": "2026-09-08T07:11:11+00:00",
+  "built_at": "2026-09-08T09:35:59+00:00",
   "builder": "src/build_goldens.py",
   "dataset_revision": "7309ddb30e67468748b7aa9182d8517fe28c2f9c",
   "data_sha256": {

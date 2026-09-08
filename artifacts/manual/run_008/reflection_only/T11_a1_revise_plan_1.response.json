@@ -1,0 +1,63 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": [
+          "claim_status"
+        ],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "adjudicated_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": [
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount"
+        ],
+        "statistics": "sum_mean_quantiles"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "service_date_from",
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Revised plan preserves all components needed to produce the portfolio deep-dive analysis (status distribution, denial rate, fraud prevalence, financial distributions, and monthly trends). The denial_rate denominator now excludes pending claims to compute the true adjudicated denial rate. The monthly_trend date_column now reflects service timing rather than adjudication lag.",
+  "changes_summary": "Corrected denial_rate denominator from 'all_claims' to 'adjudicated_claims' to exclude pending claims and compute the true denial rate over only adjudicated claims (Paid, Denied, Adjusted). Corrected monthly_trend date_column from 'adjudication_date' to 'service_date_from' to align the volume and spend trend with when services occurred rather than when claims were adjudicated."
+}

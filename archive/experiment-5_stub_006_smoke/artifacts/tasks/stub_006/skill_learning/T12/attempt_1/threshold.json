@@ -1,0 +1,13 @@
+{
+  "amount_column": "paid_amount",
+  "percentile": 95,
+  "threshold_source": "all_data",
+  "threshold_value": 3161.9339999999993,
+  "positive_rate_train": 0.05117824146164227,
+  "positive_rate_test": 0.046699875466998754,
+  "n_positive_train": 493,
+  "n_positive_test": 150,
+  "definition": "positive = paid_amount > threshold_value; threshold_value = numpy.percentile(all_data paid_amount, 95)",
+  "n_rows_used": 12845,
+  "seed": 42
+}

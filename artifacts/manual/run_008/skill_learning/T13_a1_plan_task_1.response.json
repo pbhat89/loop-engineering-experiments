@@ -1,0 +1,28 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": ["T11", "T12"]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps"],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "association_not_causation", "model_limitations"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": ["evolved_run_006_001"],
+  "rationale": "Collects metrics from both T11 and T12 per task spec. Brief emphasizes key findings, model results, limitations, synthetic caveats, and next steps with full artifact citations for executive credibility. Cautious (avoid) causal language maintains analytical rigor. Synthetic_data caveat applied per retrieved skill guidance for synthetic data reporting."
+}

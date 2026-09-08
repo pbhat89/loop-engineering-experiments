@@ -1,5 +1,6 @@
 """Executor tests (A6): default and expert plans for T1-T8 against the real data snapshot,
-determinism, produced-key shapes, required artifacts and the structured error paths.
+determinism, produced-key shapes, required artifacts and the structured error paths, plus the
+experiment-5 v2 held-out chain T11 -> T12 -> T13 (D-24).
 
 Data-dependent tests skip with a reason when ``data/raw`` is absent. No network, no goldens.
 """
@@ -400,3 +401,57 @@ def test_missing_source_task_recorded_not_invented(root: Path) -> None:
     assert res["metrics"]["findings"] == [{"task_id": "T3", "status": "missing"}, {"task_id": "T7", "status": "missing"}]
     brief = res["metrics"]["brief"]
     assert brief["n_cited_statements"] == brief["n_numeric_statements"]
+
+
+def test_t13_brief_reads_the_final_attempts_of_t11_and_t12(root: Path) -> None:
+    """T13 (D-24) sources only the two held-out tasks before it, reading each one's *final* attempt."""
+    condition = "heldout_v2"
+    t11_plan = {"steps": [
+        {"component": "load_tables", "params": {}},
+        {"component": "claim_volume", "params": {"by": ["claim_status"], "figure": True}},
+        {"component": "denial_rate", "params": {"denominator": "adjudicated_claims"}},
+        {"component": "fraud_prevalence", "params": {"denominator": "all_claims"}},
+        {"component": "financial_summary", "params": {"amount_columns": ["billed_amount", "allowed_amount", "paid_amount"], "statistics": "sum_mean_quantiles"}},
+        {"component": "monthly_trend", "params": {"date_column": "service_date_from", "metrics": ["claim_count", "paid_amount_sum"]}},
+        {"component": "write_report", "params": {"caveats": ["synthetic_data", "descriptive_only"], "show_denominators": True, "cite_artifacts": True}},
+    ]}
+    t12_plan = {"steps": [
+        {"component": "load_tables", "params": {}},
+        {"component": "split", "params": {"test_size": 0.25}},
+        {"component": "target_definition", "params": {"amount_column": "paid_amount", "percentile": 90, "threshold_source": "train_only"}},
+        {"component": "feature_set", "params": {"features": ["claim_type", "cpt_category", "place_of_service", "provider_specialty", "network_status", "service_units", "length_of_stay", "er_flag", "elective_flag", "preventive_flag", "auth_required_flag", "primary_icd10_cm", "drg_present"]}},
+        {"component": "preprocessing", "params": {"fit_on": "train_only", "scaling": "standard"}},
+        {"component": "models", "params": {"models": ["logistic_regression", "random_forest"]}},
+        {"component": "write_report", "params": {"caveats": ["synthetic_data", "model_limitations", "no_operational_use"], "show_denominators": True, "cite_artifacts": True}},
+    ]}
+
+    def spec(tid: str) -> dict:
+        return {"task_id": tid, "components": TASK_CATALOGUE[tid]["components"]}
+
+    # a first and then a second T11 attempt: only the second (final) one may reach the brief
+    first = execute(spec("T11"), default_plan("T11"), run_context(root, condition, "T11", attempt=1))
+    final = execute(spec("T11"), t11_plan, run_context(root, condition, "T11", attempt=2))
+    assert first["status"] == "ok" and final["status"] == "ok"
+    assert execute(spec("T12"), t12_plan, run_context(root, condition, "T12", attempt=1))["status"] == "ok"
+
+    plan = {"steps": [
+        {"component": "collect_findings", "params": {"sources": ["T11", "T12"]}},
+        {"component": "brief_sections", "params": {"sections": ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps"], "causal_language": "avoid", "cite_artifacts": True}},
+        {"component": "write_report", "params": {"caveats": ["synthetic_data", "no_operational_use"], "show_denominators": True, "cite_artifacts": True}},
+    ]}
+    res = execute(spec("T13"), plan, run_context(root, condition, "T13"))
+    assert res["status"] == "ok" and res["errors"] == []
+    findings = res["metrics"]["findings"]
+    assert {f["task_id"] for f in findings} == {"T11", "T12"}
+    assert not any(f.get("status") == "missing" for f in findings)
+    keys = {(f["task_id"], f["metric_key"]) for f in findings}
+    assert {("T11", "claim_volume.total_claims"), ("T11", "denial_rate"), ("T12", "target_definition.threshold_value")} <= keys
+    assert any(t == "T12" and k.endswith(".roc_auc") for t, k in keys)  # the brief must be able to quote the ranking metric
+    assert all("attempt_2" in f["source_path"] for f in findings if f["task_id"] == "T11")
+
+    brief = res["metrics"]["brief"]
+    assert brief["n_numeric_statements"] > 0 and brief["n_cited_statements"] == brief["n_numeric_statements"]
+    assert brief["word_count"] <= 600 and brief["causal_language"] == "avoid"
+    text = (Path(res["output_dir"]) / "executive_brief.md").read_text(encoding="utf-8")
+    assert "## Key findings" in text and "## Model results" in text
+    assert not any(phrase in text.lower() for phrase in ("causes", " drives ", "leads to", "because of"))

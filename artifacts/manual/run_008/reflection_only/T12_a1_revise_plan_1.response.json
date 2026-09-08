@@ -1,0 +1,73 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 90,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "none"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "class_imbalance",
+          "model_limitations",
+          "synthetic_data"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Revised plan corrects critical target leakage and adds missing caveat. Removed billed_amount, allowed_amount, member_oop, and cob_amount from feature_set because these fields are known only after claim adjudication and introduce leakage in the model predictions. Model now uses only submission-time features: claim and service attributes (claim_type, place_of_service, provider_specialty), clinical indicators (primary_icd10_cm, drg_present), service details (cpt_category, service_units, length_of_stay), and claim flags (er_flag, elective_flag, preventive_flag, auth_required_flag, network_status). Added synthetic_data caveat to report as required. All other components remain unchanged: 25% test holdout, percentile-90 threshold on paid_amount computed on training data, logistic regression and random forest models, and model limitation and class imbalance caveats.",
+  "changes_summary": "Removed 4 amount fields (billed_amount, allowed_amount, member_oop, cob_amount) from feature_set to eliminate target leakage; model now uses only submission-time features available when claims arrive. Added 'synthetic_data' caveat to write_report. These changes address the high-severity leakage finding and missing caveat, which will resolve the out-of-range ROC-AUC metrics."
+}

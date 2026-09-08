@@ -1,14 +1,16 @@
 {
-  "generated_at": "2026-09-08T07:51:22+00:00",
+  "generated_at": "2026-09-08T09:57:28+00:00",
   "logs_dir": "logs",
   "run_ids": [
     "run_004",
     "run_005",
     "run_006",
     "run_007",
+    "run_008",
     "stub_003",
     "stub_004",
-    "stub_005"
+    "stub_005",
+    "stub_006"
   ],
   "task_ids": [
     "T1",
@@ -20,7 +22,10 @@
     "T7",
     "T8",
     "T9",
-    "T10"
+    "T10",
+    "T11",
+    "T12",
+    "T13"
   ],
   "condition_colors": {
     "baseline": "#0072B2",
@@ -43,14 +48,16 @@
         "run_005",
         "run_006",
         "run_007",
+        "run_008",
         "stub_003",
         "stub_004",
-        "stub_005"
+        "stub_005",
+        "stub_006"
       ],
       "observations": true,
       "notes": [
         "series are offset slightly along the task axis so overlapping scores stay visible",
-        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, feedback_memory · run_004, self_refine_memory · run_004, baseline · run_005, reflection_only · run_005, skill_learning · run_005, foundational_only · run_005, self_refine · run_005, feedback_memory · run_005, self_refine_memory · run_005, baseline · run_006, foundational_only · run_006, baseline · run_007, foundational_only · run_007, self_refine · run_007, self_refine_memory · run_007, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003, feedback_memory · stub_003, self_refine_memory · stub_003, baseline · stub_004, reflection_only · stub_004, skill_learning · stub_004, foundational_only · stub_004, self_refine · stub_004, feedback_memory · stub_004, self_refine_memory · stub_004, baseline · stub_005, reflection_only · stub_005, skill_learning · stub_005, foundational_only · stub_005, self_refine · stub_005, feedback_memory · stub_005, self_refine_memory · stub_005"
+        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, feedback_memory · run_004, self_refine_memory · run_004, baseline · run_005, reflection_only · run_005, skill_learning · run_005, foundational_only · run_005, self_refine · run_005, feedback_memory · run_005, self_refine_memory · run_005, baseline · run_006, foundational_only · run_006, baseline · run_007, reflection_only · run_007, skill_learning · run_007, foundational_only · run_007, self_refine · run_007, feedback_memory · run_007, self_refine_memory · run_007, baseline · run_008, foundational_only · run_008, self_refine · run_008, self_refine_memory · run_008, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003, feedback_memory · stub_003, self_refine_memory · stub_003, baseline · stub_004, reflection_only · stub_004, skill_learning · stub_004, foundational_only · stub_004, self_refine · stub_004, feedback_memory · stub_004, self_refine_memory · stub_004, baseline · stub_005, reflection_only · stub_005, skill_learning · stub_005, foundational_only · stub_005, self_refine · stub_005, feedback_memory · stub_005, self_refine_memory · stub_005, baseline · stub_006, reflection_only · stub_006, skill_learning · stub_006, foundational_only · stub_006, self_refine · stub_006, feedback_memory · stub_006, self_refine_memory · stub_006"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -67,13 +74,15 @@
         "run_005",
         "run_006",
         "run_007",
+        "run_008",
         "stub_003",
         "stub_004",
-        "stub_005"
+        "stub_005",
+        "stub_006"
       ],
       "observations": true,
       "notes": [
-        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, feedback_memory · run_004, self_refine_memory · run_004, baseline · run_005, reflection_only · run_005, skill_learning · run_005, foundational_only · run_005, self_refine · run_005, feedback_memory · run_005, self_refine_memory · run_005, baseline · run_006, foundational_only · run_006, baseline · run_007, foundational_only · run_007, self_refine · run_007, self_refine_memory · run_007, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003, feedback_memory · stub_003, self_refine_memory · stub_003, baseline · stub_004, reflection_only · stub_004, skill_learning · stub_004, foundational_only · stub_004, self_refine · stub_004, feedback_memory · stub_004, self_refine_memory · stub_004, baseline · stub_005, reflection_only · stub_005, skill_learning · stub_005, foundational_only · stub_005, self_refine · stub_005, feedback_memory · stub_005, self_refine_memory · stub_005"
+        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, feedback_memory · run_004, self_refine_memory · run_004, baseline · run_005, reflection_only · run_005, skill_learning · run_005, foundational_only · run_005, self_refine · run_005, feedback_memory · run_005, self_refine_memory · run_005, baseline · run_006, foundational_only · run_006, baseline · run_007, reflection_only · run_007, skill_learning · run_007, foundational_only · run_007, self_refine · run_007, feedback_memory · run_007, self_refine_memory · run_007, baseline · run_008, foundational_only · run_008, self_refine · run_008, self_refine_memory · run_008, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003, feedback_memory · stub_003, self_refine_memory · stub_003, baseline · stub_004, reflection_only · stub_004, skill_learning · stub_004, foundational_only · stub_004, self_refine · stub_004, feedback_memory · stub_004, self_refine_memory · stub_004, baseline · stub_005, reflection_only · stub_005, skill_learning · stub_005, foundational_only · stub_005, self_refine · stub_005, feedback_memory · stub_005, self_refine_memory · stub_005, baseline · stub_006, reflection_only · stub_006, skill_learning · stub_006, foundational_only · stub_006, self_refine · stub_006, feedback_memory · stub_006, self_refine_memory · stub_006"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -90,9 +99,11 @@
         "run_005",
         "run_006",
         "run_007",
+        "run_008",
         "stub_003",
         "stub_004",
-        "stub_005"
+        "stub_005",
+        "stub_006"
       ],
       "observations": true,
       "notes": [
@@ -114,9 +125,11 @@
         "run_005",
         "run_006",
         "run_007",
+        "run_008",
         "stub_003",
         "stub_004",
-        "stub_005"
+        "stub_005",
+        "stub_006"
       ],
       "observations": true,
       "notes": [
@@ -138,21 +151,23 @@
         "run_005",
         "run_006",
         "run_007",
+        "run_008",
         "stub_003",
         "stub_004",
-        "stub_005"
+        "stub_005",
+        "stub_006"
       ],
       "observations": true,
       "notes": [
         "observed from logs; foundational skill retrievals omitted",
-        "62 of 66 feedback items never became a skill source and are not drawn"
+        "58 of 61 feedback items never became a skill source and are not drawn"
       ],
       "sources": [
         "logs/skill_events.jsonl",
         "logs/feedback_events.jsonl"
       ],
-      "nodes": 20,
-      "edges": 25,
+      "nodes": 16,
+      "edges": 19,
       "copy": "artifacts/graphs/skill_lifecycle_graph.png"
     },
     {
@@ -166,13 +181,15 @@
         "run_005",
         "run_006",
         "run_007",
+        "run_008",
         "stub_003",
         "stub_004",
-        "stub_005"
+        "stub_005",
+        "stub_006"
       ],
       "observations": true,
       "notes": [
-        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, feedback_memory · run_004, self_refine_memory · run_004, baseline · run_005, reflection_only · run_005, skill_learning · run_005, foundational_only · run_005, self_refine · run_005, feedback_memory · run_005, self_refine_memory · run_005, baseline · run_006, foundational_only · run_006, baseline · run_007, foundational_only · run_007, self_refine · run_007, self_refine_memory · run_007, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003, feedback_memory · stub_003, self_refine_memory · stub_003, baseline · stub_004, reflection_only · stub_004, skill_learning · stub_004, foundational_only · stub_004, self_refine · stub_004, feedback_memory · stub_004, self_refine_memory · stub_004, baseline · stub_005, reflection_only · stub_005, skill_learning · stub_005, foundational_only · stub_005, self_refine · stub_005, feedback_memory · stub_005, self_refine_memory · stub_005"
+        "no observations: baseline · run_004, reflection_only · run_004, skill_learning · run_004, foundational_only · run_004, self_refine · run_004, feedback_memory · run_004, self_refine_memory · run_004, baseline · run_005, reflection_only · run_005, skill_learning · run_005, foundational_only · run_005, self_refine · run_005, feedback_memory · run_005, self_refine_memory · run_005, baseline · run_006, foundational_only · run_006, baseline · run_007, reflection_only · run_007, skill_learning · run_007, foundational_only · run_007, self_refine · run_007, feedback_memory · run_007, self_refine_memory · run_007, baseline · run_008, foundational_only · run_008, self_refine · run_008, self_refine_memory · run_008, baseline · stub_003, reflection_only · stub_003, skill_learning · stub_003, foundational_only · stub_003, self_refine · stub_003, feedback_memory · stub_003, self_refine_memory · stub_003, baseline · stub_004, reflection_only · stub_004, skill_learning · stub_004, foundational_only · stub_004, self_refine · stub_004, feedback_memory · stub_004, self_refine_memory · stub_004, baseline · stub_005, reflection_only · stub_005, skill_learning · stub_005, foundational_only · stub_005, self_refine · stub_005, feedback_memory · stub_005, self_refine_memory · stub_005, baseline · stub_006, reflection_only · stub_006, skill_learning · stub_006, foundational_only · stub_006, self_refine · stub_006, feedback_memory · stub_006, self_refine_memory · stub_006"
       ],
       "sources": [
         "logs/experiment_events.jsonl"
@@ -203,18 +220,6 @@
       "tasks_not_reused": 2,
       "mean_score_reused": 3.64,
       "mean_score_not_reused": 4.0
-    },
-    {
-      "run_id": "run_007",
-      "condition": "skill_learning",
-      "skill_id": "evolved_run_007_001",
-      "skill_name": "min_group_size_threshold_for_segmented_rates",
-      "created_after_task": "T9",
-      "reuse_count": 1,
-      "tasks_reused": 1,
-      "tasks_not_reused": 0,
-      "mean_score_reused": 3.51,
-      "mean_score_not_reused": null
     }
   ],
   "status_file": "logs/experiment_status.json",

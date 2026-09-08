@@ -1,0 +1,13 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T13-no_causal_language",
+      "correction": "Set brief_sections causal_language parameter to 'avoid' to eliminate causal phrasing like 'drives' from the executive brief, using only associative language."
+    },
+    {
+      "feedback_id": "T13-causal_language_setting",
+      "correction": "Change brief_sections causal_language from 'allow' to 'avoid' to ensure statistical discipline: a descriptive study of synthetic data cannot support causal claims."
+    }
+  ],
+  "reusable_lessons": []
+}

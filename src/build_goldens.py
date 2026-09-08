@@ -4,9 +4,11 @@
     uv run python -m src.build_goldens --check    # recompute and diff against the committed files (exit 1 on drift)
 
 Rules (LEAD §6, Addendum A): pandas/numpy + the data manifest only; deterministic; **never imports
-src/task_runner.py or src/analyses/** so the goldens share no code with the executor. The only scikit-learn
-call is ``train_test_split`` because the skeleton fixes the split convention in its terms. Every value carries
-its definition (numerator, denominator, filters, seed, split) so the user can review it manually once.
+src/task_runner.py or src/analyses/** so the goldens share no code with the executor. scikit-learn is used for
+``train_test_split`` (the skeleton fixes the split convention in its terms) and, for T12 only, for one
+leakage-free reference logistic regression whose ROC-AUC is asserted to fall inside the task's target band
+(D-24) - that fit is reference code written here, not the executor's. Every value carries its definition
+(numerator, denominator, filters, seed, split) so the user can review it manually once.
 
 Conventions (docs/LEAD_CATALOGUE_SKELETON.md §0): adjudicated = claim_status in {Paid, Denied, Adjusted};
 month key = %Y-%m of the chosen date column; split = train_test_split(np.arange(n), test_size, random_state=seed,
@@ -52,9 +54,13 @@ GOLDEN_FILES = {
     "T6": "T6_fraud_model_contract.json",
     "T7": "T7_high_cost_model_contract.json",
     "T8": "T8_executive_brief_rubric.yaml",
-    # experiment 5 (D-23): two held-out transfer tasks built by their own reference code
+    # experiment 5 v1 (D-23): two held-out transfer tasks built by their own reference code
     "T9": "T9_denial_hotspots_metrics.json",
     "T10": "T10_specialty_spend_metrics.json",
+    # experiment 5 v2 (D-24): three convention-dense held-out tasks, parameterised from T2's, T7's and T8's builders
+    "T11": "T11_portfolio_deep_dive_metrics.json",
+    "T12": "T12_high_cost_p90_model_contract.json",
+    "T13": "T13_cfo_brief_rubric.yaml",
 }
 T9_SEGMENTS = ["place_of_service", "auth_required_flag", "network_status"]
 
@@ -91,6 +97,15 @@ T5_PERMITTED = ["claim_type", "cpt_category", "place_of_service", "provider_spec
                 "allowed_amount", "paid_amount", "service_units", "length_of_stay", "er_flag", "auth_required_flag",
                 "high_cost_flag", "member_payer_type"]
 
+# D-21 / D-24: the high-cost target band. Leakage-free models reach ~0.90-0.92 on this data; the amount fields the
+# target is derived from push ROC-AUC to 0.997-1.0, so anything above the top of the band is evidence of leakage.
+ROC_AUC_BAND = (0.60, 0.95)
+# The leakage-free feature set of T7's / T12's remediation: what is known when a claim is submitted, no amounts,
+# no high_cost_flag, no identifiers. ``drg_present`` is derived here as ``drg_code.notna()``.
+REFERENCE_CATEGORICAL = ["claim_type", "cpt_category", "place_of_service", "provider_specialty", "network_status", "primary_icd10_cm"]
+REFERENCE_NUMERIC = ["service_units", "length_of_stay", "er_flag", "elective_flag", "preventive_flag", "auth_required_flag", "drg_present"]
+REFERENCE_FEATURES = REFERENCE_CATEGORICAL + REFERENCE_NUMERIC
+
 
 # --------------------------------------------------------------------------- helpers
 def _py(v: Any) -> Any:
@@ -126,8 +141,49 @@ def month_series(s: pd.Series) -> tuple[dict[str, int], int]:
     return {str(k): int(v) for k, v in counts.items()}, unparseable
 
 
+def month_amount_series(dates: pd.Series, amounts: pd.Series) -> dict[str, float]:
+    """Sum of ``amounts`` per ``%Y-%m`` of ``dates``; rows with an unparseable date are dropped, NaN amounts count as 0."""
+    parsed = pd.to_datetime(dates, errors="coerce")
+    keep = parsed.notna().to_numpy()
+    months = parsed[keep].dt.strftime("%Y-%m")
+    values = pd.to_numeric(amounts[keep], errors="coerce").fillna(0.0)
+    sums = values.groupby(months.values).sum().sort_index()
+    return {str(k): float(v) for k, v in sums.items()}
+
+
 def split_indices(n: int, stratify: np.ndarray | None = None) -> tuple[np.ndarray, np.ndarray]:
     return train_test_split(np.arange(n), test_size=TEST_SIZE, random_state=SEED, shuffle=True, stratify=stratify)
+
+
+def reference_roc_auc(mc: pd.DataFrame, threshold: float, train: np.ndarray, test: np.ndarray) -> float:
+    """Held-out ROC-AUC of one leakage-free logistic regression for the high-cost target (reference code, D-24).
+
+    Independent of ``src/analyses/modeling.py``: one-hot with ``pd.get_dummies``, constant columns dropped and
+    medians / means / standard deviations taken on the **training rows only**, then a plain
+    ``LogisticRegression``. Its only purpose is to show that the task's ROC-AUC band is reachable without using
+    the amount fields the target is derived from; the value is recorded under the golden's ``reference`` key and
+    is never itself a check.
+    """
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import roc_auc_score
+
+    frame = pd.DataFrame(index=mc.index)
+    for col in REFERENCE_CATEGORICAL:
+        frame[col] = mc[col].astype("object")
+    for col in REFERENCE_NUMERIC:
+        frame[col] = pd.to_numeric(mc["drg_code"].notna() if col == "drg_present" else mc[col], errors="coerce")
+    design = pd.get_dummies(frame, columns=REFERENCE_CATEGORICAL, dummy_na=True, dtype=float)
+    train_rows = design.iloc[train]
+    keep = [c for c in design.columns if float(train_rows[c].std(skipna=True) or 0.0) > 0]
+    median = train_rows[keep].median()
+    x_train = train_rows[keep].fillna(median)
+    x_test = design.iloc[test][keep].fillna(median)
+    mean, sd = x_train.mean(), x_train.std().replace(0.0, 1.0)
+    y = (mc["paid_amount"].to_numpy(dtype=float) > threshold).astype(int)
+    model = LogisticRegression(max_iter=2000, random_state=SEED)
+    model.fit((x_train - mean) / sd, y[train])
+    scores = model.predict_proba((x_test - mean) / sd)[:, 1]
+    return float(roc_auc_score(y[test], scores))
 
 
 class Review:
@@ -234,7 +290,12 @@ def build_t1(tables: dict[str, pd.DataFrame], review: Review) -> dict:
     }
 
 
-def build_t2(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+def _build_portfolio(tables: dict[str, pd.DataFrame], review: Review, tid: str, *, paid_trend: bool) -> dict:
+    """T2 (portfolio description) and T11 (portfolio deep-dive) share one reference implementation.
+
+    ``paid_trend`` adds what T11's brief asks for on top of T2's contract: the monthly *paid spend* series
+    beside the claim-count series, and the contract that both series are produced.
+    """
     mc = tables["medical_claims"]
     n = int(len(mc))
     status = mc["claim_status"].value_counts()
@@ -258,8 +319,8 @@ def build_t2(tables: dict[str, pd.DataFrame], review: Review) -> dict:
         "monthly_trend.unparseable_dates": unparseable,
         "monthly_trend.series.claim_count": series,
     }
-    review.add("T2", "claim_volume.total_claims", n, "all rows of medical_claims", "exact", ok(n == 12845, "A2 row count"))
-    review.add("T2", "claim_volume.by.claim_status", ", ".join(f"{k} {v['n']}" for k, v in by_status.items()), "value_counts(claim_status)", "exact",
+    review.add(tid, "claim_volume.total_claims", n, "all rows of medical_claims", "exact", ok(n == 12845, "A2 row count"))
+    review.add(tid, "claim_volume.by.claim_status", ", ".join(f"{k} {v['n']}" for k, v in by_status.items()), "value_counts(claim_status)", "exact",
                ok(sum(v["n"] for v in by_status.values()) == n, "status counts sum to total"))
     expected_metrics = {
         "denial_rate": metric(rate(denied, adjudicated), RATE_TOL, numerator="claim_status == 'Denied'",
@@ -268,9 +329,9 @@ def build_t2(tables: dict[str, pd.DataFrame], review: Review) -> dict:
         "fraud_prevalence": metric(rate(fraud, n), RATE_TOL, numerator="fraud_label == 1", denominator="all medical claims",
                                    denominator_option="all_claims", numerator_value=fraud, denominator_value=n),
     }
-    review.add("T2", "denial_rate", f"{rate(denied, adjudicated):.6f}", f"{denied} denied / {adjudicated} adjudicated (Paid+Denied+Adjusted)", str(RATE_TOL),
+    review.add(tid, "denial_rate", f"{rate(denied, adjudicated):.6f}", f"{denied} denied / {adjudicated} adjudicated (Paid+Denied+Adjusted)", str(RATE_TOL),
                ok(adjudicated == n - int(status.get("Pended", 0)), "adjudicated = total - Pended"))
-    review.add("T2", "fraud_prevalence", f"{rate(fraud, n):.6f}", f"{fraud} fraud_label==1 / {n} all claims", str(RATE_TOL), ok(fraud == 647, "A2 reported 647"))
+    review.add(tid, "fraud_prevalence", f"{rate(fraud, n):.6f}", f"{fraud} fraud_label==1 / {n} all claims", str(RATE_TOL), ok(fraud == 647, "A2 reported 647"))
     for col in ["billed_amount", "allowed_amount", "paid_amount"]:
         s = mc[col].astype(float)
         stats = {"sum": float(s.sum()), "mean": float(s.mean()), "median": float(s.median()),
@@ -278,23 +339,59 @@ def build_t2(tables: dict[str, pd.DataFrame], review: Review) -> dict:
         for stat, val in stats.items():
             expected_metrics[f"financial_summary.{col}.{stat}"] = metric(val, CURRENCY_TOL, column=col, statistic=stat, rows="all medical claims",
                                                                         quantile_method="numpy.percentile linear")
-        review.add("T2", f"financial_summary.{col}", f"sum {stats['sum']:.2f}; mean {stats['mean']:.2f}; median {stats['median']:.2f}; p90 {stats['p90']:.2f}; p99 {stats['p99']:.2f}",
+        review.add(tid, f"financial_summary.{col}", f"sum {stats['sum']:.2f}; mean {stats['mean']:.2f}; median {stats['median']:.2f}; p90 {stats['p90']:.2f}; p99 {stats['p99']:.2f}",
                    "sum/mean/median/p90/p99 over all rows", str(CURRENCY_TOL), ok(stats["median"] <= stats["p90"] <= stats["p99"], "median <= p90 <= p99"))
-    review.add("T2", "monthly_trend.series.claim_count", f"{len(months)} months {months[0]}..{months[-1]}; min {min(series.values())}, max {max(series.values())} per month",
+    review.add(tid, "monthly_trend.series.claim_count", f"{len(months)} months {months[0]}..{months[-1]}; min {min(series.values())}, max {max(series.values())} per month",
                "count per %Y-%m of service_date_from", "exact per month", ok(sum(series.values()) + unparseable == n, "monthly counts + unparseable = total"))
+    contracts: dict = {
+        "denial_rate.denominator_option": "adjudicated_claims",
+        "monthly_trend.date_column": "service_date_from",
+        "report.show_denominators": True,
+        "financial_summary": {"includes": ["billed_amount", "allowed_amount", "paid_amount"]},
+    }
+    if paid_trend:
+        paid_by_month = month_amount_series(mc["service_date_from"], mc["paid_amount"])
+        assert sorted(paid_by_month) == months, "the paid series must cover the same months as the count series"
+        # the series dict is keyed by metric name, so `includes` on it is "both series were produced"
+        contracts["monthly_trend.series"] = {"includes": ["claim_count", "paid_amount_sum"]}
+        expected_metrics["monthly_trend.series.paid_amount_sum"] = {
+            "values": _py(paid_by_month),
+            "tolerance": CURRENCY_TOL,
+            "definition": {
+                "statistic": "sum of paid_amount per %Y-%m of service_date_from",
+                "rows": "claims whose service_date_from parses; non-numeric paid_amount counted as 0",
+                "n_months": len(paid_by_month),
+                "total": float(sum(paid_by_month.values())),
+            },
+        }
+        total_paid = float(mc["paid_amount"].astype(float).sum())
+        review.add(tid, "monthly_trend.series.paid_amount_sum",
+                   f"{len(paid_by_month)} months {min(paid_by_month)}..{max(paid_by_month)}; total {sum(paid_by_month.values()):.2f}",
+                   "sum of paid_amount per %Y-%m of service_date_from", f"{CURRENCY_TOL} per month",
+                   ok(abs(sum(paid_by_month.values()) - total_paid) <= CURRENCY_TOL,
+                      f"monthly paid totals sum to the all-rows paid total {total_paid:.2f} (no unparseable dates to lose)"))
     return {
         "expected_exact": expected_exact,
         "expected_metrics": expected_metrics,
-        "contracts": {
-            "denial_rate.denominator_option": "adjudicated_claims",
-            "monthly_trend.date_column": "service_date_from",
-            "report.show_denominators": True,
-            "financial_summary": {"includes": ["billed_amount", "allowed_amount", "paid_amount"]},
-        },
+        "contracts": contracts,
         "metric_ranges": {},
         "prohibited_fields": [],
         "required_caveats": caveats("synthetic_data", "descriptive_only"),
     }
+
+
+def build_t2(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+    return _build_portfolio(tables, review, "T2", paid_trend=False)
+
+
+def build_t11(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+    """T11 (portfolio deep-dive): T2's contract plus the paid-spend trend and the amount-distribution quantiles.
+
+    The quantile values themselves (``financial_summary.<col>.{median,p90,p99}``) are already in T2's
+    ``expected_metrics`` for all three amount columns; T11's rubric simply scores two more of them
+    (``allowed_amount.median`` and ``billed_amount.p99``) than T2 does.
+    """
+    return _build_portfolio(tables, review, "T11", paid_trend=True)
 
 
 def _group_stats(mc: pd.DataFrame, column: str) -> dict[str, dict]:
@@ -507,23 +604,45 @@ def build_t6(tables: dict[str, pd.DataFrame], review: Review) -> dict:
     }
 
 
-def build_t7(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+def _build_high_cost(tables: dict[str, pd.DataFrame], review: Review, tid: str, *, percentile: int, reference_model: bool) -> dict:
+    """T7 (top 5 percent by paid amount) and T12 (top 10 percent) share one reference implementation.
+
+    ``reference_model`` fits the leakage-free reference logistic regression below and asserts that its held-out
+    ROC-AUC lands inside the task's target band, so the band is checked against a real honest model rather
+    than asserted (D-24). It is enabled for T12 only, which keeps T7's committed golden byte-identical.
+    """
     mc = tables["medical_claims"]
     n = int(len(mc))
     paid = mc["paid_amount"].to_numpy(dtype=float)
     tr, te = split_indices(n)
-    threshold = float(np.percentile(paid[tr], 95))
-    threshold_all = float(np.percentile(paid, 95))
+    threshold = float(np.percentile(paid[tr], percentile))
+    threshold_all = float(np.percentile(paid, percentile))
     pos_tr, pos_te = int((paid[tr] > threshold).sum()), int((paid[te] > threshold).sum())
-    review.add("T7", "target_definition.threshold_value", f"{threshold:.4f}", f"numpy.percentile(paid_amount[train], 95) with train from train_test_split(np.arange({n}), test_size={TEST_SIZE}, random_state={SEED}, shuffle=True)",
+    expected_rate = (100 - percentile) / 100.0
+    review.add(tid, "target_definition.threshold_value", f"{threshold:.4f}", f"numpy.percentile(paid_amount[train], {percentile}) with train from train_test_split(np.arange({n}), test_size={TEST_SIZE}, random_state={SEED}, shuffle=True)",
                str(CURRENCY_TOL), ok(abs(threshold - threshold_all) > CURRENCY_TOL, f"differs from the all-data percentile {threshold_all:.4f}, so the check discriminates"))
-    review.add("T7", "target_definition.positive_rate_{train,test}", f"train {pos_tr}/{len(tr)} = {rate(pos_tr, len(tr)):.6f}; test {pos_te}/{len(te)} = {rate(pos_te, len(te)):.6f}",
-               "paid_amount > threshold_value in each partition", str(RATE_TOL), ok(abs(rate(pos_tr, len(tr)) - 0.05) < 0.002, "train positive rate about 5 percent"))
-    review.add("T7", "split", f"n_train {len(tr)}; n_test {len(te)}", "plain split, no stratification", "exact", ok(len(tr) + len(te) == n, "sizes sum to total"))
+    review.add(tid, "target_definition.positive_rate_{train,test}", f"train {pos_tr}/{len(tr)} = {rate(pos_tr, len(tr)):.6f}; test {pos_te}/{len(te)} = {rate(pos_te, len(te)):.6f}",
+               "paid_amount > threshold_value in each partition", str(RATE_TOL), ok(abs(rate(pos_tr, len(tr)) - expected_rate) < 0.002, f"train positive rate about {100 - percentile} percent"))
+    review.add(tid, "split", f"n_train {len(tr)}; n_test {len(te)}", "plain split, no stratification", "exact", ok(len(tr) + len(te) == n, "sizes sum to total"))
+    reference: dict = {"n_positive_train": pos_tr, "n_positive_test": pos_te, "all_data_threshold": threshold_all}
+    if reference_model:
+        auc = reference_roc_auc(mc, threshold, tr, te)
+        lo, hi = ROC_AUC_BAND
+        assert lo <= auc <= hi, f"{tid}: the leakage-free reference ROC-AUC {auc:.6f} is outside the band [{lo}, {hi}]"
+        reference["leakage_free_reference"] = {
+            "model": "LogisticRegression(max_iter=2000, random_state=42) on train-only one-hot + standardised features",
+            "features": list(REFERENCE_FEATURES),
+            "roc_auc_test": auc,
+            "band": [lo, hi],
+            "purpose": "evidence that the ROC-AUC band is reachable by an honest model and does not require leakage",
+        }
+        review.add(tid, "reference.leakage_free_reference.roc_auc_test", f"{auc:.6f}",
+                   f"independent logistic regression on submission-time features only, fitted on the training split (seed {SEED})",
+                   f"band [{lo}, {hi}]", ok(lo <= auc <= hi, f"inside the band, so a leakage-free model can pass models.*.roc_auc"))
     return {
         "expected_exact": {"split": {"n_train": int(len(tr)), "n_test": int(len(te))}, "seed": SEED},
         "expected_metrics": {
-            "target_definition.threshold_value": metric(threshold, CURRENCY_TOL, amount_column="paid_amount", percentile=95, threshold_source="train_only",
+            "target_definition.threshold_value": metric(threshold, CURRENCY_TOL, amount_column="paid_amount", percentile=percentile, threshold_source="train_only",
                                                         split=f"train_test_split(np.arange(n), test_size={TEST_SIZE}, random_state={SEED}, shuffle=True)",
                                                         method="numpy.percentile linear interpolation", all_data_threshold_for_reference=threshold_all),
             "target_definition.positive_rate_train": metric(rate(pos_tr, len(tr)), RATE_TOL, numerator="train rows with paid_amount > threshold_value", denominator="n_train",
@@ -532,7 +651,7 @@ def build_t7(tables: dict[str, pd.DataFrame], review: Review) -> dict:
                                                            numerator_value=pos_te, denominator_value=int(len(te))),
         },
         "contracts": {
-            "target_definition.threshold_source": "train_only", "target_definition.amount_column": "paid_amount", "target_definition.percentile": 95,
+            "target_definition.threshold_source": "train_only", "target_definition.amount_column": "paid_amount", "target_definition.percentile": percentile,
             "preprocessing.fit_on": "train_only", "split.test_size": TEST_SIZE,
             "models_logistic": {"includes": ["logistic_regression"]},
             "models_tree": {"any_of": ["random_forest", "gradient_boosting"]},
@@ -543,14 +662,23 @@ def build_t7(tables: dict[str, pd.DataFrame], review: Review) -> dict:
             # 0.499-0.515), so the floor sits below chance to avoid failing honest models on noise.
             # D-21: a target band rather than a floor. Leakage-free models reach 0.89-0.91 on this data; amount features
             # (the target is derived from them) push ROC-AUC to 0.997-1.0, so anything above 0.95 is treated as suspicious.
-            "models.*.roc_auc": {"min": 0.60, "max": 0.95},
+            "models.*.roc_auc": {"min": ROC_AUC_BAND[0], "max": ROC_AUC_BAND[1]},
             "models.*.pr_auc": {"min": {"ref": "target_definition.positive_rate_test", "factor": 0.5}, "max": 1.0},
             "models.*.precision_at_top_5pct": {"min": 0.0, "max": 1.0},
         },
         "prohibited_fields": ["billed_amount", "allowed_amount", "paid_amount", "member_oop", "cob_amount", "high_cost_flag", "claim_id", "member_id"],
         "required_caveats": caveats("synthetic_data", "model_limitations", "no_operational_use"),
-        "reference": {"n_positive_train": pos_tr, "n_positive_test": pos_te, "all_data_threshold": threshold_all},
+        "reference": reference,
     }
+
+
+def build_t7(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+    return _build_high_cost(tables, review, "T7", percentile=95, reference_model=False)
+
+
+def build_t12(tables: dict[str, pd.DataFrame], review: Review) -> dict:
+    """T12 (high-cost model, wider net): T7's contract with the target at the 90th percentile of paid amount."""
+    return _build_high_cost(tables, review, "T12", percentile=90, reference_model=True)
 
 
 def build_t8(review: Review) -> dict:
@@ -578,6 +706,40 @@ def build_t8(review: Review) -> dict:
             {"task_id": "T5", "metric_key": "class_prevalence", "why": "fraud-label prevalence and imbalance"},
             {"task_id": "T6", "metric_key": "models.*.roc_auc", "why": "fraud model discrimination"},
             {"task_id": "T7", "metric_key": "target_definition.threshold_value", "why": "high-cost threshold from the training split"},
+        ],
+        "artifact_reference_requirement": "every numeric statement ends with [source: <artifact path or metrics.json#key>]",
+    }
+
+
+def build_t13(review: Review) -> dict:
+    """T13 (brief for the CFO): T8's structural contract sourced from the two tasks that precede it in this set.
+
+    Structural golden, no data values: the brief is scored on where its numbers come from (T11 and T12), the five
+    required sections, a citation behind every numeric statement, associative phrasing, the 600-word ceiling and
+    the two caveats.
+    """
+    review.add("T13", "brief contracts", "sources >= {T11, T12}; 5 sections; cite_artifacts; causal_language avoid; <= 600 words",
+               "structural golden (no data values)", "n/a", ok(True, "forbidden phrases: causes, drives, leads to, because of"))
+    return {
+        "expected_exact": {},
+        "expected_metrics": {},
+        "contracts": {
+            "findings_core_sources": {"includes": ["T11", "T12"], "field": "task_id"},
+            "brief.sections": {"includes": ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps"]},
+            "brief.cite_artifacts": True,
+            "brief.n_cited_statements": {"equals_metric": "brief.n_numeric_statements"},
+            "brief.causal_language": "avoid",
+        },
+        "metric_ranges": {},
+        "prohibited_fields": [],
+        "required_caveats": caveats("synthetic_data", "no_operational_use"),
+        "forbidden_phrases": ["causes", "drives", "leads to", "because of"],
+        "max_words": 600,
+        "required_findings": [
+            {"task_id": "T11", "metric_key": "claim_volume.total_claims", "why": "portfolio size"},
+            {"task_id": "T11", "metric_key": "denial_rate", "why": "headline denial rate with numerator and denominator"},
+            {"task_id": "T12", "metric_key": "target_definition.threshold_value", "why": "high-cost threshold from the training split"},
+            {"task_id": "T12", "metric_key": "models.*.roc_auc", "why": "how well the wider-net model ranks claims"},
         ],
         "artifact_reference_requirement": "every numeric statement ends with [source: <artifact path or metrics.json#key>]",
     }
@@ -762,7 +924,8 @@ def build_all() -> tuple[dict[str, dict], str]:
     built_at = utc_now()
     bodies = {"T1": build_t1(tables, review), "T2": build_t2(tables, review), "T3": build_t3(tables, review), "T4": build_t4(tables, review),
               "T5": build_t5(tables, review), "T6": build_t6(tables, review), "T7": build_t7(tables, review), "T8": build_t8(review),
-              "T9": build_t9(tables, review), "T10": build_t10(tables, review)}
+              "T9": build_t9(tables, review), "T10": build_t10(tables, review),
+              "T11": build_t11(tables, review), "T12": build_t12(tables, review), "T13": build_t13(review)}
     goldens: dict[str, dict] = {}
     for tid, body in bodies.items():
         inputs = spec[tid]["input_tables"] or list(tables)
@@ -846,6 +1009,9 @@ def main(argv: list[str] | None = None) -> int:
     print(f"wrote {REVIEW_PATH.relative_to(REPO_ROOT).as_posix()}")
     print(f"denial_rate {goldens['T2']['expected_metrics']['denial_rate']['value']:.6f} | fraud_prevalence {goldens['T2']['expected_metrics']['fraud_prevalence']['value']:.6f} | "
           f"T7 threshold {goldens['T7']['expected_metrics']['target_definition.threshold_value']['value']:.4f}")
+    ref = goldens["T12"]["reference"]["leakage_free_reference"]
+    print(f"T12 threshold {goldens['T12']['expected_metrics']['target_definition.threshold_value']['value']:.4f} | "
+          f"leakage-free reference ROC-AUC {ref['roc_auc_test']:.6f} inside band {ref['band']}")
     return 0
 
 

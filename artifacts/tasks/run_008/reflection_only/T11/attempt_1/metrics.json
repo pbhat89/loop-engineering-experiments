@@ -1,0 +1,244 @@
+{
+  "task_id": "T11",
+  "run_id": "run_008",
+  "condition": "reflection_only",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-08T09:47:48+00:00",
+  "plan_sha256": "e518a31e5e9c0134d6ecfd55dd12af1aa0ca265e1b334281852d8314d86f211c",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "claim_volume",
+        "params": {
+          "by": [
+            "claim_status"
+          ],
+          "figure": true
+        }
+      },
+      {
+        "component": "denial_rate",
+        "params": {
+          "denominator": "all_claims"
+        }
+      },
+      {
+        "component": "fraud_prevalence",
+        "params": {
+          "denominator": "all_claims"
+        }
+      },
+      {
+        "component": "financial_summary",
+        "params": {
+          "amount_columns": [
+            "billed_amount",
+            "allowed_amount",
+            "paid_amount"
+          ],
+          "statistics": "sum_mean_quantiles"
+        }
+      },
+      {
+        "component": "monthly_trend",
+        "params": {
+          "date_column": "adjudication_date",
+          "metrics": [
+            "claim_count",
+            "paid_amount_sum"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "descriptive_only"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Task requires status breakdown, denial rate, fraud flag prevalence, distributions across billed/allowed/paid amounts, and monthly trends of volume and spend. Plan includes all metric-producing components to populate metrics.json and generate all required artifacts. Report cites sources for transparency to claims leadership.",
+    "changes_summary": null
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "claim_volume": {
+    "total_claims": 12845,
+    "by": {
+      "claim_status": {
+        "Paid": {
+          "n": 10511,
+          "share": 0.8182950564421954
+        },
+        "Denied": {
+          "n": 1286,
+          "share": 0.10011677695601401
+        },
+        "Adjusted": {
+          "n": 542,
+          "share": 0.04219540677306345
+        },
+        "Pended": {
+          "n": 506,
+          "share": 0.03939275982872713
+        }
+      }
+    }
+  },
+  "denial_rate": {
+    "value": 0.10011677695601401,
+    "numerator": 1286,
+    "denominator": 12845,
+    "numerator_definition": "claim_status == \"Denied\"",
+    "denominator_definition": "all rows of medical_claims",
+    "denominator_option": "all_claims"
+  },
+  "fraud_prevalence": {
+    "value": 0.050369793694044374,
+    "numerator": 647,
+    "denominator": 12845,
+    "denominator_option": "all_claims"
+  },
+  "financial_summary": {
+    "billed_amount": {
+      "n": 12845,
+      "sum": 21254208.810000002,
+      "mean": 1654.6678715453486,
+      "median": 429.52,
+      "p90": 4279.022,
+      "p99": 21256.579199999986
+    },
+    "allowed_amount": {
+      "n": 12845,
+      "sum": 12175223.45,
+      "mean": 947.8570221876216,
+      "median": 241.9,
+      "p90": 2359.6460000000006,
+      "p99": 11562.753599999998
+    },
+    "paid_amount": {
+      "n": 12845,
+      "sum": 9783415.77,
+      "mean": 761.6516753600622,
+      "median": 124.9,
+      "p90": 2043.8540000000007,
+      "p99": 10911.43719999996
+    }
+  },
+  "monthly_trend": {
+    "date_column": "adjudication_date",
+    "n_months": 38,
+    "first_month": "2021-01",
+    "last_month": "2024-02",
+    "unparseable_dates": 0,
+    "series": {
+      "claim_count": {
+        "2021-01": 94,
+        "2021-02": 297,
+        "2021-03": 361,
+        "2021-04": 336,
+        "2021-05": 351,
+        "2021-06": 347,
+        "2021-07": 376,
+        "2021-08": 357,
+        "2021-09": 355,
+        "2021-10": 386,
+        "2021-11": 381,
+        "2021-12": 358,
+        "2022-01": 355,
+        "2022-02": 348,
+        "2022-03": 342,
+        "2022-04": 363,
+        "2022-05": 340,
+        "2022-06": 367,
+        "2022-07": 409,
+        "2022-08": 382,
+        "2022-09": 333,
+        "2022-10": 328,
+        "2022-11": 341,
+        "2022-12": 348,
+        "2023-01": 375,
+        "2023-02": 338,
+        "2023-03": 364,
+        "2023-04": 360,
+        "2023-05": 392,
+        "2023-06": 378,
+        "2023-07": 377,
+        "2023-08": 329,
+        "2023-09": 365,
+        "2023-10": 340,
+        "2023-11": 312,
+        "2023-12": 360,
+        "2024-01": 269,
+        "2024-02": 31
+      },
+      "paid_amount_sum": {
+        "2021-01": 71453.0,
+        "2021-02": 231110.07,
+        "2021-03": 337552.58,
+        "2021-04": 281267.69,
+        "2021-05": 267969.7,
+        "2021-06": 212995.72,
+        "2021-07": 265009.44,
+        "2021-08": 301602.43,
+        "2021-09": 264466.73,
+        "2021-10": 265196.9,
+        "2021-11": 373387.64999999997,
+        "2021-12": 267214.32,
+        "2022-01": 271542.12,
+        "2022-02": 243692.18,
+        "2022-03": 338656.33999999997,
+        "2022-04": 250225.4,
+        "2022-05": 271562.61,
+        "2022-06": 288576.95,
+        "2022-07": 287391.14,
+        "2022-08": 259770.07,
+        "2022-09": 258008.97,
+        "2022-10": 336846.76,
+        "2022-11": 228626.71,
+        "2022-12": 220713.34,
+        "2023-01": 325732.73,
+        "2023-02": 256536.93,
+        "2023-03": 230763.25,
+        "2023-04": 232111.26,
+        "2023-05": 270113.3,
+        "2023-06": 301811.11,
+        "2023-07": 322953.9,
+        "2023-08": 284509.84,
+        "2023-09": 283293.03,
+        "2023-10": 249105.03,
+        "2023-11": 171517.13,
+        "2023-12": 261162.29,
+        "2024-01": 175513.13999999998,
+        "2024-02": 23454.01
+      }
+    }
+  },
+  "report": {
+    "caveats": [
+      "descriptive_only"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": ["T11", "T12"]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": ["key_findings", "model_results", "limitations", "synthetic_caveats", "next_steps"],
+        "causal_language": "allow",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "model_limitations", "no_operational_use", "sample_preview", "association_not_causation"],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Task T13 requires a CFO brief synthesizing key findings from T11 (portfolio deep-dive) and T12 (wider-net high-cost model), both specified as the only permitted sources. All numeric statements are cited per past feedback on executive briefs. Synthetic_caveats section is required based on feedback patterns from T8. Caveats are chosen to reflect statistical discipline: synthetic_data and sample_preview establish data provenance; model_limitations and no_operational_use address model constraints; association_not_causation states the proper framing for correlational findings. Brief causal language is set to 'allow' since the task calls for model results and performance discussion."
+}

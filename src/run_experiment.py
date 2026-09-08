@@ -97,6 +97,8 @@ class RunConfig:
     seed_from_run: str | None = None
     task_index_offset: int = 0
     seed_skill_exclude: list[str] = field(default_factory=list)
+    # experiment 5 v2 (D-24): freeze the carried-over memory - recall and retrieval still work, nothing is written
+    memory_read_only: bool = False
     created_at: str = field(default_factory=utc_now)
 
     @classmethod
@@ -121,6 +123,7 @@ class RunConfig:
             seed_from_run=(str(cfg["seed_from_run"]) if cfg.get("seed_from_run") else None),
             task_index_offset=int(cfg.get("task_index_offset", 0) or 0),
             seed_skill_exclude=[str(x) for x in (cfg.get("seed_skill_exclude") or [])],
+            memory_read_only=bool(cfg.get("memory_read_only", False)),
         )
 
     def to_dict(self) -> dict:
@@ -223,6 +226,7 @@ def build_services(config: RunConfig):
         feedback_max_items=config.feedback_max_items,
         reveal_fixes=config.reveal_fixes,
         memory_factory=lambda run_id, condition: FeedbackMemory(ARTIFACTS_DIR / "memory", run_id, condition),
+        memory_read_only=config.memory_read_only,
     )
 
 
@@ -322,6 +326,8 @@ class Runner:
         provenance: dict = {
             "source_run": source_run,
             "seeded_at": utc_now(),
+            # D-24: when true the seeded log is frozen - recalled before every plan, never appended to
+            "memory_read_only": bool(config.memory_read_only),
             "redaction_rule": (
                 f"every numeric token matching {NUMBER_RE.pattern} in the record's `text` and `detail` is replaced "
                 f"by '[n]', except matches of {PROTECTED_RE.pattern} (task ids and the quantile names p90/p99)"

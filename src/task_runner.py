@@ -31,9 +31,12 @@ TASK_MODULES = {
     "T6": "src.analyses.t6_fraud_model",
     "T7": "src.analyses.t7_high_cost",
     "T8": "src.analyses.t8_brief",
-    # experiment 5 (D-23): the held-out transfer tasks reuse the handler modules of the tasks they mirror
+    # experiment 5 (D-23, D-24): the held-out transfer tasks reuse the handler modules of the tasks they mirror
     "T9": "src.analyses.t4_denials",
     "T10": "src.analyses.t3_providers",
+    "T11": "src.analyses.t2_portfolio",
+    "T12": "src.analyses.t7_high_cost",
+    "T13": "src.analyses.t8_brief",
 }
 ERROR_TYPES = ("unknown_component", "invalid_param", "missing_column", "missing_dependency", "runtime_error")
 
