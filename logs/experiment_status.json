@@ -1120,7 +1120,189 @@
           "eta_label": "rough ETA ≈ 0.0 min"
         }
       }
+    },
+    "run_009": {
+      "mode": "manual",
+      "provider": {
+        "provider_mode": "manual",
+        "operator": "claude-code-subagent",
+        "model_identifier": "claude-haiku-4-5-20251001"
+      },
+      "freeze_sha256": "bab215a5fbccbd60a7108f7417d3b8a2a40a05e06f6353221b40d800f788bbdd",
+      "created_at": "2026-09-09T02:14:18+00:00",
+      "conditions": {
+        "skill_learning": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 3.69,
+            "T2": 3.67,
+            "T4": 4.0,
+            "T3": 3.64,
+            "T7": 3.8,
+            "T8": 3.91
+          },
+          "first_attempt_pass": {
+            "T1": true,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 5,
+          "execution_errors": 0,
+          "skills_created": 3,
+          "skills_retrieved": 8,
+          "operator_steps_used": 28,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 295.5,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        }
+      }
+    },
+    "run_011": {
+      "mode": "manual",
+      "provider": {
+        "provider_mode": "manual",
+        "operator": "claude-code-subagent",
+        "model_identifier": "claude-haiku-4-5-20251001"
+      },
+      "freeze_sha256": "bab215a5fbccbd60a7108f7417d3b8a2a40a05e06f6353221b40d800f788bbdd",
+      "created_at": "2026-09-09T02:50:28+00:00",
+      "conditions": {
+        "skill_learning": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 4.0,
+            "T2": 3.67,
+            "T4": 4.0,
+            "T3": 3.64,
+            "T7": 4.0,
+            "T8": 4.0
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 6,
+          "execution_errors": 0,
+          "skills_created": 4,
+          "skills_retrieved": 4,
+          "operator_steps_used": 33,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 302.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        }
+      }
+    },
+    "run_012": {
+      "mode": "manual",
+      "provider": {
+        "provider_mode": "manual",
+        "operator": "claude-code-subagent",
+        "model_identifier": "claude-haiku-4-5-20251001"
+      },
+      "freeze_sha256": "bab215a5fbccbd60a7108f7417d3b8a2a40a05e06f6353221b40d800f788bbdd",
+      "created_at": "2026-09-09T03:25:45+00:00",
+      "conditions": {
+        "skill_learning": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 6,
+          "tasks_total": 6,
+          "scores": {
+            "T1": 4.0,
+            "T2": 3.87,
+            "T4": 3.84,
+            "T3": 4.0,
+            "T7": 3.6,
+            "T8": 3.64
+          },
+          "first_attempt_pass": {
+            "T1": false,
+            "T2": false,
+            "T4": false,
+            "T3": false,
+            "T7": false,
+            "T8": false
+          },
+          "retries": 7,
+          "execution_errors": 0,
+          "skills_created": 6,
+          "skills_retrieved": 10,
+          "operator_steps_used": 37,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 332.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        }
+      }
+    },
+    "run_013": {
+      "mode": "manual",
+      "provider": {
+        "provider_mode": "manual",
+        "operator": "claude-code-subagent",
+        "model_identifier": "claude-haiku-4-5-20251001"
+      },
+      "freeze_sha256": "bab215a5fbccbd60a7108f7417d3b8a2a40a05e06f6353221b40d800f788bbdd",
+      "created_at": "2026-09-09T04:02:22+00:00",
+      "conditions": {
+        "skill_learning": {
+          "status": "done",
+          "current_task": null,
+          "attempt": null,
+          "current_node": null,
+          "pending_request": null,
+          "waiting_since": null,
+          "tasks_completed": 3,
+          "tasks_total": 3,
+          "scores": {
+            "T11": 4.0,
+            "T12": 3.8,
+            "T13": 4.0
+          },
+          "first_attempt_pass": {
+            "T11": false,
+            "T12": false,
+            "T13": false
+          },
+          "retries": 3,
+          "execution_errors": 0,
+          "skills_created": 0,
+          "skills_retrieved": 12,
+          "operator_steps_used": 9,
+          "operator_steps_cap": 64,
+          "median_seconds_per_task": 202.0,
+          "eta_minutes": 0.0,
+          "eta_label": "rough ETA ≈ 0.0 min"
+        }
+      }
     }
   },
-  "updated_at": "2026-09-08T09:57:28+00:00"
+  "updated_at": "2026-09-09T04:13:07+00:00"
 }

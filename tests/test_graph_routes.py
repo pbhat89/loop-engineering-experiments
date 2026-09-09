@@ -156,7 +156,7 @@ class FakeStore:
         self.reuse.append((skill_id, task_id))
 
 
-def fake_validate(proposal, existing, task_id, remaining):
+def fake_validate(proposal, existing, task_id, remaining, min_applicable_remaining=2):
     duplicate = next((e for e in existing if (e.get("name") if isinstance(e, dict) else getattr(e, "name", None)) == proposal["name"]), None)
     decision = "rejected" if duplicate else "accepted"
     return {
@@ -677,11 +677,114 @@ def test_memory_read_only_skill_learning_retrieves_but_never_proposes():
     assert not any(e["event"].startswith("memory_") for e in logger.skill)
 
 
-def test_run_config_reads_memory_read_only_from_experiment_yaml():
+def test_run_config_reads_the_current_experiment_yaml():
     from src.run_experiment import RunConfig
     from src.utils import CONFIG_DIR
 
     cfg = RunConfig.from_experiment_yaml("run_x", "manual", ["reflection_only"], path=CONFIG_DIR / "experiment.yaml")
-    assert cfg.memory_read_only is True and cfg.seed_from_run == "run_006" and cfg.task_index_offset == 6
-    assert cfg.task_order == ["T11", "T12", "T13"]
-    assert "memory_read_only" in cfg.to_dict()  # so it lands in logs/runs/<run_id>.json
+    # experiment 6 phase 1 (run_009, D-25) re-runs the learning phase: the memory learns again, nothing is seeded,
+    # and the skill-proposal gate is off. Phase 2 (run_010) flips memory_read_only / seed_from_run back on.
+    assert cfg.memory_read_only is False and cfg.seed_from_run is None and cfg.task_index_offset == 0
+    assert cfg.task_order == ["T1", "T2", "T4", "T3", "T7", "T8"]
+    assert cfg.skill_min_applicable_remaining == 0
+    for key in ("memory_read_only", "skill_min_applicable_remaining"):
+        assert key in cfg.to_dict()  # so it lands in logs/runs/<run_id>.json
+
+
+# --------------------------------------------------------------------------- experiment 6 (D-25): the skill gate
+
+
+# A lesson that applies to two tasks of which only one is still ahead: discarded by the >= 2 gate, kept without it.
+LATE_LESSON = {
+    "lesson": "State the denominator of every rate you report.",
+    "applicable_task_ids": ["T7", "T8"],
+    "source_feedback_ids": ["T7-denial_rate_value"],
+}
+LATE_PROPOSAL = {
+    "name": "state_rate_denominators",
+    "tags": ["rates", "reporting"],
+    "trigger": "When a task reports any rate computed over claims records.",
+    "objective": "Make every reported rate auditable by naming the population it was computed over.",
+    "procedure": [
+        "Choose the denominator the house convention requires for this rate.",
+        "Print the numerator and the denominator beside the rate in the report.",
+    ],
+    "required_checks": ["The report names the denominator of every rate it quotes."],
+    "expected_artifacts": ["report.md"],
+    "failure_modes": ["Quoting a rate without saying what population it was computed over."],
+    "example": "A denial rate quoted with its adjudicated-claim denominator beside it.",
+    "applicable_task_ids": ["T7", "T8"],
+    "source_feedback_ids": ["T7-denial_rate_value"],
+}
+
+
+class ScriptedProvider(FixtureProvider):
+    """Answers every request with one canned response and keeps the requests for inspection."""
+
+    def __init__(self, response: dict):
+        super().__init__(ProviderSettings(mode="stub"))
+        self.response = response
+        self.requests: list = []
+
+    def decide(self, request):
+        self.requests.append(request)
+        return copy.deepcopy(self.response)
+
+
+def propose_once(minimum: int, *, lesson: dict, remaining: tuple[str, ...], response: dict | None = None):
+    """Run only ``propose_skill`` with the gate set to ``minimum``; returns (update, provider, logger)."""
+    from src.graph_nodes import ClaimsNodes
+
+    provider = ScriptedProvider(response or {"proposal": copy.deepcopy(LATE_PROPOSAL), "reason_if_null": None})
+    logger = FakeLogger()
+    services = make_services(provider, logger=logger)
+    services.skill_min_applicable_remaining = minimum
+    state = dict(make_state("skill_learning", task_id="T7", task_index=4, remaining=remaining))
+    state.update({"reflection": {"reusable_lessons": [lesson], "current_task_corrections": []}, "next_route": "learn"})
+    return ClaimsNodes(services).propose_skill(state), provider, logger
+
+
+def test_gate_removed_proposes_a_lesson_that_only_one_remaining_task_needs():
+    from src.graph_nodes import SKILL_RULE_OPEN
+    from src.skill_validator import validate
+
+    update, provider, logger = propose_once(0, lesson=LATE_LESSON, remaining=("T8",))
+    assert update["skill_proposal"]["name"] == "state_rate_denominators"
+    assert [e["event"] for e in logger.skill] == ["skill_proposed"]
+    request = provider.requests[0]
+    assert request.payload["skill_rule"] == SKILL_RULE_OPEN and "at least two" not in request.instructions
+
+    # ... and the validator accepts it: with the minimum at 0 the applicability check is not run at all
+    verdict = validate(update["skill_proposal"], [], "T7", ["T8"], 0)
+    assert verdict["decision"] == "accepted" and verdict["reasons"] == []
+    assert "applicability" not in {c["check_id"] for c in verdict["checks"]}
+
+
+def test_gate_at_two_still_skips_the_same_lesson():
+    from src.skill_validator import validate
+
+    update, provider, logger = propose_once(2, lesson=LATE_LESSON, remaining=("T8",))
+    assert update["skill_proposal"] is None and provider.requests == []  # no operator step is spent
+    assert [(e["event"], e["reason"]) for e in logger.skill] == [
+        ("skill_proposal_skipped", "no lesson reusable in >= 2 remaining tasks")
+    ]
+    # and had it reached the validator, the applicability check would have rejected it
+    verdict = validate(LATE_PROPOSAL, [], "T7", ["T8"], 2)
+    assert verdict["decision"] == "rejected" and any(r.startswith("applicability:") for r in verdict["reasons"])
+
+
+def test_operator_instructions_and_skill_rule_follow_the_configured_minimum():
+    from src.graph_nodes import PROPOSE_INSTRUCTIONS_OPEN, propose_instructions, skill_rule
+
+    early = {**LATE_LESSON, "applicable_task_ids": ["T3", "T4"]}  # eligible under both settings
+    _, gated, _ = propose_once(2, lesson=early, remaining=("T3", "T4"))
+    _, open_, _ = propose_once(0, lesson=early, remaining=("T3", "T4"))
+    gated_request, open_request = gated.requests[0], open_.requests[0]
+
+    assert gated_request.instructions != open_request.instructions
+    assert gated_request.payload["skill_rule"] != open_request.payload["skill_rule"]
+    # the gated wording is experiments 1-5, byte for byte; the open wording never mentions a task count
+    assert "only if it applies to at least two remaining tasks" in gated_request.instructions
+    assert open_request.instructions == PROPOSE_INSTRUCTIONS_OPEN and "remaining task" not in open_request.instructions
+    assert "at least two" in gated_request.payload["skill_rule"] and "no minimum" in open_request.payload["skill_rule"]
+    assert propose_instructions(2) == gated_request.instructions and skill_rule(0) == open_request.payload["skill_rule"]

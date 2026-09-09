@@ -1,0 +1,26 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T13-sections",
+      "correction": "Add 'synthetic_caveats' to the brief_sections.sections parameter. Change from [key_findings, model_results, limitations, next_steps] to [key_findings, model_results, limitations, synthetic_caveats, next_steps]."
+    },
+    {
+      "feedback_id": "T13-causal_language_setting",
+      "correction": "Change brief_sections.causal_language parameter from 'allow' to 'avoid'. Synthetic data descriptive analysis cannot support causal claims."
+    },
+    {
+      "feedback_id": "T13-no_causal_language",
+      "correction": "Setting causal_language to 'avoid' prevents generation of causal phrasing. Re-execute with this setting to eliminate forbidden phrases such as 'drives'."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "Executive briefs about synthetic or observational data must include an explicit synthetic_caveats section to transparently document data limitations and protect stakeholder interpretation.",
+      "source_feedback_ids": ["T13-sections"]
+    },
+    {
+      "lesson": "Always set causal_language to 'avoid' for descriptive analysis of synthetic data. This parameter setting is foundational; it both prevents causal phrasing generation and reinforces statistical discipline, making post-hoc editing unnecessary.",
+      "source_feedback_ids": ["T13-causal_language_setting", "T13-no_causal_language"]
+    }
+  ]
+}

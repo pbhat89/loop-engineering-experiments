@@ -1,0 +1,62 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": [
+          "claim_status"
+        ],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "adjudicated_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": [
+          "billed_amount",
+          "allowed_amount",
+          "paid_amount"
+        ],
+        "statistics": "sum_mean"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "service_date_from",
+        "metrics": [
+          "claim_count"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan addresses all task questions: claim counts and status splits via claim_volume with status breakdown; denial rate via denial_rate using adjudicated_claims denominator to exclude pending claims and correctly measure the rate; fraud prevalence via fraud_prevalence; financial summary (billed, allowed, paid totals and per-claim statistics) via financial_summary; monthly volume trend via monthly_trend on service_date_from to align with when care began rather than processing date. All standard artifacts produced: status distribution chart, monthly trend chart and table, financial summary table, report. Report configured to show denominators for clarity and cite artifacts for traceability.",
+  "changes_summary": "Fixed two critical issues: (1) Changed denial_rate denominator from 'all_claims' to 'adjudicated_claims' to exclude pending claims not yet decided, yielding the correct denial rate of 1286/12339 = 0.1042 instead of 0.1001. (2) Changed monthly_trend date_column from 'adjudication_date' to 'service_date_from' to align trends with when care actually occurred rather than when claims were processed, avoiding lag-induced inconsistencies."
+}

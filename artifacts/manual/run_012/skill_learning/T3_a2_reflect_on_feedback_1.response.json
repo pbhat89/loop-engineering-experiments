@@ -1,0 +1,33 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T3-min_group_size",
+      "correction": "Set group_comparison.min_group_size parameter to 30 to flag groups with fewer than 30 claims as statistically unstable"
+    },
+    {
+      "feedback_id": "T3-caveat_small_groups",
+      "correction": "Added 'small_groups' to write_report.caveats to communicate that rate estimates for small groups are statistically unstable"
+    },
+    {
+      "feedback_id": "T3-caveat_association",
+      "correction": "Added 'association_not_causation' to write_report.caveats to clarify that observed group differences are associations, not causal effects"
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When computing group-level rates (denial_rate, fraud_rate), set min_group_size to at least 30 to flag small groups with unreliable estimates. This prevents statistical noise from being presented as meaningful group differences.",
+      "source_feedback_ids": ["T3-min_group_size"],
+      "applicable_task_ids": ["T4"]
+    },
+    {
+      "lesson": "When reporting group comparisons with rate metrics, include the 'small_groups' caveat to explicitly document that rate estimates for groups with fewer than 30 claims are statistically unstable and unreliable for decision-making.",
+      "source_feedback_ids": ["T3-caveat_small_groups"],
+      "applicable_task_ids": ["T4"]
+    },
+    {
+      "lesson": "When presenting observed differences between groups, include the 'association_not_causation' caveat to clarify that group differences represent statistical associations, not causal relationships. This prevents over-interpretation of patterns in the data.",
+      "source_feedback_ids": ["T3-caveat_association"],
+      "applicable_task_ids": ["T4", "T5", "T8"]
+    }
+  ]
+}

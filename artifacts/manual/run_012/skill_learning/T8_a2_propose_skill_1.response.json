@@ -1,0 +1,40 @@
+{
+  "proposal": {
+    "name": "enforce_citation_discipline_in_executive_communication",
+    "trigger": "When composing an executive brief, executive summary, or stakeholder communication that includes numeric findings, metrics, or comparative statements.",
+    "objective": "Ensure every numeric statement in executive-level communication carries a source citation to the artifact or metrics key from which it derives, establishing reproducibility and protecting the credibility of analytical findings.",
+    "procedure": [
+      "Before finalizing the communication, conduct a complete review to identify all numeric statements, including percentages, rates, counts, averages, comparisons, and ranking statements.",
+      "For each numeric statement identified, append a source citation in the format [source: <artifact_path_or_metrics_key>] to link the claim to the underlying data or calculation basis.",
+      "Verify that every cited source is accessible, accurate, and contains the exact value or calculation supporting the statement.",
+      "In the output metrics, ensure that n_cited_statements equals n_numeric_statements, confirming complete citation coverage across all numeric claims."
+    ],
+    "tags": [
+      "communication",
+      "executive_brief",
+      "reproducibility",
+      "traceability",
+      "citations"
+    ],
+    "required_checks": [
+      "Every numeric statement in the communication has an associated [source: ...] citation.",
+      "The n_cited_statements metric equals n_numeric_statements.",
+      "Each cited source is accessible and supports the numeric claim."
+    ],
+    "expected_artifacts": [
+      "executive_brief.md (with citations)",
+      "findings.json or metrics.json"
+    ],
+    "failure_modes": [
+      "Uncited numeric statements undermine credibility and make verification difficult.",
+      "Incomplete citation coverage masks evidentiary gaps and reduces decision-maker confidence.",
+      "Citations pointing to inaccessible or incorrect sources create confusion and erode trust."
+    ],
+    "applicable_task_ids": [],
+    "source_feedback_ids": [
+      "T8-cite_artifacts",
+      "T8-all_numbers_cited"
+    ]
+  },
+  "reason_if_null": null
+}

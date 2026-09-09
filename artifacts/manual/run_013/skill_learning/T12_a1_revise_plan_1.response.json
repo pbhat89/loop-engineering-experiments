@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 90,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "no_operational_use",
+          "model_limitations"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_012_005"
+  ],
+  "rationale": "Removed billed_amount and allowed_amount from feature_set to eliminate target leakage; these amount fields are determined post-adjudication and violate the submission-time scoring requirement. Retained only submission-time features (claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, flags, diagnosis, and procedure category). Added model_limitations caveat to write_report per feedback T12-caveat_model_limitations. Elimination of leaking features should resolve the inflated ROC-AUC metrics. All other components unchanged.",
+  "changes_summary": "Removed billed_amount and allowed_amount from feature_set (not available at claim submission, causing leakage). Added model_limitations to report caveats (communication discipline)."
+}

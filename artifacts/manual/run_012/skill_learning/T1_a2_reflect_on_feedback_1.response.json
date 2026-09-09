@@ -1,0 +1,15 @@
+{
+  "current_task_corrections": [],
+  "reusable_lessons": [
+    {
+      "lesson": "When verifying candidate keys in tables with both simple and composite natural keys, check uniqueness for both individual columns and their composite combinations. This ensures all potential join scenarios are validated and catches cases where a single column appears unique but may violate cardinality when combined with others.",
+      "applicable_task_ids": ["T3", "T6", "T7"],
+      "source_feedback_ids": ["T1-candidate_keys"]
+    },
+    {
+      "lesson": "Always include the synthetic_data caveat in reconnaissance and analysis reports when working with simulated or synthetic datasets, to ensure readers understand that observed patterns, distributions, and anomalies may not reflect real-world claims data characteristics.",
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"],
+      "source_feedback_ids": ["T1-caveat_synthetic"]
+    }
+  ]
+}

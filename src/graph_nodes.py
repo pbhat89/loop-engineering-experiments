@@ -44,7 +44,7 @@ class Services:
     execute_task: Callable[[dict, dict, dict], dict]  # task_runner.execute(task_spec, plan, run_context)
     evaluate: Callable[[dict, dict, dict, dict], dict]  # evaluator.evaluate(task_spec, execution_result, rubric, golden)
     skill_store: Any  # SkillStore-like (retrieve / render_for_operator / list_skills / persist / record_reuse)
-    validate_skill: Callable[[dict, list, str, list[str]], dict]  # skill_validator.validate(...)
+    validate_skill: Callable[[dict, list, str, list[str], int], dict]  # skill_validator.validate(...)
     logger: Any  # experiment_logger-like (log_graph_event / log_skill_event / log_feedback_event / log_experiment_event)
     rubric: dict
     load_golden: Callable[[dict], dict]  # task_spec -> golden dict
@@ -62,6 +62,11 @@ class Services:
     # and ``skill_learning`` routes to ``completed`` rather than ``learn``, so no skill is reflected on, proposed,
     # validated or persisted. The run then measures only what an earlier run left behind.
     memory_read_only: bool = False
+    # Experiment 6 (D-25): how many *remaining* tasks a lesson must apply to before it may become a skill.
+    # 2 is the historical gate (experiments 1-5); 0 removes it, so any reusable lesson is eligible and the
+    # validator's generality / safety / provenance / duplicate checks are the only filter. The value drives the
+    # eligibility filter in ``propose_skill``, the operator's instructions and the ``skill_rule`` payload key.
+    skill_min_applicable_remaining: int = 2
 
 
 # --------------------------------------------------------------------------- operator instructions
@@ -78,17 +83,70 @@ REVISE_INSTRUCTIONS = (
     "a reflection are included. Return a complete revised plan - not a diff - that addresses the feedback, and "
     "summarise what changed in changes_summary."
 )
-REFLECT_INSTRUCTIONS = (
+REFLECT_INSTRUCTIONS_GATED = (
     "Review the plan, the execution result and the evaluator feedback. Return (a) concrete corrections for the "
     "current task, each tied to a feedback id, and (b) lessons that would be reusable in at least two of the "
     "remaining tasks, each citing the feedback ids it came from. Return empty lists when nothing generalises."
 )
-PROPOSE_INSTRUCTIONS = (
-    "Turn at most one reusable lesson into a candidate skill following the embedded schema - only if it applies to "
-    "at least two remaining tasks and does not duplicate an existing skill (existing skills are listed). Procedures "
-    "must be general, safe (no code execution, network or credentials) and must not restate this task's findings. "
-    "Otherwise return proposal: null with a reason."
+REFLECT_INSTRUCTIONS_OPEN = (
+    "Review the plan, the execution result and the evaluator feedback. Return (a) concrete corrections for the "
+    "current task, each tied to a feedback id, and (b) lessons that would generalise to other claims-analysis work "
+    "beyond this task, each citing the feedback ids it came from. Do not withhold a lesson because few tasks remain "
+    "in this run. Return empty lists only when nothing generalises."
 )
+
+
+def reflect_instructions(min_applicable_remaining: int) -> str:
+    """Reflection wording for the skill rule in force (D-26).
+
+    The reflection runs *before* the proposal, so a prompt demanding "at least two remaining tasks" suppresses
+    the lesson one step earlier than the gate itself: in ``run_009`` the modelling lessons were lost this way even
+    though the proposal gate had been removed. Keep the two prompts in step.
+    """
+    return REFLECT_INSTRUCTIONS_GATED if int(min_applicable_remaining) >= 2 else REFLECT_INSTRUCTIONS_OPEN
+# The skill-proposal rule is configurable (D-25) and the operator must be told the rule that is actually in force -
+# a prompt demanding "at least two remaining tasks" makes the operator self-censor even when the code would accept
+# the lesson. ``propose_instructions`` supplies the wording and ``skill_rule`` the one-sentence statement recorded
+# in the request payload, both as a function of ``Services.skill_min_applicable_remaining``.
+_NUMBER_WORDS = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}
+PROPOSE_INSTRUCTIONS_GATED = (
+    "Turn at most one reusable lesson into a candidate skill following the embedded schema - only if it applies to "
+    "at least {count} remaining task{plural} and does not duplicate an existing skill (existing skills are listed). "
+    "Procedures must be general, safe (no code execution, network or credentials) and must not restate this task's "
+    "findings. Otherwise return proposal: null with a reason."
+)
+PROPOSE_INSTRUCTIONS_OPEN = (
+    "Turn at most one reusable lesson from this task into a candidate skill following the embedded schema, if the "
+    "lesson would generalise to other claims-analysis work. Procedures must be general, safe (no code execution, "
+    "network or credentials) and must not restate this task's findings or numbers. Return proposal: null with a "
+    "reason only when nothing from this task generalises."
+)
+SKILL_RULE_GATED = (
+    "A lesson may become a skill only when it applies to at least {count} of the task ids listed in "
+    "remaining_task_ids; otherwise return proposal: null."
+)
+SKILL_RULE_OPEN = (
+    "There is no minimum number of remaining tasks: any lesson that generalises beyond this task may become a "
+    "skill, even if no remaining task in this run would use it."
+)
+
+
+def propose_instructions(min_applicable_remaining: int) -> str:
+    """Operator wording for ``propose_skill`` under the configured gate (0 = no gate)."""
+    n = int(min_applicable_remaining)
+    if n <= 0:
+        return PROPOSE_INSTRUCTIONS_OPEN
+    return PROPOSE_INSTRUCTIONS_GATED.format(count=_NUMBER_WORDS.get(n, n), plural="" if n == 1 else "s")
+
+
+def skill_rule(min_applicable_remaining: int) -> str:
+    """The active proposal rule in one sentence, recorded in the request payload so the transcript carries it."""
+    n = int(min_applicable_remaining)
+    if n <= 0:
+        return SKILL_RULE_OPEN
+    return SKILL_RULE_GATED.format(count=_NUMBER_WORDS.get(n, n))
+
+
 REVISE_PROPOSAL_INSTRUCTIONS = (
     "The proposal failed validation; the failed checks are included. Return a corrected proposal, or null with a "
     "reason if it cannot be made valid without becoming a duplicate or a one-off."
@@ -752,7 +810,12 @@ class ClaimsNodes:
                 "attempts_remaining": max(int(state.get("max_retries", 0)) - int(state.get("retry_count", 0)), 0),
             }
         )
-        reflection, steps, errors = self._decide(state, "reflect_on_feedback", REFLECT_INSTRUCTIONS, payload, ReflectionResponse)
+        minimum = int(self.s.skill_min_applicable_remaining)
+        if learning:  # the learn path feeds propose_skill, so it must be held to the same rule (D-26)
+            payload["skill_rule"] = skill_rule(minimum)
+        reflection, steps, errors = self._decide(
+            state, "reflect_on_feedback", reflect_instructions(minimum), payload, ReflectionResponse
+        )
         if reflection is None:
             reflection = {"reusable_lessons": [], "current_task_corrections": []}
         self._graph_event(
@@ -841,12 +904,20 @@ class ClaimsNodes:
         reflection = state.get("reflection") or {}
         lessons = reflection.get("reusable_lessons") or []
         remaining = set(state.get("remaining_task_ids") or [])
-        eligible = [l for l in lessons if len(set(l.get("applicable_task_ids") or []) & remaining) >= 2]
+        minimum = int(self.s.skill_min_applicable_remaining)
+        # D-25: with the gate removed (minimum 0) every reusable lesson is eligible - a lesson learned on the last
+        # task is exactly what a held-out test asks for, and the validator remains the filter.
+        if minimum > 0:
+            eligible = [l for l in lessons if len(set(l.get("applicable_task_ids") or []) & remaining) >= minimum]
+            no_lesson_reason = f"no lesson reusable in >= {minimum} remaining tasks"
+        else:
+            eligible = list(lessons)
+            no_lesson_reason = "no reusable lesson in the reflection"
         skip_reason = None
         if self._budget_exhausted(state):
             skip_reason = "operator_cap"
         elif not eligible:
-            skip_reason = "no lesson reusable in >= 2 remaining tasks"
+            skip_reason = no_lesson_reason
         if skip_reason:
             self.s.logger.log_skill_event(
                 {**self._meta(state), "timestamp": utc_now(), "event": "skill_proposal_skipped", "reason": skip_reason}
@@ -864,9 +935,12 @@ class ClaimsNodes:
                 "feedback": operator_feedback_view(self._task_feedback(state), self.s.reveal_fixes),
                 "reflection": reflection,
                 "existing_skills": self._existing_skills_brief(),
+                "skill_rule": skill_rule(minimum),  # D-25: the transcript records the rule the operator was held to
             }
         )
-        response, steps, errors = self._decide(state, "propose_skill", PROPOSE_INSTRUCTIONS, payload, SkillProposalResponse)
+        response, steps, errors = self._decide(
+            state, "propose_skill", propose_instructions(minimum), payload, SkillProposalResponse
+        )
         proposal = (response or {}).get("proposal")
         self.s.logger.log_skill_event(
             {
@@ -896,7 +970,13 @@ class ClaimsNodes:
         else:
             lister = getattr(self.s.skill_store, "list_skills", None)
             existing = list(lister()) if callable(lister) else []
-            validation = self.s.validate_skill(proposal, existing, state["task_id"], list(state.get("remaining_task_ids") or []))
+            validation = self.s.validate_skill(
+                proposal,
+                existing,
+                state["task_id"],
+                list(state.get("remaining_task_ids") or []),
+                int(self.s.skill_min_applicable_remaining),
+            )
         decision = validation.get("decision", "rejected")
         if decision == "retry_revision" and state.get("proposal_revisions", 0) >= 1:
             decision = "rejected"
@@ -923,7 +1003,14 @@ class ClaimsNodes:
     # ---- revise_skill_proposal -------------------------------------------------------
     def revise_skill_proposal(self, state: dict) -> dict:
         payload = self._base_payload(state)
-        payload.update({"proposal": state.get("skill_proposal"), "validation": state.get("skill_validation"), "existing_skills": self._existing_skills_brief()})
+        payload.update(
+            {
+                "proposal": state.get("skill_proposal"),
+                "validation": state.get("skill_validation"),
+                "existing_skills": self._existing_skills_brief(),
+                "skill_rule": skill_rule(int(self.s.skill_min_applicable_remaining)),  # same rule as the proposal step
+            }
+        )
         response, steps, errors = self._decide(
             state, "revise_skill_proposal", REVISE_PROPOSAL_INSTRUCTIONS, payload, SkillProposalResponse
         )

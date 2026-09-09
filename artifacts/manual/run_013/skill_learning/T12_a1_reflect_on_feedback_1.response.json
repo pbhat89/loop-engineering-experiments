@@ -1,0 +1,22 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T12-no_target_leakage",
+      "correction": "In the feature_set component, remove billed_amount and allowed_amount from params.features. Retain only submission-time features: claim_type, cpt_category, place_of_service, provider_specialty, network_status, service_units, length_of_stay, er_flag, elective_flag, preventive_flag, auth_required_flag, primary_icd10_cm, drg_present."
+    },
+    {
+      "feedback_id": "T12-caveat_model_limitations",
+      "correction": "In the write_report component, add model_limitations to params.caveats. Update the list from [\"no_operational_use\"] to [\"no_operational_use\", \"model_limitations\"]."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When building predictive models designed to score claims at submission time, exclude all financial amount fields (billed_amount, allowed_amount, paid_amount, member_oop, cob_amount) and derived indicators (high_cost_flag), using only features known when the claim enters the system. This prevents target leakage and ensures operational deployability.",
+      "source_feedback_ids": ["T12-no_target_leakage"]
+    },
+    {
+      "lesson": "Include the model_limitations caveat in reports documenting predictive models to communicate baseline assumptions, known constraints, and appropriate use boundaries to stakeholders.",
+      "source_feedback_ids": ["T12-caveat_model_limitations"]
+    }
+  ]
+}

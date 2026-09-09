@@ -1,0 +1,50 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": ["claim_status"],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": ["billed_amount", "allowed_amount", "paid_amount"],
+        "statistics": "sum_mean"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "adjudication_date",
+        "metrics": ["claim_count"]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan covers all task requirements: load data, compute claims count with status breakdown (generating required status chart), calculate denial and fraud prevalence rates with portfolio-level denominators, summarize financial amounts (billed, allowed, paid) at both portfolio and per-claim levels, generate monthly claim volume trend (producing both chart and CSV), and write a comprehensive report with proper denomination context and artifact citations for an executive one-page portfolio overview."
+}

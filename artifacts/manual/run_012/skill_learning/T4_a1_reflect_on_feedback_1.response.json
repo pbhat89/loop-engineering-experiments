@@ -1,0 +1,27 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T4-code_ranking",
+      "correction": "Change denial_code_ranking scope from 'all_claims' to 'denied_claims' so each code's share is its share of denials and shares sum to 1."
+    },
+    {
+      "feedback_id": "T4-segment_rates",
+      "correction": "Change denial_rate_by_segment denominator from 'all_claims' to 'adjudicated_claims' so rates reflect denials among adjudicated claims only."
+    },
+    {
+      "feedback_id": "T4-segment_denominator",
+      "correction": "Change denial_rate_by_segment denominator from 'all_claims' to 'adjudicated_claims' to reflect correct statistical denominator for denial rates."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "For denial rate analysis, use adjudicated claims (Paid, Denied, Adjusted) as the denominator, not all claims. This excludes claims not yet adjudicated and provides the correct statistical basis for comparing denial rates across segments.",
+      "applicable_task_ids": [
+        "T5"
+      ],
+      "source_feedback_ids": [
+        "T4-segment_denominator"
+      ]
+    }
+  ]
+}

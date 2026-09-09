@@ -99,6 +99,9 @@ class RunConfig:
     seed_skill_exclude: list[str] = field(default_factory=list)
     # experiment 5 v2 (D-24): freeze the carried-over memory - recall and retrieval still work, nothing is written
     memory_read_only: bool = False
+    # experiment 6 (D-25): the skill-proposal gate. 2 = the historical rule (a lesson must apply to at least two
+    # remaining tasks); 0 = no gate, every reusable lesson is eligible and the validator is the only filter.
+    skill_min_applicable_remaining: int = 2
     created_at: str = field(default_factory=utc_now)
 
     @classmethod
@@ -124,6 +127,7 @@ class RunConfig:
             task_index_offset=int(cfg.get("task_index_offset", 0) or 0),
             seed_skill_exclude=[str(x) for x in (cfg.get("seed_skill_exclude") or [])],
             memory_read_only=bool(cfg.get("memory_read_only", False)),
+            skill_min_applicable_remaining=int(cfg.get("skill_min_applicable_remaining", 2)),
         )
 
     def to_dict(self) -> dict:
@@ -227,6 +231,9 @@ def build_services(config: RunConfig):
         reveal_fixes=config.reveal_fixes,
         memory_factory=lambda run_id, condition: FeedbackMemory(ARTIFACTS_DIR / "memory", run_id, condition),
         memory_read_only=config.memory_read_only,
+        # experiment 6 (D-25): drives the eligibility filter, the operator's instructions, the `skill_rule`
+        # payload key and the validator's applicability check, so prompt and rule cannot drift apart
+        skill_min_applicable_remaining=config.skill_min_applicable_remaining,
     )
 
 

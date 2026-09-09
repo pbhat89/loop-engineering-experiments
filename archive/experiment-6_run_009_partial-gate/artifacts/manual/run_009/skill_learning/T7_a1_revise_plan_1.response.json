@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 95,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "model_limitations"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_009_003"
+  ],
+  "rationale": "Addresses critical evaluation feedback by removing billed_amount and allowed_amount from features to eliminate target leakage of post-submission settlement information. These fields encode decisions made after claim submission and are unavailable at prediction time, causing inflated model performance (ROC-AUC > 0.99). Adding model_limitations caveat communicates that the early-warning model is a baseline screening tool with inherent limitations and should not be used as a standalone decision mechanism. Maintains dual-model comparison (logistic regression and random forest) with training-only preprocessing and threshold computation to preserve statistical rigor.",
+  "changes_summary": "Removed billed_amount and allowed_amount from feature_set to eliminate target leakage of post-submission settlement information that inflated model performance. Added model_limitations caveat to write_report to transparently communicate the model's role as a baseline screening tool and its inherent limitations."
+}

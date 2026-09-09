@@ -1,0 +1,28 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T1-candidate_keys",
+      "correction": "Add adherence.member_id as a standalone candidate key to the duplicate_check component. The keys list should include both adherence.member_id and adherence.member_id+therapeutic_class to verify all natural keys in the adherence table."
+    },
+    {
+      "feedback_id": "T1-caveat_synthetic",
+      "correction": "Add 'synthetic_data' to the caveats parameter in the write_report component to clearly state that the dataset is synthetic."
+    },
+    {
+      "feedback_id": "T1-caveat_sample_preview",
+      "correction": "Add 'sample_preview' to the caveats parameter in the write_report component to clarify that value samples shown in the report are previews only, not substantive findings."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When verifying candidate keys, test every natural key for uniqueness—both simple keys and composite keys. For tables with composite candidate keys (e.g., member_id+therapeutic_class), also verify the individual columns independently to fully document cardinality constraints and potential row-level uniqueness.",
+      "source_feedback_ids": ["T1-candidate_keys"],
+      "applicable_task_ids": ["T3", "T6", "T7"]
+    },
+    {
+      "lesson": "For all claims analysis reports, explicitly state whether the dataset is synthetic or real. Include the synthetic_data caveat in write_report parameters to ensure readers understand the data's origin and any limitations that imposes on findings.",
+      "source_feedback_ids": ["T1-caveat_synthetic"],
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"]
+    }
+  ]
+}

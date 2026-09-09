@@ -1,0 +1,1122 @@
+{
+  "request_id": "run_012:skill_learning:T7:a2:reflect_on_feedback:1",
+  "run_id": "run_012",
+  "condition": "skill_learning",
+  "task_id": "T7",
+  "attempt": 2,
+  "node": "reflect_on_feedback",
+  "seq": 1,
+  "created_at": "2026-09-09T03:52:53+00:00",
+  "instructions": "Review the plan, the execution result and the evaluator feedback. Return (a) concrete corrections for the current task, each tied to a feedback id, and (b) lessons that would generalise to other claims-analysis work beyond this task, each citing the feedback ids it came from. Do not withhold a lesson because few tasks remain in this run. Return empty lists only when nothing generalises.",
+  "payload": {
+    "task_id": "T7",
+    "condition": "skill_learning",
+    "task_spec": {
+      "task_id": "T7",
+      "title": "High-cost claim identification",
+      "objective": "Medical management wants an early-warning model: when a claim comes in, how likely is it to end up among the most expensive 5 percent by paid amount, so a nurse reviewer can look at it early? Hold out a quarter of the claims to test on, define \"high cost\" as paid amount above the 95th percentile, and train a logistic regression plus one tree-based model. Report how well the models rank claims (PR-AUC, ROC-AUC, and precision and recall among the top 5 percent of held-out claims by score). Produce the standard artifacts (model metrics, threshold, feature list, precision-at-k chart, report).",
+      "tags": [
+        "modeling",
+        "high_cost",
+        "threshold",
+        "percentile",
+        "leakage",
+        "splits",
+        "seeds",
+        "ranking",
+        "metrics"
+      ],
+      "input_tables": [
+        "medical_claims"
+      ],
+      "required_artifacts": [
+        "model_metrics.json",
+        "threshold.json",
+        "feature_list.json",
+        "precision_at_k.png",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "split",
+        "description": "Plain random train/test split of row indices with the run seed (no stratification; the target is defined afterwards).",
+        "default_selected": true,
+        "params": {
+          "test_size": {
+            "description": "Share of rows held out for testing.",
+            "options": [
+              0.2,
+              0.25,
+              0.3
+            ],
+            "default": 0.25
+          }
+        },
+        "produces": [
+          {
+            "key": "split",
+            "shape": "{test_size: float, seed: int, n_train: int, n_test: int}"
+          }
+        ]
+      },
+      {
+        "id": "target_definition",
+        "description": "Define the high-cost target as amount above a percentile threshold computed on a chosen set of rows.",
+        "default_selected": true,
+        "params": {
+          "amount_column": {
+            "description": "Which amount column defines cost.",
+            "options": [
+              "paid_amount",
+              "billed_amount",
+              "allowed_amount"
+            ],
+            "default": "paid_amount"
+          },
+          "percentile": {
+            "description": "Which percentile of the amount column sets the threshold.",
+            "options": [
+              90,
+              95,
+              99
+            ],
+            "default": 95
+          },
+          "threshold_source": {
+            "description": "Which rows the percentile is computed on.",
+            "options": [
+              "train_only",
+              "all_data"
+            ],
+            "default": "all_data"
+          }
+        },
+        "produces": [
+          {
+            "key": "target_definition",
+            "shape": "{amount_column: str, percentile: int, threshold_source: str, threshold_value: float, positive_rate_train: float, positive_rate_test: float, n_positive_train: int, n_positive_test: int} (threshold_value = numpy.percentile(values, percentile); positive = amount > threshold_value)"
+          }
+        ],
+        "artifacts": [
+          "threshold.json"
+        ]
+      },
+      {
+        "id": "feature_set",
+        "description": "Select model features and record which identifier or target-derived fields the selection contains.",
+        "default_selected": true,
+        "params": {
+          "features": {
+            "description": "Which columns enter the model as features (drg_present = drg_code.notna()).",
+            "multi": true,
+            "options": [
+              "claim_type",
+              "cpt_category",
+              "place_of_service",
+              "provider_specialty",
+              "network_status",
+              "service_units",
+              "length_of_stay",
+              "er_flag",
+              "elective_flag",
+              "preventive_flag",
+              "auth_required_flag",
+              "primary_icd10_cm",
+              "drg_present",
+              "billed_amount",
+              "allowed_amount",
+              "paid_amount",
+              "member_oop",
+              "cob_amount",
+              "high_cost_flag",
+              "claim_id",
+              "member_id"
+            ],
+            "default": [
+              "claim_type",
+              "billed_amount",
+              "allowed_amount"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "feature_set",
+            "shape": "{features: [str], n_categorical: int, n_numeric: int, id_fields_present: [str], target_derived_present: [str]}"
+          }
+        ],
+        "artifacts": [
+          "feature_list.json"
+        ]
+      },
+      {
+        "id": "preprocessing",
+        "description": "One-hot encode categoricals and optionally scale numerics, fitted on a chosen partition.",
+        "default_selected": true,
+        "params": {
+          "fit_on": {
+            "description": "Which rows the encoder and scaler are fitted on.",
+            "options": [
+              "train_only",
+              "all_data"
+            ],
+            "default": "all_data"
+          },
+          "scaling": {
+            "description": "Whether numeric features are standardised.",
+            "options": [
+              "none",
+              "standard"
+            ],
+            "default": "none"
+          }
+        },
+        "produces": [
+          {
+            "key": "preprocessing",
+            "shape": "{fit_on: str, scaling: str, n_features_out: int}"
+          }
+        ]
+      },
+      {
+        "id": "models",
+        "description": "Fit the chosen classifiers and report held-out ranking metrics (top 5 percent of test rows by score).",
+        "default_selected": true,
+        "params": {
+          "models": {
+            "description": "Which classifiers to train.",
+            "multi": true,
+            "options": [
+              "logistic_regression",
+              "random_forest",
+              "gradient_boosting"
+            ],
+            "default": [
+              "logistic_regression"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "models",
+            "shape": "{name: {pr_auc: float, roc_auc: float, precision_at_top_5pct: float, recall_at_top_5pct: float, n_test: int}}"
+          }
+        ],
+        "artifacts": [
+          "model_metrics.json",
+          "precision_at_k.png"
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T8"
+    ],
+    "remaining_tasks": [
+      {
+        "task_id": "T8",
+        "title": "Executive brief"
+      }
+    ],
+    "purpose": "learn: extract reusable lessons from the whole task",
+    "plan": {
+      "steps": [
+        {
+          "component": "load_tables",
+          "params": {}
+        },
+        {
+          "component": "split",
+          "params": {
+            "test_size": 0.25
+          }
+        },
+        {
+          "component": "target_definition",
+          "params": {
+            "amount_column": "paid_amount",
+            "percentile": 95,
+            "threshold_source": "train_only"
+          }
+        },
+        {
+          "component": "feature_set",
+          "params": {
+            "features": [
+              "claim_type",
+              "cpt_category",
+              "place_of_service",
+              "provider_specialty",
+              "network_status",
+              "service_units",
+              "length_of_stay",
+              "er_flag",
+              "elective_flag",
+              "preventive_flag",
+              "auth_required_flag",
+              "primary_icd10_cm",
+              "drg_present"
+            ]
+          }
+        },
+        {
+          "component": "preprocessing",
+          "params": {
+            "fit_on": "train_only",
+            "scaling": "none"
+          }
+        },
+        {
+          "component": "models",
+          "params": {
+            "models": [
+              "logistic_regression",
+              "random_forest"
+            ]
+          }
+        },
+        {
+          "component": "write_report",
+          "params": {
+            "caveats": [
+              "model_limitations"
+            ],
+            "show_denominators": true,
+            "cite_artifacts": true
+          }
+        }
+      ],
+      "skills_applied": [],
+      "rationale": "Task T7 requires an early-warning model for high-cost claims (top 5% by paid amount) for nurse review. Revised plan addresses three critical statistical discipline issues from prior evaluation: (1) threshold_source changed to 'train_only' to prevent test distribution leakage into target definition; (2) amount fields (billed_amount, allowed_amount, member_oop, cob_amount) removed from feature set to eliminate target leakage—these are directly or indirectly derived from paid_amount and violate submission-time feature requirement; (3) preprocessing.fit_on changed to 'train_only' to prevent test row information from affecting transformation parameters. Retained feature set includes clinical (cpt_category, primary_icd10_cm, drg_present, place_of_service, er_flag, elective_flag, preventive_flag), operational (provider_specialty, network_status, auth_required_flag, service_units, length_of_stay), and claim-level attributes (claim_type), all available at submission time. One-hot encode categoricals fitted on training only, no scaling for tree compatibility. Logistic regression and random forest for ranking model comparison. Report with model_limitations caveat, denominator notation for clarity, and artifact citations per standard practice.",
+      "changes_summary": "Fixed three critical statistical leakage issues: (1) target_definition.threshold_source changed from 'all_data' to 'train_only'—threshold must be computed on training data only to prevent test distribution from leaking into target; (2) feature_set.features reduced from 17 to 13 by removing billed_amount, allowed_amount, member_oop, and cob_amount—these amount fields are directly or indirectly derived from the target (paid_amount) and violate the submission-time feature principle; retained features are available at claim submission and do not encode target information; (3) preprocessing.fit_on changed from 'all_data' to 'train_only'—encoder and scaler must be fitted on training data only to prevent test row distributions from affecting transformation parameters."
+    },
+    "plan_history": [
+      {
+        "steps": [
+          {
+            "component": "load_tables",
+            "params": {}
+          },
+          {
+            "component": "split",
+            "params": {
+              "test_size": 0.25
+            }
+          },
+          {
+            "component": "target_definition",
+            "params": {
+              "amount_column": "paid_amount",
+              "percentile": 95,
+              "threshold_source": "all_data"
+            }
+          },
+          {
+            "component": "feature_set",
+            "params": {
+              "features": [
+                "claim_type",
+                "cpt_category",
+                "place_of_service",
+                "provider_specialty",
+                "network_status",
+                "service_units",
+                "length_of_stay",
+                "er_flag",
+                "elective_flag",
+                "preventive_flag",
+                "auth_required_flag",
+                "primary_icd10_cm",
+                "drg_present",
+                "billed_amount",
+                "allowed_amount",
+                "member_oop",
+                "cob_amount"
+              ]
+            }
+          },
+          {
+            "component": "preprocessing",
+            "params": {
+              "fit_on": "all_data",
+              "scaling": "none"
+            }
+          },
+          {
+            "component": "models",
+            "params": {
+              "models": [
+                "logistic_regression",
+                "random_forest"
+              ]
+            }
+          },
+          {
+            "component": "write_report",
+            "params": {
+              "caveats": [
+                "model_limitations"
+              ],
+              "show_denominators": true,
+              "cite_artifacts": true
+            }
+          }
+        ],
+        "skills_applied": [],
+        "rationale": "Task T7 requires an early-warning model for high-cost claims (top 5% by paid amount) for nurse review. Plan: (1) load input data from medical_claims; (2) 25% test holdout using run seed per task requirement; (3) target as paid_amount > 95th percentile across all data; (4) comprehensive feature set covering clinical (cpt_category, primary_icd10_cm, drg_present, place_of_service, er_flag, elective_flag, preventive_flag), operational (provider_specialty, network_status, auth_required_flag, service_units, length_of_stay), and financial context (billed_amount, allowed_amount, member_oop, cob_amount)—avoiding target and identifier leakage; (5) one-hot encode categoricals fitted on all data, no scaling for tree compatibility; (6) logistic regression and random forest for ranking model comparison; (7) report with model_limitations caveat, denominator notation for clarity, and artifact citations per standard practice. Retrieved skill on descriptive_only does not apply to predictive modeling task.",
+        "changes_summary": null
+      },
+      {
+        "steps": [
+          {
+            "component": "load_tables",
+            "params": {}
+          },
+          {
+            "component": "split",
+            "params": {
+              "test_size": 0.25
+            }
+          },
+          {
+            "component": "target_definition",
+            "params": {
+              "amount_column": "paid_amount",
+              "percentile": 95,
+              "threshold_source": "train_only"
+            }
+          },
+          {
+            "component": "feature_set",
+            "params": {
+              "features": [
+                "claim_type",
+                "cpt_category",
+                "place_of_service",
+                "provider_specialty",
+                "network_status",
+                "service_units",
+                "length_of_stay",
+                "er_flag",
+                "elective_flag",
+                "preventive_flag",
+                "auth_required_flag",
+                "primary_icd10_cm",
+                "drg_present"
+              ]
+            }
+          },
+          {
+            "component": "preprocessing",
+            "params": {
+              "fit_on": "train_only",
+              "scaling": "none"
+            }
+          },
+          {
+            "component": "models",
+            "params": {
+              "models": [
+                "logistic_regression",
+                "random_forest"
+              ]
+            }
+          },
+          {
+            "component": "write_report",
+            "params": {
+              "caveats": [
+                "model_limitations"
+              ],
+              "show_denominators": true,
+              "cite_artifacts": true
+            }
+          }
+        ],
+        "skills_applied": [],
+        "rationale": "Task T7 requires an early-warning model for high-cost claims (top 5% by paid amount) for nurse review. Revised plan addresses three critical statistical discipline issues from prior evaluation: (1) threshold_source changed to 'train_only' to prevent test distribution leakage into target definition; (2) amount fields (billed_amount, allowed_amount, member_oop, cob_amount) removed from feature set to eliminate target leakage—these are directly or indirectly derived from paid_amount and violate submission-time feature requirement; (3) preprocessing.fit_on changed to 'train_only' to prevent test row information from affecting transformation parameters. Retained feature set includes clinical (cpt_category, primary_icd10_cm, drg_present, place_of_service, er_flag, elective_flag, preventive_flag), operational (provider_specialty, network_status, auth_required_flag, service_units, length_of_stay), and claim-level attributes (claim_type), all available at submission time. One-hot encode categoricals fitted on training only, no scaling for tree compatibility. Logistic regression and random forest for ranking model comparison. Report with model_limitations caveat, denominator notation for clarity, and artifact citations per standard practice.",
+        "changes_summary": "Fixed three critical statistical leakage issues: (1) target_definition.threshold_source changed from 'all_data' to 'train_only'—threshold must be computed on training data only to prevent test distribution from leaking into target; (2) feature_set.features reduced from 17 to 13 by removing billed_amount, allowed_amount, member_oop, and cob_amount—these amount fields are directly or indirectly derived from the target (paid_amount) and violate the submission-time feature principle; retained features are available at claim submission and do not encode target information; (3) preprocessing.fit_on changed from 'all_data' to 'train_only'—encoder and scaler must be fitted on training data only to prevent test row distributions from affecting transformation parameters."
+      }
+    ],
+    "execution_summary": {
+      "status": "ok",
+      "components_executed": [
+        "load_tables",
+        "split",
+        "target_definition",
+        "feature_set",
+        "preprocessing",
+        "models",
+        "write_report"
+      ],
+      "components_failed": [],
+      "errors": [],
+      "artifacts": [
+        "threshold.json",
+        "feature_list.json",
+        "model_metrics.json",
+        "precision_at_k.png",
+        "report.md",
+        "metrics.json"
+      ],
+      "metric_keys": [
+        "feature_set",
+        "models",
+        "plan",
+        "preprocessing",
+        "report",
+        "split",
+        "tables",
+        "target_definition"
+      ]
+    },
+    "evaluation_summary": {
+      "score_total": 3.6,
+      "scores": {
+        "correctness": 4.0,
+        "completeness": 4.0,
+        "reproducibility": 4.0,
+        "statistical_discipline": 4.0,
+        "communication": 2.0
+      },
+      "passed": true,
+      "failed_checks": [
+        {
+          "check_id": "T7.caveat_synthetic",
+          "dimension": "communication",
+          "critical": false,
+          "observed": {
+            "in_report_caveats": false,
+            "keywords_found": [],
+            "report_text_available": true
+          },
+          "expected": {
+            "caveat_id": "synthetic_data",
+            "any_of": [
+              "synthetic",
+              "simulated"
+            ]
+          },
+          "detail": "caveat 'synthetic_data' neither listed in report.caveats nor phrased in the report text (keywords ['synthetic', 'simulated'])"
+        },
+        {
+          "check_id": "T7.caveat_no_operational_use",
+          "dimension": "communication",
+          "critical": false,
+          "observed": {
+            "in_report_caveats": false,
+            "keywords_found": [],
+            "report_text_available": true
+          },
+          "expected": {
+            "caveat_id": "no_operational_use",
+            "any_of": [
+              "operational",
+              "not be used",
+              "must not be used"
+            ]
+          },
+          "detail": "caveat 'no_operational_use' neither listed in report.caveats nor phrased in the report text (keywords ['operational', 'not be used', 'must not be used'])"
+        }
+      ],
+      "n_failed_checks_total": 2,
+      "n_failed_checks_shown": 2
+    },
+    "feedback": [
+      {
+        "feedback_id": "T7-threshold_source",
+        "check_id": "T7.threshold_source",
+        "criterion": "statistical_discipline",
+        "issue_type": "wrong_threshold_source",
+        "severity": "high",
+        "remediation": "Compute the 95th-percentile threshold on the training partition only (threshold_source train_only); a threshold from all rows leaks the test distribution into the target.",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": "all_data",
+        "expected": "train_only",
+        "detail": "target_definition.threshold_source is 'all_data', expected 'train_only'",
+        "weight": 4,
+        "first_seen_attempt": 1,
+        "last_seen_attempt": 1,
+        "status": "resolved_after_attempt_1"
+      },
+      {
+        "feedback_id": "T7-no_target_leakage",
+        "check_id": "T7.no_target_leakage",
+        "criterion": "statistical_discipline",
+        "issue_type": "leakage",
+        "severity": "high",
+        "remediation": "Exclude every amount field (billed_amount, allowed_amount, paid_amount, member_oop, cob_amount), the pre-computed high_cost_flag and the identifiers claim_id and member_id; use submission-time features only.",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": [
+          "billed_amount",
+          "allowed_amount",
+          "member_oop",
+          "cob_amount"
+        ],
+        "expected": "none of ['billed_amount', 'allowed_amount', 'paid_amount', 'member_oop', 'cob_amount', 'high_cost_flag', 'claim_id', 'member_id']",
+        "detail": "prohibited fields present: ['billed_amount', 'allowed_amount', 'member_oop', 'cob_amount']",
+        "weight": 4,
+        "first_seen_attempt": 1,
+        "last_seen_attempt": 1,
+        "status": "resolved_after_attempt_1"
+      },
+      {
+        "feedback_id": "T7-fit_on_train_only",
+        "check_id": "T7.fit_on_train_only",
+        "criterion": "statistical_discipline",
+        "issue_type": "preprocessing_leakage",
+        "severity": "high",
+        "remediation": "Fit the encoder and scaler on the training partition only (fit_on train_only).",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": "all_data",
+        "expected": "train_only",
+        "detail": "preprocessing.fit_on is 'all_data', expected 'train_only'",
+        "weight": 3,
+        "first_seen_attempt": 1,
+        "last_seen_attempt": 1,
+        "status": "resolved_after_attempt_1"
+      },
+      {
+        "feedback_id": "T7-caveat_synthetic",
+        "check_id": "T7.caveat_synthetic",
+        "criterion": "communication",
+        "issue_type": "missing_caveat",
+        "severity": "low",
+        "remediation": "State that the data is synthetic (add the synthetic_data caveat).",
+        "reusable": true,
+        "applicable_task_ids": [
+          "T8"
+        ],
+        "observed": {
+          "in_report_caveats": false,
+          "keywords_found": [],
+          "report_text_available": true
+        },
+        "expected": {
+          "caveat_id": "synthetic_data",
+          "any_of": [
+            "synthetic",
+            "simulated"
+          ]
+        },
+        "detail": "caveat 'synthetic_data' neither listed in report.caveats nor phrased in the report text (keywords ['synthetic', 'simulated'])",
+        "weight": 1,
+        "first_seen_attempt": 2,
+        "last_seen_attempt": 2,
+        "status": "open"
+      },
+      {
+        "feedback_id": "T7-caveat_no_operational_use",
+        "check_id": "T7.caveat_no_operational_use",
+        "criterion": "communication",
+        "issue_type": "missing_caveat",
+        "severity": "low",
+        "remediation": "State that the ranking must not be used operationally (add the no_operational_use caveat).",
+        "reusable": true,
+        "applicable_task_ids": [
+          "T8"
+        ],
+        "observed": {
+          "in_report_caveats": false,
+          "keywords_found": [],
+          "report_text_available": true
+        },
+        "expected": {
+          "caveat_id": "no_operational_use",
+          "any_of": [
+            "operational",
+            "not be used",
+            "must not be used"
+          ]
+        },
+        "detail": "caveat 'no_operational_use' neither listed in report.caveats nor phrased in the report text (keywords ['operational', 'not be used', 'must not be used'])",
+        "weight": 1,
+        "first_seen_attempt": 2,
+        "last_seen_attempt": 2,
+        "status": "open"
+      }
+    ],
+    "attempts": 2,
+    "attempts_remaining": 3,
+    "skill_rule": "There is no minimum number of remaining tasks: any lesson that generalises beyond this task may become a skill, even if no remaining task in this run would use it."
+  },
+  "response_schema": {
+    "$defs": {
+      "Correction": {
+        "properties": {
+          "feedback_id": {
+            "title": "Feedback Id",
+            "type": "string"
+          },
+          "correction": {
+            "title": "Correction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "feedback_id",
+          "correction"
+        ],
+        "title": "Correction",
+        "type": "object"
+      },
+      "ReusableLesson": {
+        "properties": {
+          "lesson": {
+            "title": "Lesson",
+            "type": "string"
+          },
+          "applicable_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Applicable Task Ids",
+            "type": "array"
+          },
+          "source_feedback_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Source Feedback Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lesson"
+        ],
+        "title": "ReusableLesson",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``reflect_on_feedback``.",
+    "properties": {
+      "reusable_lessons": {
+        "items": {
+          "$ref": "#/$defs/ReusableLesson"
+        },
+        "title": "Reusable Lessons",
+        "type": "array"
+      },
+      "current_task_corrections": {
+        "items": {
+          "$ref": "#/$defs/Correction"
+        },
+        "title": "Current Task Corrections",
+        "type": "array"
+      }
+    },
+    "title": "ReflectionResponse",
+    "type": "object"
+  }
+}

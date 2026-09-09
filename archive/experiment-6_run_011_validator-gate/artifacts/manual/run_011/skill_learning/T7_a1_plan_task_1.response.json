@@ -1,0 +1,65 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 95,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "service_units",
+          "length_of_stay",
+          "billed_amount",
+          "allowed_amount"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "gradient_boosting"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "model_limitations"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan implements task specification with statistical discipline: 25% holdout test set; high-cost target defined as paid_amount above 95th percentile computed on training data only to avoid leakage. Feature set includes claim characteristics (type, CPT category), service context (place of service, provider specialty, service units, length of stay), and financial signals (billed and allowed amounts) for predicting claim cost tier at intake. Preprocessing fit on training data exclusively. Logistic regression provides interpretable coefficients; gradient boosting provides tree-based ranking capability. Report cites artifacts for full reproducibility."
+}

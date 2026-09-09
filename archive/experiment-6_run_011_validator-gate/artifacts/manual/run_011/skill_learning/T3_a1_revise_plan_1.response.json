@@ -1,0 +1,50 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty",
+          "network_status",
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_011_002"
+  ],
+  "rationale": "The prior plan's group_by parameter was incomplete, producing only the composite specialty+network_status grouping. To address all three feedback findings (missing network_status groups, missing provider_specialty groups, and missing in-network denial rate), group_comparison now includes all three grouping options: provider_specialty, network_status, and their composite. This generates separate metrics for specialty groups, network status groups (In-Network vs Out-of-Network), and the detailed specialty+network_status breakdown. All four requested metrics (volume, paid amount, denial and fraud rates) are computed over adjudicated claims with small-group flagging at 30 claims, following the retrieved skill on denial rate computation discipline. Top-10 provider ranking by claim count directly addresses the objective, and report includes numerator/denominator detail as required.",
+  "changes_summary": "Expanded group_by parameter from [\"provider_specialty+network_status\"] to [\"provider_specialty\", \"network_status\", \"provider_specialty+network_status\"] to produce separate group comparisons for each grouping dimension independently. This provides the network_status breakdown (In-Network/Out-of-Network) and provider_specialty breakdown that the prior execution failed to generate, while retaining the composite analysis. Denominator (adjudicated_claims), all metrics, and remaining steps unchanged."
+}

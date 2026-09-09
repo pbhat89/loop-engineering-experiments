@@ -1,0 +1,153 @@
+{
+  "task_id": "T13",
+  "run_id": "run_013",
+  "condition": "skill_learning",
+  "attempt": 2,
+  "seed": 42,
+  "generated_at": "2026-09-09T04:12:58+00:00",
+  "plan_sha256": "151e81d4da838b2902da7893902a199b1b00c7d013b2099ec6ee3ea9bae26913",
+  "plan": {
+    "steps": [
+      {
+        "component": "collect_findings",
+        "params": {
+          "sources": [
+            "T11",
+            "T12"
+          ]
+        }
+      },
+      {
+        "component": "brief_sections",
+        "params": {
+          "sections": [
+            "key_findings",
+            "model_results",
+            "limitations",
+            "synthetic_caveats",
+            "next_steps"
+          ],
+          "causal_language": "avoid",
+          "cite_artifacts": true
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "no_operational_use"
+          ],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [
+      "evolved_run_012_006",
+      "evolved_run_012_001",
+      "evolved_run_012_005"
+    ],
+    "rationale": "This revised plan addresses all three failed checks from the prior evaluation. First, synthetic_caveats is now included as a required section in brief_sections to transparently document that the analysis is based on synthetic data and that observed patterns do not represent real-world claims characteristics. Second, causal_language is set to 'avoid' to prevent generation of forbidden causal phrasing (causes, drives, leads to, because of) and reinforce statistical discipline; the parameter setting prevents generation rather than requiring post-hoc editing. Third, the synthetic_data caveat in write_report documents data limitations, and no_operational_use caveat clarifies that model scores are analytical-only and require governance review before operational deployment. Together, these changes establish clear foundational safeguards that protect stakeholder interpretation of findings from a descriptive analysis of synthetic data.",
+    "changes_summary": "Two parameter changes address the failed checks: (1) Added 'synthetic_caveats' to brief_sections.sections to include the missing required section that transparently documents synthetic data limitations; changed from [key_findings, model_results, limitations, next_steps] to [key_findings, model_results, limitations, synthetic_caveats, next_steps]. (2) Changed brief_sections.causal_language from 'allow' to 'avoid' to prevent generation of causal phrasing; this parameter setting is foundational and prevents forbidden phrases such as 'drives' from being generated during brief composition, eliminating the need for post-hoc editing and reinforcing statistical discipline."
+  },
+  "tables": {},
+  "findings": [
+    {
+      "task_id": "T11",
+      "metric_key": "denial_rate",
+      "label": "Denial rate (denominator: adjudicated_claims)",
+      "value": 0.10422238430991167,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T11/attempt_2/metrics.json#denial_rate",
+      "numerator": 1286,
+      "denominator": 12339
+    },
+    {
+      "task_id": "T11",
+      "metric_key": "claim_volume.total_claims",
+      "label": "Total medical claims",
+      "value": 12845,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T11/attempt_2/metrics.json#claim_volume.total_claims"
+    },
+    {
+      "task_id": "T11",
+      "metric_key": "financial_summary.paid_amount.sum",
+      "label": "Total paid amount",
+      "value": 9783415.77,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T11/attempt_2/metrics.json#financial_summary.paid_amount.sum"
+    },
+    {
+      "task_id": "T11",
+      "metric_key": "fraud_prevalence",
+      "label": "Fraud prevalence (denominator: all_claims)",
+      "value": 0.050369793694044374,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T11/attempt_2/metrics.json#fraud_prevalence",
+      "numerator": 647,
+      "denominator": 12845
+    },
+    {
+      "task_id": "T12",
+      "metric_key": "target_definition.threshold_value",
+      "label": "High-cost threshold (paid_amount p90, train_only)",
+      "value": 2074.346000000002,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T12/attempt_2/metrics.json#target_definition.threshold_value"
+    },
+    {
+      "task_id": "T12",
+      "metric_key": "models.logistic_regression.pr_auc",
+      "label": "High-cost model logistic_regression PR-AUC",
+      "value": 0.3933153059019225,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T12/attempt_2/metrics.json#models.logistic_regression.pr_auc"
+    },
+    {
+      "task_id": "T12",
+      "metric_key": "models.logistic_regression.roc_auc",
+      "label": "High-cost model logistic_regression ROC-AUC",
+      "value": 0.917397140308231,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T12/attempt_2/metrics.json#models.logistic_regression.roc_auc"
+    },
+    {
+      "task_id": "T12",
+      "metric_key": "models.random_forest.pr_auc",
+      "label": "High-cost model random_forest PR-AUC",
+      "value": 0.3875433572486803,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T12/attempt_2/metrics.json#models.random_forest.pr_auc"
+    },
+    {
+      "task_id": "T12",
+      "metric_key": "models.random_forest.roc_auc",
+      "label": "High-cost model random_forest ROC-AUC",
+      "value": 0.9077159530298725,
+      "source_path": "artifacts/tasks/run_013/skill_learning/T12/attempt_2/metrics.json#models.random_forest.roc_auc"
+    }
+  ],
+  "brief": {
+    "sections": [
+      "key_findings",
+      "model_results",
+      "limitations",
+      "synthetic_caveats",
+      "next_steps"
+    ],
+    "causal_language": "avoid",
+    "cite_artifacts": true,
+    "word_count": 275,
+    "n_numeric_statements": 9,
+    "n_cited_statements": 9
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "no_operational_use"
+    ],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

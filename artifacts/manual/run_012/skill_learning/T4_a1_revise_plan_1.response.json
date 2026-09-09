@@ -1,0 +1,44 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "denied_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "claim_type",
+          "provider_specialty",
+          "network_status",
+          "place_of_service",
+          "auth_required_flag"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only",
+          "association_not_causation",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The prior plan's structure correctly addressed the denial analysis objective's core dimensions. Two statistical discipline corrections are required: (1) denial code ranking must use denied_claims scope so each code's share is its proportion of denials and shares sum to 1; (2) segment-level denial rates must use adjudicated_claims as denominator, excluding claims not yet adjudicated, providing the correct statistical basis for rate comparison and operational decision-making. By-status missingness tracking retained for denial codes to show code absence patterns across claim statuses.",
+  "changes_summary": "Two parameter corrections to address statistical discipline violations: (1) denial_code_ranking scope changed from 'all_claims' to 'denied_claims' to compute denial code shares as shares of denials only; (2) denial_rate_by_segment denominator changed from 'all_claims' to 'adjudicated_claims' to establish the correct statistical denominator for segment-level denial rates."
+}

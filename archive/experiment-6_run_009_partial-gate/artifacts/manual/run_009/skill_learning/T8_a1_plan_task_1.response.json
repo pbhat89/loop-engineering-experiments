@@ -1,0 +1,26 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": ["T2", "T6"]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": ["key_findings", "model_results", "limitations", "next_steps"],
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["descriptive_only", "association_not_causation", "model_limitations"],
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The task requires an executive brief summarizing key findings, model performance, limitations, and next steps from earlier work. The plan uses collect_findings with default sources T2 (denial analysis) and T6 (high-cost model), brief_sections configured with all four required sections (key_findings, model_results, limitations, next_steps) and artifact citations for traceability as specified in the task tags, and write_report with standard caveats (descriptive_only, association_not_causation, model_limitations) appropriate for an analysis report to leadership."
+}

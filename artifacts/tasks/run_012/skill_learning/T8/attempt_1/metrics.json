@@ -1,0 +1,125 @@
+{
+  "task_id": "T8",
+  "run_id": "run_012",
+  "condition": "skill_learning",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-09T03:56:50+00:00",
+  "plan_sha256": "126c3c45e5815a680773ffc3fb775dd36d383a184b10e644381a8faf54eaf429",
+  "plan": {
+    "steps": [
+      {
+        "component": "collect_findings",
+        "params": {
+          "sources": [
+            "T2",
+            "T6"
+          ]
+        }
+      },
+      {
+        "component": "brief_sections",
+        "params": {
+          "sections": [
+            "key_findings",
+            "model_results",
+            "limitations",
+            "next_steps"
+          ],
+          "causal_language": "avoid",
+          "cite_artifacts": false
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "descriptive_only",
+            "association_not_causation",
+            "no_operational_use"
+          ],
+          "show_denominators": false,
+          "cite_artifacts": false
+        }
+      }
+    ],
+    "skills_applied": [
+      "evolved_run_012_001",
+      "evolved_run_012_002",
+      "evolved_run_012_004",
+      "evolved_run_012_005"
+    ],
+    "rationale": "This plan creates an executive brief for the head of claims by aggregating headline metrics from the denial analysis (T2) and high-cost model results (T6), the two primary analytical outputs. The brief is structured with key findings, model results, limitations, and next steps to guide executive decision-making. Causal language is avoided to protect against misinterpretation of descriptive and comparative findings as causal claims. All four retrieved skills are applied through the write_report caveats: synthetic_data (disclose that the dataset is simulated), descriptive_only (clarify that denial and provider analyses are descriptive in nature), association_not_causation (distinguish observed group differences from causal effects), and no_operational_use (explicitly require clinical validation and governance review before any deployment of model scores). This comprehensive caveating protects the reader from common misinterpretations of analytical findings and model output.",
+    "changes_summary": null
+  },
+  "tables": {},
+  "findings": [
+    {
+      "task_id": "T2",
+      "metric_key": "denial_rate",
+      "label": "Denial rate (denominator: adjudicated_claims)",
+      "value": 0.10422238430991167,
+      "source_path": "artifacts/tasks/run_012/skill_learning/T2/attempt_3/metrics.json#denial_rate",
+      "numerator": 1286,
+      "denominator": 12339
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "claim_volume.total_claims",
+      "label": "Total medical claims",
+      "value": 12845,
+      "source_path": "artifacts/tasks/run_012/skill_learning/T2/attempt_3/metrics.json#claim_volume.total_claims"
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "financial_summary.paid_amount.sum",
+      "label": "Total paid amount",
+      "value": 9783415.77,
+      "source_path": "artifacts/tasks/run_012/skill_learning/T2/attempt_3/metrics.json#financial_summary.paid_amount.sum"
+    },
+    {
+      "task_id": "T2",
+      "metric_key": "fraud_prevalence",
+      "label": "Fraud prevalence (denominator: all_claims)",
+      "value": 0.050369793694044374,
+      "source_path": "artifacts/tasks/run_012/skill_learning/T2/attempt_3/metrics.json#fraud_prevalence",
+      "numerator": 647,
+      "denominator": 12845
+    },
+    {
+      "task_id": "T6",
+      "status": "missing"
+    }
+  ],
+  "brief": {
+    "sections": [
+      "key_findings",
+      "model_results",
+      "limitations",
+      "next_steps"
+    ],
+    "causal_language": "avoid",
+    "cite_artifacts": false,
+    "word_count": 179,
+    "n_numeric_statements": 5,
+    "n_cited_statements": 0
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "descriptive_only",
+      "association_not_causation",
+      "no_operational_use"
+    ],
+    "show_denominators": false,
+    "cite_artifacts": false,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

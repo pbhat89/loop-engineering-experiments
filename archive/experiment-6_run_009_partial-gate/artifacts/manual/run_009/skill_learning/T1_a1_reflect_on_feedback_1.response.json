@@ -1,0 +1,19 @@
+{
+  "reusable_lessons": [
+    {
+      "lesson": "When testing uniqueness of natural keys and candidate keys, include both single-column and composite-key candidates. For instance, when adherence data may have a natural key as either (member_id) alone or (member_id + therapeutic_class) as a composite, test both to determine which is the true natural key.",
+      "applicable_task_ids": ["T3", "T7"],
+      "source_feedback_ids": ["T1-candidate_keys"]
+    }
+  ],
+  "current_task_corrections": [
+    {
+      "feedback_id": "T1-missingness_scope",
+      "correction": "Set the missingness scope parameter to 'all_columns' instead of 'top_10' to ensure that entirely empty and near-empty columns are included in the profile."
+    },
+    {
+      "feedback_id": "T1-candidate_keys",
+      "correction": "Add 'adherence.member_id' to the duplicate_check keys list. The complete set of keys to test should include all natural keys: 'medical_claims.claim_id', 'pharmacy_claims.rx_claim_id', 'members.member_id', 'providers.provider_npi', 'adherence.member_id', and 'adherence.member_id+therapeutic_class'."
+    }
+  ]
+}

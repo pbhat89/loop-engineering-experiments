@@ -1,0 +1,54 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": ["claim_status"],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": ["billed_amount", "allowed_amount", "paid_amount"],
+        "statistics": "sum_mean_quantiles"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "adjudication_date",
+        "metrics": ["claim_count", "paid_amount_sum"]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "descriptive_only"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_012_001",
+    "evolved_run_012_002",
+    "evolved_run_012_006"
+  ],
+  "rationale": "Plan addresses all objective elements: claim status splits via claim_volume with status breakdown and figure; denial rate and fraud prevalence at portfolio level; financial distributions via financial_summary with all three amount columns and quantiles; monthly trends via monthly_trend tracking claim count and paid spend. Three evolved skills apply: synthetic_data caveat (evolved_run_012_001) documents the synthetic nature of the analysis; descriptive_only caveat (evolved_run_012_002) clarifies that distributions and trends are descriptive without causal claims; cite_artifacts (evolved_run_012_006) applies citation discipline for executive-facing communication to the head of claims. Denominators are explicitly displayed to emphasize statistical discipline and rate clarity."
+}

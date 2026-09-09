@@ -1,0 +1,46 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": [
+          "T2",
+          "T4",
+          "T5",
+          "T6",
+          "T7"
+        ]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": [
+          "key_findings",
+          "model_results",
+          "limitations",
+          "synthetic_caveats",
+          "next_steps"
+        ],
+        "causal_language": "avoid",
+        "cite_artifacts": true
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "model_limitations"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_011_003"
+  ],
+  "rationale": "The prior plan was revised to address three critical feedback items from the evaluation. First, enable cite_artifacts in brief_sections to ensure all 11 numeric statements carry source citations, satisfying both the missing_citation finding and the reproducibility requirement. Second, change causal_language from 'allow' to 'avoid' to eliminate causal phrasing ('drives') and replace with strictly associative language. Third, retain the same component sources (T2, T4, T5, T6, T7) and section structure (key_findings, model_results, limitations, synthetic_caveats, next_steps) as they executed successfully. The synthetic_data_transparency_in_reports skill remains applicable and was applied in the prior attempt. These corrections directly address all three failed checks identified in the evaluation.",
+  "changes_summary": "Changed brief_sections.causal_language from 'allow' to 'avoid' to eliminate causal phrasing and use only associative language per feedback on removing 'drives'. Changed brief_sections.cite_artifacts from false to true to ensure all 11 numeric statements include [source: ...] citations as required for reproducibility. Retained collect_findings sources (T2, T4, T5, T6, T7), all brief sections, and report caveats (synthetic_data, model_limitations) as execution was successful only the parameter settings needed correction."
+}

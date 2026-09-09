@@ -3,16 +3,16 @@
 # Every condition reads this same file; per-condition differences are routes and memory only (config/graph.yaml).
 
 seed: 42
-# Experiment 5 v2 (D-24): the held-out transfer test, redesigned. Three arms, three tasks none of the arms has ever
-# seen, and the two memory arms start *warm* - seeded from run_006's memory (feedback_memory) and learned skills
-# (skill_learning). reflection_only is the cold control (checker feedback, no memory). No self-review arms.
-# v1 (run_007, [T9, T10, T5, T6]) hit a ceiling: the cold arm's first attempts already scored 3.09-3.68. v2 uses
-# three *convention-dense* tasks whose conventions are all covered by the run_006 memory, and freezes the memory
-# for the duration of the test (memory_read_only below) so run_008 is a pure evaluation of what was carried in.
-conditions: [reflection_only, feedback_memory, skill_learning]
-task_order: [T11, T12, T13]             # portfolio deep-dive -> high-cost model at p90 -> brief for the CFO
+# Experiment 6 phase 1 (D-25): re-run the *learning* phase for the skills arm only, with the skill-proposal gate
+# removed (skill_min_applicable_remaining: 0 below). Experiments 4/5 proposed a skill only when the lesson applied
+# to at least two remaining tasks, which discarded every lesson learned late in the sequence - including the
+# modelling lessons (leakage, ROC-AUC range) that the held-out test then asked for. Phase 1 is run_009 over the
+# experiment-4 suite; phase 2 (run_010) seeds from it and runs the held-out test (see scripts/phase2_run_010.md).
+conditions: [skill_learning]
+# experiment 5 v2 (D-24) conditions, kept for the record: [reflection_only, feedback_memory, skill_learning]
+task_order: [T11, T12, T13]           # experiment 6 held-out test; the learning suite was [T1, T2, T4, T3, T7, T8]
+# experiment 5 v2 (D-24) order, kept for the record: [T11, T12, T13]
 # experiment 5 v1 (D-23) order, kept for the record: [T9, T10, T5, T6]
-# experiment 4 (D-22) order, kept for the record: [T1, T2, T4, T3, T7, T8]
 
 # Carry-over of memory (experiment 5). `seed_from_run` is read-only: nothing in that run's files is modified.
 #   * feedback_memory  <- artifacts/memory/run_006/feedback_memory.jsonl, every numeric token redacted to [n]
@@ -20,8 +20,8 @@ task_order: [T11, T12, T13]             # portfolio deep-dive -> high-cost model
 # `task_index_offset` continues the task numbering of run_006 (indices 0-5), so this run's tasks are indices 6+:
 # the seeded skills (created after indices 0 and 1) are eligible from the first task. `remaining_task_ids` is
 # unaffected. Unchanged from run_007: the seeded raw log is run_006's 19 redacted notes, not run_007's own log.
-seed_from_run: run_006
-task_index_offset: 6
+seed_from_run: run_012                  # carry the six rules written with the gate removed (D-26)
+task_index_offset: 6                    # the held-out tasks follow the six learning tasks
 seed_skill_exclude: []                  # seeded skill ids the leakage audit (scripts/seed_audit.py) forces out
 
 # Frozen memory (experiment 5 v2, D-24). The carried-over memory is read-only for the whole run: `finalize_task`
@@ -30,7 +30,8 @@ seed_skill_exclude: []                  # seeded skill ids the leakage audit (sc
 # the last attempt of a task it routes straight to `completed`. Retrieval is untouched: the warm arms still read
 # the seeded notes and the seeded skills before planning. run_008 therefore measures only what run_006 left
 # behind, with no learning inside the test itself.
-memory_read_only: true
+memory_read_only: true                  # frozen for the test: nothing appended, no new rules
+#   run_009 is the learning phase, so the memory must be writable; run_010 sets this back to true.
 
 # Stopping rules (brief Addendum B, widened for experiment 3 and unchanged in experiment 4)
 max_retries: 4                          # five attempts per task
@@ -46,6 +47,11 @@ reveal_fixes: false                     # the literal component/parameter fix is
 foundational_skills: false              # start from an empty library: every retrieved skill was learned inside the run
 retrieval_k: 8
 duplicate_similarity_threshold: 0.6     # token-Jaccard over objective + procedure
+# Experiment 6 (D-25): how many *remaining* tasks a lesson must apply to before it may become a skill.
+#   2 = the experiments 1-5 gate (Addendum B); 0 = no gate - every reusable lesson is eligible and the validator's
+#   generality, safety, provenance and duplicate checks are the only filter. The value also selects the operator's
+#   propose_skill wording and the `skill_rule` line recorded in every propose/revise request payload.
+skill_min_applicable_remaining: 0       # experiments 1-5 value, kept for the record: 2
 
 # Data snapshot (one-time download by src/download_data.py; no network afterwards)
 dataset:

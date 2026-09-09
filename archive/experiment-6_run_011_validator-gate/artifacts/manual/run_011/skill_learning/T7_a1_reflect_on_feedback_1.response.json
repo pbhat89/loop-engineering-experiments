@@ -1,0 +1,33 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T7-no_target_leakage",
+      "correction": "Remove billed_amount and allowed_amount from the features list in the feature_set component. Use only submission-time features: claim_type, cpt_category, place_of_service, provider_specialty, service_units, length_of_stay. Financial amounts (billed, allowed, paid) and pre-computed flags (high_cost_flag) are unavailable when scoring new claims and cause target leakage in the model."
+    },
+    {
+      "feedback_id": "T7-roc_auc_range",
+      "correction": "After removing leakage-inducing features, retrain both models. The unusually high ROC-AUC values (0.9969, 0.9972) indicate target leakage; once valid features are used, expect performance metrics in the range 0.6-0.95, reflecting true predictive power from submission-time data alone."
+    },
+    {
+      "feedback_id": "T7-caveat_no_operational_use",
+      "correction": "Add 'no_operational_use' to the caveats list in the write_report component. Update from ['synthetic_data', 'model_limitations'] to ['synthetic_data', 'model_limitations', 'no_operational_use']."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "In cost-prediction models designed to rank claims at intake, exclude post-submission financial fields (billed_amount, allowed_amount, paid_amount, member_oop, cob_amount), pre-computed target indicators (high_cost_flag), and identifiers (claim_id, member_id). These fields are not available when scoring new incoming claims, creating target leakage. Restrict features to submission-time clinical, service, and provider characteristics.",
+      "source_feedback_ids": ["T7-no_target_leakage"],
+      "applicable_task_ids": []
+    },
+    {
+      "lesson": "When held-out model performance appears implausibly high for a practical prediction task (e.g., ROC-AUC > 0.95 for binary classification on real-world healthcare data), investigate for data leakage before accepting or reporting the results. Suspiciously high metrics often indicate that information about the target or outcome has inadvertently entered the feature set.",
+      "source_feedback_ids": ["T7-no_target_leakage", "T7-roc_auc_range"],
+      "applicable_task_ids": []
+    },
+    {
+      "lesson": "Synthetic or limited-data models should include both 'synthetic_data' and 'model_limitations' caveats in reports; additionally, models intended for medical decision support must always include the 'no_operational_use' caveat to prevent deployment without proper clinical validation and sign-off.",
+      "source_feedback_ids": ["T7-caveat_no_operational_use"],
+      "applicable_task_ids": ["T8"]
+    }
+  ]
+}

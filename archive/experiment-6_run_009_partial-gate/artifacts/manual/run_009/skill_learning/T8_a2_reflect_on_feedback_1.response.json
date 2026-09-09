@@ -1,0 +1,9 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T8-segment_source",
+      "correction": "Add T3 (provider and network comparison) to collect_findings sources to provide network performance and provider segmentation context alongside model results and fraud findings."
+    }
+  ],
+  "reusable_lessons": []
+}

@@ -1,0 +1,13 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T3-join_check_rendering_npi",
+      "correction": "Add join_check component to the plan with params.pairs including 'medical_claims.rendering_npi->providers.provider_npi' to verify the many-to-one cardinality and confirm zero unmatched claims before using provider directory attributes."
+    },
+    {
+      "feedback_id": "T3-caveat_association",
+      "correction": "Add 'association_not_causation' to the caveats parameter in the write_report step to clarify that observed differences in denial and fraud rates across provider groups are associations, not causal effects."
+    }
+  ],
+  "reusable_lessons": []
+}

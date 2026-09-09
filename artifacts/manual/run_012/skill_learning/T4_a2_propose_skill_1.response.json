@@ -1,0 +1,32 @@
+{
+  "proposal": {
+    "name": "use_adjudicated_claims_as_denominator_for_segment_rates",
+    "trigger": "When calculating denial rates or other rates by claim characteristics and segments",
+    "objective": "Establish the correct statistical denominator (adjudicated claims) when calculating segment-level rates, enabling valid comparisons and sound operational decision-making",
+    "procedure": [
+      "When calculating denial rates (or other rates) by segment values (claim_type, provider_specialty, network_status, place_of_service, auth_required_flag, etc.), use only adjudicated claims as the denominator",
+      "Define adjudicated claims as those with claim status in {Paid, Denied, Adjusted}, explicitly excluding unadjudicated or pending statuses",
+      "Set the denominator_option field to 'adjudicated_claims' and record this choice in all output",
+      "Calculate the rate as numerator / adjudicated_claims_denominator for each segment value",
+      "Document that this approach provides the correct basis for segment-level rate comparison and operational decision-making"
+    ],
+    "required_checks": [
+      "Verify denominator_option is set to 'adjudicated_claims' in the output",
+      "Confirm each segment's numerator and denominator are aligned within the adjudicated_claims population",
+      "Check that segment denominators sum to the total adjudicated claims"
+    ],
+    "expected_artifacts": [
+      "Segment rate table with denominators shown",
+      "Segment rate visualization"
+    ],
+    "failure_modes": [
+      "Using all_claims as denominator, which conflates adjudicated and unadjudicated claims and produces inflated rate estimates",
+      "Not recording which denominator definition was used, creating ambiguity for readers",
+      "Misalignment between numerator and denominator scope across segments"
+    ],
+    "applicable_task_ids": ["T5"],
+    "source_feedback_ids": ["T4-segment_denominator"],
+    "tags": ["rates", "denominators", "segment_analysis", "statistical_discipline"]
+  },
+  "reason_if_null": null
+}

@@ -1,0 +1,31 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T8-cite_artifacts",
+      "correction": "Enable cite_artifacts in brief_sections parameters to attach source citations to every numeric statement in the executive brief."
+    },
+    {
+      "feedback_id": "T8-all_numbers_cited",
+      "correction": "Set brief_sections.cite_artifacts to true to achieve complete citation coverage across all numeric statements, ensuring reproducibility requirements are met."
+    },
+    {
+      "feedback_id": "T8-no_causal_language",
+      "correction": "Set brief_sections.causal_language to 'avoid' to eliminate causal phrasing and restrict language to strictly associative descriptions of relationships."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "Executive briefs require full citation coverage for reproducibility and credibility. Always enable cite_artifacts in brief_sections to ensure numeric statements carry source references.",
+      "source_feedback_ids": [
+        "T8-cite_artifacts",
+        "T8-all_numbers_cited"
+      ]
+    },
+    {
+      "lesson": "Executive communications to leadership should use only associative language when describing relationships. Set causal_language to 'avoid' to eliminate phrases that may overstate causality and reduce precision in stakeholder reporting.",
+      "source_feedback_ids": [
+        "T8-no_causal_language"
+      ]
+    }
+  ]
+}

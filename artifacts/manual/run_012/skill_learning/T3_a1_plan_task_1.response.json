@@ -1,0 +1,67 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.rendering_npi->providers.provider_npi"
+        ]
+      }
+    },
+    {
+      "component": "provider_join",
+      "params": {
+        "provider_key": "rendering_npi",
+        "how": "left",
+        "validate": "many_to_one"
+      }
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": [
+          "provider_specialty",
+          "network_status",
+          "provider_specialty+network_status"
+        ],
+        "metrics": [
+          "claim_count",
+          "paid_amount_sum",
+          "denial_rate",
+          "fraud_rate"
+        ],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 0
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10,
+        "min_claims": 0
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_012_003",
+    "evolved_run_012_001",
+    "evolved_run_012_002"
+  ],
+  "rationale": "This plan addresses the task requirements to compare volume, paid amounts, denial rate, and fraud-flag rate across provider specialties and network status, and to list the ten rendering providers with the most claims. The provider_join step ensures specialty and network_status are taken from the authoritative provider directory. The group_comparison uses adjudicated_claims as the denominator for segment-level rates (per the evolved skill), ensuring valid cross-segment comparisons and proper statistical discipline. The provider_ranking step produces the required top-ten ranking. The write_report step includes caveats documenting both the synthetic nature of the data and the purely descriptive scope of this analysis, protecting reader interpretation. All four metrics requested are included in group_comparison, and all required artifacts are produced."
+}

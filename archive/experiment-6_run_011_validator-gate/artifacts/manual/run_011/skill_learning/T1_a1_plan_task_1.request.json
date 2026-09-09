@@ -1,0 +1,1275 @@
+{
+  "request_id": "run_011:skill_learning:T1:a1:plan_task:1",
+  "run_id": "run_011",
+  "condition": "skill_learning",
+  "task_id": "T1",
+  "attempt": 1,
+  "node": "plan_task",
+  "seq": 1,
+  "created_at": "2026-09-09T02:50:31+00:00",
+  "instructions": "Produce an analysis plan for this task by selecting components from the catalogue and setting their parameters. Use only catalogue component ids and declared parameter options; omitted parameters take their defaults. Deterministic code executes the plan exactly as written, and the result is scored against a frozen rubric (correctness, completeness, reproducibility, statistical discipline, communication) and a frozen golden reference. List in skills_applied the ids of any provided skills you actually used.",
+  "payload": {
+    "task_id": "T1",
+    "condition": "skill_learning",
+    "task_spec": {
+      "task_id": "T1",
+      "title": "Dataset reconnaissance",
+      "objective": "Five files have just arrived from the data vendor: members, providers, medical claims, pharmacy claims and a medication-adherence table. Before anyone builds on them, tell us what is in each file, whether the identifiers can be trusted, what period the dates cover, whether the files join to each other the way we would expect, and anything that looks wrong. Produce the standard artifacts (data contract, missingness table, report).",
+      "tags": [
+        "data_contract",
+        "schema",
+        "keys",
+        "missingness",
+        "duplicates",
+        "dates",
+        "joins",
+        "cardinality",
+        "data_quality"
+      ],
+      "input_tables": [
+        "members",
+        "providers",
+        "medical_claims",
+        "pharmacy_claims",
+        "adherence"
+      ],
+      "required_artifacts": [
+        "data_contract.json",
+        "missingness.csv",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "schema_summary",
+        "description": "Column names, dtypes and dtype counts per table, written as the data contract.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "schema",
+            "shape": "{table: {rows: int, n_columns: int, dtypes: {dtype: count}}}"
+          }
+        ],
+        "artifacts": [
+          "data_contract.json"
+        ]
+      },
+      {
+        "id": "missingness",
+        "description": "Null counts per column with a list of entirely empty columns per table.",
+        "default_selected": true,
+        "params": {
+          "scope": {
+            "description": "Whether to profile only the ten most-null columns per table or every column.",
+            "options": [
+              "top_10",
+              "all_columns"
+            ],
+            "default": "top_10"
+          }
+        },
+        "produces": [
+          {
+            "key": "missingness",
+            "shape": "{scope: str, per_table: {table: {column: null_count}}, all_null_columns: {table: [column]}}"
+          }
+        ],
+        "artifacts": [
+          "missingness.csv"
+        ]
+      },
+      {
+        "id": "duplicate_check",
+        "description": "Row count versus distinct count for candidate key columns, deciding whether each is a unique key.",
+        "default_selected": false,
+        "params": {
+          "keys": {
+            "description": "Which table.column keys (composite keys joined with '+') to test for uniqueness.",
+            "multi": true,
+            "options": [
+              "medical_claims.claim_id",
+              "pharmacy_claims.rx_claim_id",
+              "members.member_id",
+              "providers.provider_npi",
+              "adherence.member_id",
+              "adherence.member_id+therapeutic_class"
+            ],
+            "default": [
+              "medical_claims.claim_id"
+            ]
+          }
+        },
+        "produces": [
+          {
+            "key": "duplicates",
+            "shape": "{key: {n_rows: int, n_unique: int, duplicate_rows: int, is_candidate_key: bool}}"
+          }
+        ]
+      },
+      {
+        "id": "date_ranges",
+        "description": "Minimum, maximum and unparseable count for date columns, optionally with date-order consistency checks.",
+        "default_selected": false,
+        "params": {
+          "columns": {
+            "description": "Which table.column date columns to profile.",
+            "multi": true,
+            "options": [
+              "medical_claims.service_date_from",
+              "medical_claims.service_date_to",
+              "medical_claims.adjudication_date",
+              "pharmacy_claims.fill_date",
+              "pharmacy_claims.paid_date",
+              "members.enrollment_start",
+              "members.enrollment_end"
+            ],
+            "default": [
+              "medical_claims.service_date_from"
+            ]
+          },
+          "consistency_checks": {
+            "description": "Whether to count medical claims whose adjudication precedes the service end or whose service end precedes its start.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "date_ranges",
+            "shape": "{column: {min: 'YYYY-MM-DD', max: 'YYYY-MM-DD', unparseable: int}}"
+          },
+          {
+            "key": "date_consistency",
+            "shape": "(only when consistency_checks) {adjudication_before_service_end: int, service_end_before_start: int}"
+          }
+        ]
+      },
+      {
+        "id": "join_check",
+        "description": "Cardinality, unmatched keys and row counts for selected cross-table key pairs.",
+        "default_selected": false,
+        "params": {
+          "pairs": {
+            "description": "Which left.key->right.key relationships to verify.",
+            "multi": true,
+            "options": [
+              "medical_claims.member_id->members.member_id",
+              "medical_claims.rendering_npi->providers.provider_npi",
+              "medical_claims.billing_npi->providers.provider_npi",
+              "pharmacy_claims.member_id->members.member_id",
+              "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+              "adherence.member_id->members.member_id"
+            ],
+            "default": []
+          }
+        },
+        "produces": [
+          {
+            "key": "join_check",
+            "shape": "{pair: {cardinality: many_to_one|one_to_one|no_match|many_to_many, rows_left: int, rows_after_inner_join: int, unmatched_left: int, unmatched_left_denominator: int, right_key_unique: bool}}"
+          }
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "members": {
+          "rows": 500,
+          "columns": [
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "age",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "age_band",
+              "dtype": "str",
+              "null_count": 2
+            },
+            {
+              "name": "sex",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "race_ethnicity",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "zip_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "payer_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "income_band",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dual_eligible_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "lis_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hcc_risk_score",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "n_chronic_conditions",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "enrollment_start",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "enrollment_end",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "care_management_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ami",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_alzheimer",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_anemia",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_asthma",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_atrialfib",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cataract",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_chrnkidn",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_copd",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_chf",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_diabetes",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_deprssion",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hyperl",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hyperp",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ihd",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_mo_diabetes",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_osteoprs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_ra_oa",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_stroke_tia",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_colorectal",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_endometrial",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_lung",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_prostate",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_cancer_breast",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_glaucoma",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hip_fracture",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_hipvteib",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ccw_bnign_prostate",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "member_id"
+          ],
+          "date_columns": [
+            "enrollment_start",
+            "enrollment_end"
+          ],
+          "date_ranges": {
+            "enrollment_end": [
+              "2023-12-31",
+              "2023-12-31"
+            ],
+            "enrollment_start": [
+              "2020-01-03",
+              "2021-01-01"
+            ]
+          }
+        },
+        "providers": {
+          "rows": 150,
+          "columns": [
+            {
+              "name": "provider_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "nucc_taxonomy",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "group_id",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "provider_npi"
+          ],
+          "date_columns": [],
+          "date_ranges": {}
+        },
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        },
+        "pharmacy_claims": {
+          "rows": 18310,
+          "columns": [
+            {
+              "name": "rx_claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "fill_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "paid_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pharmacy_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "prescriber_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "bin_number",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pcn_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "ndc_11",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "drug_name_generic",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "drug_name_brand",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "therapeutic_class",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "atc_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "formulary_tier",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "days_supply",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "quantity_dispensed",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "refill_number",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "pharmacy_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dispense_as_written_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty_rx_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "compounded_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "ingredient_cost",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "dispensing_fee",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "gross_amount_due",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "copay_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "plan_paid",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "dir_fee_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "awp_per_unit",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "nadac_per_unit",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "early_refill_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label_rx",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "diversion_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "controlled_substance_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "end_date",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "rx_claim_id"
+          ],
+          "date_columns": [
+            "fill_date",
+            "paid_date",
+            "end_date"
+          ],
+          "date_ranges": {
+            "end_date": [
+              "2021-01-08",
+              "2024-03-30"
+            ],
+            "fill_date": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "paid_date": [
+              "2021-01-02",
+              "2024-01-04"
+            ]
+          }
+        },
+        "adherence": {
+          "rows": 10627,
+          "columns": [
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "therapeutic_class",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "total_days_supply",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "n_fills",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "pdc",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "mpr",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "adherence_flag_pdc80",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [],
+          "date_columns": [],
+          "date_ranges": {}
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "pharmacy_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "adherence.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 10627,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 10627,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "no_match",
+          "from": "pharmacy_claims.pharmacy_npi",
+          "from_distinct": 18310,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 0.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 150,
+          "to_unique": true,
+          "unmatched_from": 18310,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 18310
+        },
+        {
+          "cardinality": "no_match",
+          "from": "pharmacy_claims.prescriber_npi",
+          "from_distinct": 18310,
+          "from_null_keys": 0,
+          "from_rows": 18310,
+          "match_rate": 0.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 150,
+          "to_unique": true,
+          "unmatched_from": 18310,
+          "unmatched_from_denominator": 18310,
+          "unmatched_from_distinct": 18310
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T2",
+      "T4",
+      "T3",
+      "T7",
+      "T8"
+    ],
+    "remaining_tasks": [
+      {
+        "task_id": "T2",
+        "title": "Claims portfolio description"
+      },
+      {
+        "task_id": "T4",
+        "title": "Denial analysis"
+      },
+      {
+        "task_id": "T3",
+        "title": "Provider and network patterns"
+      },
+      {
+        "task_id": "T7",
+        "title": "High-cost claim identification"
+      },
+      {
+        "task_id": "T8",
+        "title": "Executive brief"
+      }
+    ],
+    "retrieved_skills": []
+  },
+  "response_schema": {
+    "$defs": {
+      "PlanStep": {
+        "properties": {
+          "component": {
+            "description": "Component id from the task's catalogue.",
+            "title": "Component",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "description": "Parameter values; only declared options are valid.",
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "component"
+        ],
+        "title": "PlanStep",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``plan_task`` and ``revise_plan``. A revised plan is a complete plan, not a diff.",
+    "properties": {
+      "steps": {
+        "items": {
+          "$ref": "#/$defs/PlanStep"
+        },
+        "minItems": 1,
+        "title": "Steps",
+        "type": "array"
+      },
+      "skills_applied": {
+        "description": "Skill ids the operator actually used.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Skills Applied",
+        "type": "array"
+      },
+      "rationale": {
+        "default": "",
+        "title": "Rationale",
+        "type": "string"
+      },
+      "changes_summary": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "revise_plan only: what changed and why.",
+        "title": "Changes Summary"
+      }
+    },
+    "required": [
+      "steps"
+    ],
+    "title": "PlanResponse",
+    "type": "object"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "schema_summary",
+      "params": {}
+    },
+    {
+      "component": "missingness",
+      "params": {
+        "scope": "all_columns"
+      }
+    },
+    {
+      "component": "duplicate_check",
+      "params": {
+        "keys": [
+          "medical_claims.claim_id",
+          "pharmacy_claims.rx_claim_id",
+          "members.member_id",
+          "providers.provider_npi",
+          "adherence.member_id",
+          "adherence.member_id+therapeutic_class"
+        ]
+      }
+    },
+    {
+      "component": "date_ranges",
+      "params": {
+        "columns": [
+          "medical_claims.service_date_from",
+          "medical_claims.service_date_to",
+          "medical_claims.adjudication_date",
+          "pharmacy_claims.fill_date",
+          "pharmacy_claims.paid_date",
+          "members.enrollment_start",
+          "members.enrollment_end"
+        ],
+        "consistency_checks": true
+      }
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.member_id->members.member_id",
+          "medical_claims.rendering_npi->providers.provider_npi",
+          "medical_claims.billing_npi->providers.provider_npi",
+          "pharmacy_claims.member_id->members.member_id",
+          "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+          "adherence.member_id->members.member_id"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "sample_preview"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Dataset reconnaissance requires comprehensive profiling of structure, identifiers, temporal coverage, and joins. Load and schema components establish baseline structure and produce data_contract.json. Missingness with all_columns scope reveals entirely-empty columns (dx3–5, modifiers, denial codes in medical claims) indicating data quality issues. Duplicate_check now verifies all candidate keys including both the simple adherence.member_id key and the composite adherence key (member_id + therapeutic_class), as the previous plan missed the standalone member_id verification in the adherence table. Date_ranges with consistency_checks=true detects temporal anomalies such as enrollment_end uniformity and service/adjudication date ordering violations. Join_check across all six relationships exposes the critical pharmacy-provider mismatches (pharmacy_npi and prescriber_npi show 0% match rate to providers table). Report with cite_artifacts=true and caveats including synthetic_data and sample_preview produces reproducible documentation that clarifies the synthetic nature of the data and that sample values shown are previews only, linking every finding to source artifacts.",
+  "changes_summary": "Added adherence.member_id as a standalone key to duplicate_check to fully verify candidate keys in the adherence table. Added synthetic_data and sample_preview caveats to write_report to clarify that the dataset is synthetic and that sample values shown are illustrative only."
+}

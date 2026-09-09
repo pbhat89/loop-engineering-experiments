@@ -1,0 +1,1117 @@
+{
+  "request_id": "run_011:skill_learning:T3:a2:reflect_on_feedback:1",
+  "run_id": "run_011",
+  "condition": "skill_learning",
+  "task_id": "T3",
+  "attempt": 2,
+  "node": "reflect_on_feedback",
+  "seq": 1,
+  "created_at": "2026-09-09T03:08:10+00:00",
+  "instructions": "Review the plan, the execution result and the evaluator feedback. Return (a) concrete corrections for the current task, each tied to a feedback id, and (b) lessons that would generalise to other claims-analysis work beyond this task, each citing the feedback ids it came from. Do not withhold a lesson because few tasks remain in this run. Return empty lists only when nothing generalises.",
+  "payload": {
+    "task_id": "T3",
+    "condition": "skill_learning",
+    "task_spec": {
+      "task_id": "T3",
+      "title": "Provider and network patterns",
+      "objective": "Network management wants to know where the money and the denials go. Compare volume, paid amounts, denial rate and fraud-flag rate across provider specialties and between in-network and out-of-network claims. List the ten rendering providers with the most claims, with their specialty and network status taken from the provider directory. Produce the standard artifacts (group comparison table and chart, provider ranking table, report).",
+      "tags": [
+        "providers",
+        "network",
+        "specialty",
+        "group_comparison",
+        "small_groups",
+        "rates",
+        "denominators",
+        "joins",
+        "cardinality"
+      ],
+      "input_tables": [
+        "medical_claims",
+        "providers"
+      ],
+      "required_artifacts": [
+        "group_comparison.csv",
+        "group_comparison.png",
+        "provider_ranking.csv",
+        "report.md",
+        "metrics.json"
+      ]
+    },
+    "component_catalogue": [
+      {
+        "id": "load_tables",
+        "description": "Load the task's input tables with the project dtype policy and record row and column counts.",
+        "default_selected": true,
+        "params": {},
+        "produces": [
+          {
+            "key": "tables",
+            "shape": "{table: {rows: int, columns: int}}"
+          }
+        ]
+      },
+      {
+        "id": "join_check",
+        "description": "Cardinality, unmatched keys and row counts for selected cross-table key pairs.",
+        "default_selected": false,
+        "params": {
+          "pairs": {
+            "description": "Which left.key->right.key relationships to verify.",
+            "multi": true,
+            "options": [
+              "medical_claims.member_id->members.member_id",
+              "medical_claims.rendering_npi->providers.provider_npi",
+              "medical_claims.billing_npi->providers.provider_npi",
+              "pharmacy_claims.member_id->members.member_id",
+              "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+              "adherence.member_id->members.member_id"
+            ],
+            "default": []
+          }
+        },
+        "produces": [
+          {
+            "key": "join_check",
+            "shape": "{pair: {cardinality: str, rows_left: int, rows_after_inner_join: int, unmatched_left: int, unmatched_left_denominator: int, right_key_unique: bool}}"
+          }
+        ]
+      },
+      {
+        "id": "provider_join",
+        "description": "Join medical claims to the provider directory on a chosen provider key and record the row-count change.",
+        "default_selected": false,
+        "params": {
+          "provider_key": {
+            "description": "Which claim-level provider id to join on.",
+            "options": [
+              "rendering_npi",
+              "billing_npi"
+            ],
+            "default": "rendering_npi"
+          },
+          "how": {
+            "description": "Whether to keep only matched claims or all claims.",
+            "options": [
+              "inner",
+              "left"
+            ],
+            "default": "inner"
+          },
+          "validate": {
+            "description": "Whether to assert a many-to-one relationship during the merge.",
+            "options": [
+              "none",
+              "many_to_one"
+            ],
+            "default": "none"
+          }
+        },
+        "produces": [
+          {
+            "key": "provider_join",
+            "shape": "{provider_key: str, how: str, validate: str, rows_before: int, rows_after: int, unmatched: int, providers_matched: int}"
+          }
+        ]
+      },
+      {
+        "id": "group_comparison",
+        "description": "Per-group counts, paid totals, denial and fraud rates with small-group flags for chosen grouping columns.",
+        "default_selected": true,
+        "params": {
+          "group_by": {
+            "description": "Which claim-level columns (or their combination) define the groups.",
+            "multi": true,
+            "options": [
+              "provider_specialty",
+              "network_status",
+              "provider_specialty+network_status"
+            ],
+            "default": [
+              "provider_specialty"
+            ]
+          },
+          "metrics": {
+            "description": "Which per-group metrics to compute.",
+            "multi": true,
+            "options": [
+              "claim_count",
+              "paid_amount_sum",
+              "paid_amount_mean",
+              "denial_rate",
+              "fraud_rate"
+            ],
+            "default": [
+              "claim_count",
+              "paid_amount_sum"
+            ]
+          },
+          "denominator": {
+            "description": "Which claims in each group form the denial-rate denominator (fraud rate always uses all claims in the group).",
+            "options": [
+              "all_claims",
+              "adjudicated_claims"
+            ],
+            "default": "all_claims"
+          },
+          "min_group_size": {
+            "description": "Groups with fewer claims than this are flagged as small (0 never flags).",
+            "options": [
+              0,
+              30,
+              50,
+              100
+            ],
+            "default": 0
+          }
+        },
+        "produces": [
+          {
+            "key": "group_comparison",
+            "shape": "{min_group_size: int, denominator_option: str, groups: {group_by_key: {group_value: {n: int, claim_count?: int, paid_amount_sum?: float, paid_amount_mean?: float, denial_rate?: {value, numerator, denominator}, fraud_rate?: {value, numerator, denominator}, small_group_flag: bool}}}} (composite values formatted '<specialty>|<network_status>')"
+          }
+        ],
+        "artifacts": [
+          "group_comparison.csv",
+          "group_comparison.png"
+        ]
+      },
+      {
+        "id": "provider_ranking",
+        "description": "Top rendering providers by a chosen metric, joined to the provider directory for specialty and network status.",
+        "default_selected": false,
+        "params": {
+          "metric": {
+            "description": "Which metric ranks the providers.",
+            "options": [
+              "claim_count",
+              "paid_amount_sum",
+              "denial_rate"
+            ],
+            "default": "claim_count"
+          },
+          "top_n": {
+            "description": "How many providers to list.",
+            "options": [
+              5,
+              10,
+              20
+            ],
+            "default": 10
+          },
+          "min_claims": {
+            "description": "Minimum claims a provider needs to be eligible for the ranking.",
+            "options": [
+              0,
+              30
+            ],
+            "default": 0
+          }
+        },
+        "produces": [
+          {
+            "key": "provider_ranking",
+            "shape": "{metric: str, top_n: int, min_claims: int, rows: [{provider_npi: str, specialty: str, network_status: str, n: int, value: float}]}"
+          }
+        ],
+        "artifacts": [
+          "provider_ranking.csv"
+        ]
+      },
+      {
+        "id": "write_report",
+        "description": "Write report.md with summary, results, artifacts, caveats and method sections.",
+        "default_selected": true,
+        "params": {
+          "caveats": {
+            "description": "Which fixed caveat statements to include in the report's Caveats section.",
+            "multi": true,
+            "options": [
+              "synthetic_data",
+              "sample_preview",
+              "descriptive_only",
+              "association_not_causation",
+              "small_groups",
+              "class_imbalance",
+              "model_limitations",
+              "no_operational_use"
+            ],
+            "default": []
+          },
+          "show_denominators": {
+            "description": "Whether every rate in the report is printed as numerator / denominator = rate.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          },
+          "cite_artifacts": {
+            "description": "Whether every results bullet ends with a [source: ...] reference to an artifact or metrics key.",
+            "options": [
+              true,
+              false
+            ],
+            "default": false
+          }
+        },
+        "produces": [
+          {
+            "key": "report",
+            "shape": "{caveats: [str], show_denominators: bool, cite_artifacts: bool, sections: [str]}"
+          }
+        ],
+        "artifacts": [
+          "report.md"
+        ]
+      }
+    ],
+    "manifest_summary": {
+      "tables": {
+        "medical_claims": {
+          "rows": 12845,
+          "columns": [
+            {
+              "name": "claim_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "member_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "claim_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_from",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_date_to",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "adjudication_date",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "plan_id",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "rendering_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "billing_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "primary_icd10_cm",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx2",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "dx3",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx4",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "dx5",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "drg_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "drg_type",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "mdc_code",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "length_of_stay",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "poa_flag",
+              "dtype": "str",
+              "null_count": 10914
+            },
+            {
+              "name": "cpt_code",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "cpt_category",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "modifier1",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "modifier2",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "revenue_code",
+              "dtype": "str",
+              "null_count": 7041
+            },
+            {
+              "name": "place_of_service",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "pos_description",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "service_units",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "billed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "allowed_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "paid_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_deductible",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_copay",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_coinsurance",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "member_oop",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "cob_amount",
+              "dtype": "float64",
+              "null_count": 0
+            },
+            {
+              "name": "claim_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "denial_code_carc",
+              "dtype": "str",
+              "null_count": 11559
+            },
+            {
+              "name": "denial_reason_desc",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "auth_required_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "auth_number",
+              "dtype": "str",
+              "null_count": 12845
+            },
+            {
+              "name": "er_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "preventive_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "elective_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "high_cost_flag",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "readmission_flag_30d",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_label",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "fraud_pattern_type",
+              "dtype": "str",
+              "null_count": 12198
+            },
+            {
+              "name": "hedis_bcs",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_col",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_cdc_a1c",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_awv",
+              "dtype": "int64",
+              "null_count": 0
+            },
+            {
+              "name": "hedis_depression",
+              "dtype": "int64",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "claim_id"
+          ],
+          "date_columns": [
+            "service_date_from",
+            "service_date_to",
+            "adjudication_date"
+          ],
+          "date_ranges": {
+            "adjudication_date": [
+              "2021-01-08",
+              "2024-02-11"
+            ],
+            "service_date_from": [
+              "2021-01-01",
+              "2023-12-31"
+            ],
+            "service_date_to": [
+              "2021-01-01",
+              "2024-01-09"
+            ]
+          }
+        },
+        "providers": {
+          "rows": 150,
+          "columns": [
+            {
+              "name": "provider_npi",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "provider_type",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "specialty",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "nucc_taxonomy",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "state",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "network_status",
+              "dtype": "str",
+              "null_count": 0
+            },
+            {
+              "name": "group_id",
+              "dtype": "str",
+              "null_count": 0
+            }
+          ],
+          "candidate_keys": [
+            "provider_npi"
+          ],
+          "date_columns": [],
+          "date_ranges": {}
+        }
+      },
+      "relationships": [
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.member_id",
+          "from_distinct": 500,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "members.member_id",
+          "to_distinct": 500,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.rendering_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        },
+        {
+          "cardinality": "many_to_one",
+          "from": "medical_claims.billing_npi",
+          "from_distinct": 150,
+          "from_null_keys": 0,
+          "from_rows": 12845,
+          "match_rate": 1.0,
+          "to": "providers.provider_npi",
+          "to_distinct": 150,
+          "to_keys_unreferenced": 0,
+          "to_unique": true,
+          "unmatched_from": 0,
+          "unmatched_from_denominator": 12845,
+          "unmatched_from_distinct": 0
+        }
+      ]
+    },
+    "remaining_task_ids": [
+      "T7",
+      "T8"
+    ],
+    "remaining_tasks": [
+      {
+        "task_id": "T7",
+        "title": "High-cost claim identification"
+      },
+      {
+        "task_id": "T8",
+        "title": "Executive brief"
+      }
+    ],
+    "purpose": "learn: extract reusable lessons from the whole task",
+    "plan": {
+      "steps": [
+        {
+          "component": "load_tables",
+          "params": {}
+        },
+        {
+          "component": "group_comparison",
+          "params": {
+            "group_by": [
+              "provider_specialty",
+              "network_status",
+              "provider_specialty+network_status"
+            ],
+            "metrics": [
+              "claim_count",
+              "paid_amount_sum",
+              "denial_rate",
+              "fraud_rate"
+            ],
+            "denominator": "adjudicated_claims",
+            "min_group_size": 30
+          }
+        },
+        {
+          "component": "provider_ranking",
+          "params": {
+            "metric": "claim_count",
+            "top_n": 10,
+            "min_claims": 0
+          }
+        },
+        {
+          "component": "write_report",
+          "params": {
+            "caveats": [
+              "synthetic_data",
+              "small_groups"
+            ],
+            "show_denominators": true,
+            "cite_artifacts": true
+          }
+        }
+      ],
+      "skills_applied": [
+        "evolved_run_011_002"
+      ],
+      "rationale": "The prior plan's group_by parameter was incomplete, producing only the composite specialty+network_status grouping. To address all three feedback findings (missing network_status groups, missing provider_specialty groups, and missing in-network denial rate), group_comparison now includes all three grouping options: provider_specialty, network_status, and their composite. This generates separate metrics for specialty groups, network status groups (In-Network vs Out-of-Network), and the detailed specialty+network_status breakdown. All four requested metrics (volume, paid amount, denial and fraud rates) are computed over adjudicated claims with small-group flagging at 30 claims, following the retrieved skill on denial rate computation discipline. Top-10 provider ranking by claim count directly addresses the objective, and report includes numerator/denominator detail as required.",
+      "changes_summary": "Expanded group_by parameter from [\"provider_specialty+network_status\"] to [\"provider_specialty\", \"network_status\", \"provider_specialty+network_status\"] to produce separate group comparisons for each grouping dimension independently. This provides the network_status breakdown (In-Network/Out-of-Network) and provider_specialty breakdown that the prior execution failed to generate, while retaining the composite analysis. Denominator (adjudicated_claims), all metrics, and remaining steps unchanged."
+    },
+    "plan_history": [
+      {
+        "steps": [
+          {
+            "component": "load_tables",
+            "params": {}
+          },
+          {
+            "component": "group_comparison",
+            "params": {
+              "group_by": [
+                "provider_specialty+network_status"
+              ],
+              "metrics": [
+                "claim_count",
+                "paid_amount_sum",
+                "denial_rate",
+                "fraud_rate"
+              ],
+              "denominator": "adjudicated_claims",
+              "min_group_size": 30
+            }
+          },
+          {
+            "component": "provider_ranking",
+            "params": {
+              "metric": "claim_count",
+              "top_n": 10,
+              "min_claims": 0
+            }
+          },
+          {
+            "component": "write_report",
+            "params": {
+              "caveats": [
+                "synthetic_data",
+                "small_groups"
+              ],
+              "show_denominators": true,
+              "cite_artifacts": true
+            }
+          }
+        ],
+        "skills_applied": [
+          "evolved_run_011_002"
+        ],
+        "rationale": "Group-by-both analysis across provider specialties and network status requires the composite grouping. All four requested metrics (volume, paid amount, denial and fraud rates) are included. Adjudicated-claims denominator for denial rate follows the retrieved skill on statistical discipline. Top-10 provider ranking by claim count directly addresses the objective. Report includes numerator/denominator detail as per skill requirements. Small-group flagging at 30-claim threshold supports network management decision-making.",
+        "changes_summary": null
+      },
+      {
+        "steps": [
+          {
+            "component": "load_tables",
+            "params": {}
+          },
+          {
+            "component": "group_comparison",
+            "params": {
+              "group_by": [
+                "provider_specialty",
+                "network_status",
+                "provider_specialty+network_status"
+              ],
+              "metrics": [
+                "claim_count",
+                "paid_amount_sum",
+                "denial_rate",
+                "fraud_rate"
+              ],
+              "denominator": "adjudicated_claims",
+              "min_group_size": 30
+            }
+          },
+          {
+            "component": "provider_ranking",
+            "params": {
+              "metric": "claim_count",
+              "top_n": 10,
+              "min_claims": 0
+            }
+          },
+          {
+            "component": "write_report",
+            "params": {
+              "caveats": [
+                "synthetic_data",
+                "small_groups"
+              ],
+              "show_denominators": true,
+              "cite_artifacts": true
+            }
+          }
+        ],
+        "skills_applied": [
+          "evolved_run_011_002"
+        ],
+        "rationale": "The prior plan's group_by parameter was incomplete, producing only the composite specialty+network_status grouping. To address all three feedback findings (missing network_status groups, missing provider_specialty groups, and missing in-network denial rate), group_comparison now includes all three grouping options: provider_specialty, network_status, and their composite. This generates separate metrics for specialty groups, network status groups (In-Network vs Out-of-Network), and the detailed specialty+network_status breakdown. All four requested metrics (volume, paid amount, denial and fraud rates) are computed over adjudicated claims with small-group flagging at 30 claims, following the retrieved skill on denial rate computation discipline. Top-10 provider ranking by claim count directly addresses the objective, and report includes numerator/denominator detail as required.",
+        "changes_summary": "Expanded group_by parameter from [\"provider_specialty+network_status\"] to [\"provider_specialty\", \"network_status\", \"provider_specialty+network_status\"] to produce separate group comparisons for each grouping dimension independently. This provides the network_status breakdown (In-Network/Out-of-Network) and provider_specialty breakdown that the prior execution failed to generate, while retaining the composite analysis. Denominator (adjudicated_claims), all metrics, and remaining steps unchanged."
+      }
+    ],
+    "execution_summary": {
+      "status": "ok",
+      "components_executed": [
+        "load_tables",
+        "group_comparison",
+        "provider_ranking",
+        "write_report"
+      ],
+      "components_failed": [],
+      "errors": [],
+      "artifacts": [
+        "group_comparison.csv",
+        "group_comparison.png",
+        "provider_ranking.csv",
+        "report.md",
+        "metrics.json"
+      ],
+      "metric_keys": [
+        "group_comparison",
+        "plan",
+        "provider_ranking",
+        "report",
+        "tables"
+      ]
+    },
+    "evaluation_summary": {
+      "score_total": 3.64,
+      "scores": {
+        "correctness": 4.0,
+        "completeness": 4.0,
+        "reproducibility": 4.0,
+        "statistical_discipline": 2.86,
+        "communication": 3.33
+      },
+      "passed": true,
+      "failed_checks": [
+        {
+          "check_id": "T3.join_check_rendering_npi",
+          "dimension": "statistical_discipline",
+          "critical": false,
+          "observed": null,
+          "expected": {
+            "cardinality": "many_to_one",
+            "rows_left": 12845,
+            "rows_after_inner_join": 12845,
+            "unmatched_left": 0,
+            "unmatched_left_denominator": 12845,
+            "right_key_unique": true
+          },
+          "detail": "metric 'join_check.medical_claims.rendering_npi->providers.provider_npi' missing"
+        },
+        {
+          "check_id": "T3.caveat_association",
+          "dimension": "communication",
+          "critical": false,
+          "observed": {
+            "in_report_caveats": false,
+            "keywords_found": [],
+            "report_text_available": true
+          },
+          "expected": {
+            "caveat_id": "association_not_causation",
+            "any_of": [
+              "associat",
+              "not causal",
+              "causation"
+            ]
+          },
+          "detail": "caveat 'association_not_causation' neither listed in report.caveats nor phrased in the report text (keywords ['associat', 'not causal', 'causation'])"
+        }
+      ],
+      "n_failed_checks_total": 2,
+      "n_failed_checks_shown": 2
+    },
+    "feedback": [
+      {
+        "feedback_id": "T3-groups_network_status",
+        "check_id": "T3.groups_network_status",
+        "criterion": "correctness",
+        "issue_type": "wrong_value",
+        "severity": "medium",
+        "remediation": "Compare groups by network_status as well as specialty, with n, denial-rate numerator/denominator over adjudicated claims and small-group flags at 30.",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": null,
+        "expected": {
+          "In-Network": {
+            "n": 10788,
+            "claim_count": 10788,
+            "small_group_flag": false,
+            "denial_rate": {
+              "numerator": 1095,
+              "denominator": 10370
+            },
+            "fraud_rate": {
+              "numerator": 543,
+              "denominator": 10788
+            }
+          },
+          "Out-of-Network": {
+            "n": 2057,
+            "claim_count": 2057,
+            "small_group_flag": false,
+            "denial_rate": {
+              "numerator": 191,
+              "denominator": 1969
+            },
+            "fraud_rate": {
+              "numerator": 104,
+              "denominator": 2057
+            }
+          }
+        },
+        "detail": "metric 'group_comparison.groups.network_status' missing",
+        "weight": 3,
+        "first_seen_attempt": 1,
+        "last_seen_attempt": 1,
+        "status": "resolved_after_attempt_1"
+      },
+      {
+        "feedback_id": "T3-groups_specialty",
+        "check_id": "T3.groups_specialty",
+        "criterion": "correctness",
+        "issue_type": "wrong_value",
+        "severity": "medium",
+        "remediation": "Per specialty report n, denial-rate numerator/denominator over adjudicated claims and the small-group flag at 30 claims.",
+        "reusable": false,
+        "applicable_task_ids": [],
+        "observed": null,
+        "expected": {
+          "_truncated": true,
+          "_type": "dict",
+          "_size": 25
+        },
+        "detail": "metric 'group_comparison.groups.provider_specialty' missing",
+        "weight": 3,
+        "first_seen_attempt": 1,
+        "last_seen_attempt": 1,
+        "status": "resolved_after_attempt_1"
+      },
+      {
+        "feedback_id": "T3-in_network_denial_rate",
+        "check_id": "T3.in_network_denial_rate",
+        "criterion": "correctness",
+        "issue_type": "wrong_denominator",
+        "severity": "medium",
+        "remediation": "Compute the in-network denial rate over adjudicated in-network claims.",
+        "reusable": true,
+        "applicable_task_ids": [
+          "T4"
+        ],
+        "observed": null,
+        "expected": 0.1055930568948891,
+        "detail": "metric 'group_comparison.groups.network_status.In-Network.denial_rate.value' missing",
+        "weight": 2,
+        "first_seen_attempt": 1,
+        "last_seen_attempt": 1,
+        "status": "resolved_after_attempt_1"
+      },
+      {
+        "feedback_id": "T3-join_check_rendering_npi",
+        "check_id": "T3.join_check_rendering_npi",
+        "criterion": "statistical_discipline",
+        "issue_type": "missing_check",
+        "severity": "medium",
+        "remediation": "Verify the medical_claims.rendering_npi -> providers.provider_npi join (many_to_one, 0 unmatched) before using provider attributes.",
+        "reusable": true,
+        "applicable_task_ids": [
+          "T5"
+        ],
+        "observed": null,
+        "expected": {
+          "cardinality": "many_to_one",
+          "rows_left": 12845,
+          "rows_after_inner_join": 12845,
+          "unmatched_left": 0,
+          "unmatched_left_denominator": 12845,
+          "right_key_unique": true
+        },
+        "detail": "metric 'join_check.medical_claims.rendering_npi->providers.provider_npi' missing",
+        "weight": 2,
+        "first_seen_attempt": 2,
+        "last_seen_attempt": 2,
+        "status": "open"
+      },
+      {
+        "feedback_id": "T3-caveat_association",
+        "check_id": "T3.caveat_association",
+        "criterion": "communication",
+        "issue_type": "missing_caveat",
+        "severity": "low",
+        "remediation": "State that group differences are associations, not causal effects (add the association_not_causation caveat).",
+        "reusable": true,
+        "applicable_task_ids": [
+          "T4",
+          "T5",
+          "T8"
+        ],
+        "observed": {
+          "in_report_caveats": false,
+          "keywords_found": [],
+          "report_text_available": true
+        },
+        "expected": {
+          "caveat_id": "association_not_causation",
+          "any_of": [
+            "associat",
+            "not causal",
+            "causation"
+          ]
+        },
+        "detail": "caveat 'association_not_causation' neither listed in report.caveats nor phrased in the report text (keywords ['associat', 'not causal', 'causation'])",
+        "weight": 1,
+        "first_seen_attempt": 2,
+        "last_seen_attempt": 2,
+        "status": "open"
+      }
+    ],
+    "attempts": 2,
+    "attempts_remaining": 3,
+    "skill_rule": "There is no minimum number of remaining tasks: any lesson that generalises beyond this task may become a skill, even if no remaining task in this run would use it."
+  },
+  "response_schema": {
+    "$defs": {
+      "Correction": {
+        "properties": {
+          "feedback_id": {
+            "title": "Feedback Id",
+            "type": "string"
+          },
+          "correction": {
+            "title": "Correction",
+            "type": "string"
+          }
+        },
+        "required": [
+          "feedback_id",
+          "correction"
+        ],
+        "title": "Correction",
+        "type": "object"
+      },
+      "ReusableLesson": {
+        "properties": {
+          "lesson": {
+            "title": "Lesson",
+            "type": "string"
+          },
+          "applicable_task_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Applicable Task Ids",
+            "type": "array"
+          },
+          "source_feedback_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Source Feedback Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "lesson"
+        ],
+        "title": "ReusableLesson",
+        "type": "object"
+      }
+    },
+    "description": "Answer for ``reflect_on_feedback``.",
+    "properties": {
+      "reusable_lessons": {
+        "items": {
+          "$ref": "#/$defs/ReusableLesson"
+        },
+        "title": "Reusable Lessons",
+        "type": "array"
+      },
+      "current_task_corrections": {
+        "items": {
+          "$ref": "#/$defs/Correction"
+        },
+        "title": "Current Task Corrections",
+        "type": "array"
+      }
+    },
+    "title": "ReflectionResponse",
+    "type": "object"
+  }
+}

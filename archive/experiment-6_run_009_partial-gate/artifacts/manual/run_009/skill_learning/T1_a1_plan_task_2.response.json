@@ -1,0 +1,68 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "schema_summary"
+    },
+    {
+      "component": "missingness",
+      "params": {
+        "scope": "top_10"
+      }
+    },
+    {
+      "component": "duplicate_check",
+      "params": {
+        "keys": [
+          "medical_claims.claim_id",
+          "pharmacy_claims.rx_claim_id",
+          "members.member_id",
+          "providers.provider_npi",
+          "adherence.member_id+therapeutic_class"
+        ]
+      }
+    },
+    {
+      "component": "date_ranges",
+      "params": {
+        "columns": [
+          "medical_claims.service_date_from",
+          "medical_claims.service_date_to",
+          "medical_claims.adjudication_date",
+          "pharmacy_claims.fill_date",
+          "pharmacy_claims.paid_date",
+          "members.enrollment_start",
+          "members.enrollment_end"
+        ],
+        "consistency_checks": true
+      }
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.member_id->members.member_id",
+          "medical_claims.rendering_npi->providers.provider_npi",
+          "medical_claims.billing_npi->providers.provider_npi",
+          "pharmacy_claims.member_id->members.member_id",
+          "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+          "adherence.member_id->members.member_id"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan addresses all task requirements. Load and schema steps establish basic metadata. Missingness checks top_10 columns per table to identify sparse fields. Duplicate checking validates the trustworthiness of all candidate keys: claim_id and rx_claim_id for uniqueness within claims tables, member_id and provider_npi for dimension stability, and member_id+therapeutic_class composite for adherence. Date_ranges with consistency_checks confirms the temporal coverage of all date columns and validates that medical claims adjudication dates follow their service windows. Join_check verifies all five cross-table relationships, including the expected no-match of pharmacy NPIs (pharmacy_npi, prescriber_npi) against the provider directory. Write_report synthesizes findings with synthetic_data caveat and source citations."
+}

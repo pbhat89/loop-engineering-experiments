@@ -1,0 +1,43 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "denial_code_ranking",
+      "params": {
+        "scope": "all_claims",
+        "quantify_missing": "by_status"
+      }
+    },
+    {
+      "component": "denial_rate_by_segment",
+      "params": {
+        "segments": [
+          "claim_type",
+          "provider_specialty",
+          "network_status",
+          "place_of_service",
+          "auth_required_flag"
+        ],
+        "denominator": "all_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only",
+          "association_not_causation",
+          "small_groups"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": false
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan addresses all dimensions of the denial analysis objective: code ranking with by-status missingness breakdown reveals both frequent codes and the substantial volume of claims without denial codes; five-segment denial rates directly answer the requested comparisons; caveats flag that this is descriptive analysis only and that segment-level differences are not causal; showing denominators makes rates verifiable and supports the denials team's operational decision-making.",
+  "changes_summary": null
+}

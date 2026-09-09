@@ -1,0 +1,73 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "split",
+      "params": {
+        "test_size": 0.25
+      }
+    },
+    {
+      "component": "target_definition",
+      "params": {
+        "amount_column": "paid_amount",
+        "percentile": 90,
+        "threshold_source": "train_only"
+      }
+    },
+    {
+      "component": "feature_set",
+      "params": {
+        "features": [
+          "claim_type",
+          "cpt_category",
+          "place_of_service",
+          "provider_specialty",
+          "network_status",
+          "service_units",
+          "length_of_stay",
+          "er_flag",
+          "elective_flag",
+          "preventive_flag",
+          "auth_required_flag",
+          "primary_icd10_cm",
+          "drg_present",
+          "billed_amount",
+          "allowed_amount"
+        ]
+      }
+    },
+    {
+      "component": "preprocessing",
+      "params": {
+        "fit_on": "train_only",
+        "scaling": "standard"
+      }
+    },
+    {
+      "component": "models",
+      "params": {
+        "models": [
+          "logistic_regression",
+          "random_forest"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "no_operational_use"
+        ],
+        "show_denominators": false,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_012_005"
+  ],
+  "rationale": "Task requires identifying high-cost claims (top 10% by paid_amount, i.e., 90th percentile) using information available at claim submission. Split 0.25 for quarter holdout per task spec. Target threshold computed on train_only to prevent leakage (leakage noted in task tags). Feature set includes clinical and claim attributes available at submission (claim_type, diagnosis, procedure category, place of service, provider specialty, network status, flags, amounts), excluding identifiers and target-derived fields. Preprocessing fits on train_only and applies standard scaling to benefit logistic regression. Models include logistic_regression plus random_forest (tree-based) per task requirement. Report includes no_operational_use caveat (skill evolved_run_012_005) because model scores are analytical tools for identifying claims requiring review and must not be used operationally without clinical validation and governance review. cite_artifacts=true enforces reproducibility discipline."
+}

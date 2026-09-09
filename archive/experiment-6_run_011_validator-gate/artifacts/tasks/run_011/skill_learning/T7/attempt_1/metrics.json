@@ -1,0 +1,153 @@
+{
+  "task_id": "T7",
+  "run_id": "run_011",
+  "condition": "skill_learning",
+  "attempt": 1,
+  "seed": 42,
+  "generated_at": "2026-09-09T03:11:32+00:00",
+  "plan_sha256": "8ed69a6927c39511430171b381befd49c1b2eda122aa7fb4e0ee74d9500cddce",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25
+        }
+      },
+      {
+        "component": "target_definition",
+        "params": {
+          "amount_column": "paid_amount",
+          "percentile": 95,
+          "threshold_source": "train_only"
+        }
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "service_units",
+            "length_of_stay",
+            "billed_amount",
+            "allowed_amount"
+          ]
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "train_only",
+          "scaling": "standard"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression",
+            "gradient_boosting"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "synthetic_data",
+            "model_limitations"
+          ],
+          "show_denominators": false,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Plan implements task specification with statistical discipline: 25% holdout test set; high-cost target defined as paid_amount above 95th percentile computed on training data only to avoid leakage. Feature set includes claim characteristics (type, CPT category), service context (place of service, provider specialty, service units, length of stay), and financial signals (billed and allowed amounts) for predicting claim cost tier at intake. Preprocessing fit on training data exclusively. Logistic regression provides interpretable coefficients; gradient boosting provides tree-based ranking capability. Report cites artifacts for full reproducibility.",
+    "changes_summary": null
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "split": {
+    "test_size": 0.25,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212
+  },
+  "target_definition": {
+    "amount_column": "paid_amount",
+    "percentile": 95,
+    "threshold_source": "train_only",
+    "threshold_value": 3198.9879999999994,
+    "positive_rate_train": 0.05003633343714315,
+    "positive_rate_test": 0.046699875466998754,
+    "n_positive_train": 482,
+    "n_positive_test": 150
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "service_units",
+      "length_of_stay",
+      "billed_amount",
+      "allowed_amount"
+    ],
+    "n_categorical": 4,
+    "n_numeric": 4,
+    "id_fields_present": [],
+    "target_derived_present": [
+      "billed_amount",
+      "allowed_amount"
+    ]
+  },
+  "preprocessing": {
+    "fit_on": "train_only",
+    "scaling": "standard",
+    "n_features_out": 48
+  },
+  "models": {
+    "logistic_regression": {
+      "pr_auc": 0.9217471559337421,
+      "roc_auc": 0.996884389288047,
+      "precision_at_top_5pct": 0.84472049689441,
+      "recall_at_top_5pct": 0.9066666666666666,
+      "n_test": 3212
+    },
+    "gradient_boosting": {
+      "pr_auc": 0.9238531589447975,
+      "roc_auc": 0.9972196821249728,
+      "precision_at_top_5pct": 0.8695652173913043,
+      "recall_at_top_5pct": 0.9333333333333333,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [
+      "synthetic_data",
+      "model_limitations"
+    ],
+    "show_denominators": false,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}

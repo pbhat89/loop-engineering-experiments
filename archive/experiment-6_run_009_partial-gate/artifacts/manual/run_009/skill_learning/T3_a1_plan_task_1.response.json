@@ -1,0 +1,41 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "provider_join",
+      "params": {
+        "provider_key": "rendering_npi",
+        "how": "inner",
+        "validate": "many_to_one"
+      }
+    },
+    {
+      "component": "group_comparison",
+      "params": {
+        "group_by": ["provider_specialty", "provider_specialty+network_status"],
+        "metrics": ["claim_count", "paid_amount_sum", "denial_rate", "fraud_rate"],
+        "denominator": "adjudicated_claims",
+        "min_group_size": 30
+      }
+    },
+    {
+      "component": "provider_ranking",
+      "params": {
+        "metric": "claim_count",
+        "top_n": 10
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data", "descriptive_only", "small_groups"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": ["evolved_run_009_002"],
+  "rationale": "Join claims to provider directory to ensure specialty and network_status sourced correctly. Group by specialty alone and specialty x network to address both comparison dimensions. Denial rates over adjudicated_claims per skill to exclude pending claims and ensure statistical correctness. Top 10 providers by claim count. Small-group threshold 30 claims; descriptive caveats and denominators shown for transparency."
+}

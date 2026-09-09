@@ -1,0 +1,17 @@
+{
+  "current_task_corrections": [],
+  "reusable_lessons": [
+    {
+      "lesson": "When preparing reports for data-driven analyses, include the 'synthetic_data' caveat to transparently communicate that the underlying data is synthetic rather than operational, ensuring stakeholders understand the data's limitations and applicability regardless of analysis type.",
+      "applicable_task_ids": [
+        "T5",
+        "T6",
+        "T7",
+        "T8"
+      ],
+      "source_feedback_ids": [
+        "T4-caveat_synthetic"
+      ]
+    }
+  ]
+}

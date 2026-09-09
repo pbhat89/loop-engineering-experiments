@@ -1,0 +1,33 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T8-cite_artifacts",
+      "correction": "Set brief_sections cite_artifacts parameter to true. Every numeric statement in the executive brief must include a [source: ...] citation to enable verification by stakeholders."
+    },
+    {
+      "feedback_id": "T8-all_numbers_cited",
+      "correction": "Enabling cite_artifacts = true in brief_sections will ensure all 11 numeric statements are accompanied by source citations, matching n_cited_statements to n_numeric_statements."
+    },
+    {
+      "feedback_id": "T8-no_causal_language",
+      "correction": "Set brief_sections causal_language parameter to 'avoid' instead of 'allow'. Replace causal phrasing like 'drives' with associative language such as 'is associated with' or 'correlates with'."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "Executive communications and stakeholder-facing reports must cite the source of every numeric claim. Each metric should include a [source: ...] reference to its origin (artifact or metrics key) to ensure reproducibility and enable stakeholders to verify findings.",
+      "source_feedback_ids": [
+        "T8-cite_artifacts",
+        "T8-all_numbers_cited"
+      ],
+      "applicable_task_ids": []
+    },
+    {
+      "lesson": "Analytical writing must carefully distinguish between association and causation. Use associative language ('is associated with', 'correlates with') unless a causal relationship has been rigorously established through experimental design or causal inference methods. Avoid causal phrasing ('causes', 'drives', 'leads to', 'because of') in claims-analysis communications.",
+      "source_feedback_ids": [
+        "T8-no_causal_language"
+      ],
+      "applicable_task_ids": []
+    }
+  ]
+}

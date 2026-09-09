@@ -1,6 +1,6 @@
 """Validate a skill proposal before it is persisted (structure, safety, generality, duplicates).
 
-``validate(proposal, existing_skills, task_id, remaining_task_ids)`` returns::
+``validate(proposal, existing_skills, task_id, remaining_task_ids, min_applicable_remaining=2)`` returns::
 
     {"decision": "accepted" | "rejected" | "retry_revision",
      "checks": [{"check_id", "passed", "detail", "severity"}],
@@ -19,8 +19,11 @@ Thresholds (all module constants, tuned to the six foundational skills):
 * ``MIN_PROCEDURE_STEPS = 2``  procedure needs at least this many steps                 (revise)
 * ``MIN_STEP_WORDS = 3``       every step must be concrete: at least this many words    (revise)
 * ``MIN_EXAMPLE_CHARS = 10``   example shorter than this is a structural gap            (revise)
-* ``MIN_FUTURE_TASKS = 2``     ``applicable_task_ids`` must intersect the remaining tasks
-                               (excluding the current task) in at least this many ids   (reject)
+* ``MIN_FUTURE_TASKS = 2``     default of ``min_applicable_remaining``: ``applicable_task_ids`` must intersect
+                               the remaining tasks (excluding the current task) in at least this many ids (reject).
+                               Experiment 6 (D-25) passes **0**, which skips the check entirely - a lesson learned
+                               on the last task of a run is then still eligible, and generality, safety, provenance
+                               and the duplicate threshold are the only filter.
 * ``DUPLICATE_JACCARD = 0.6``  token-Jaccard over ``objective + procedure`` (tokens as in
                                ``skill_store.keywords``: alphanumeric, length >= 4, stop words
                                removed) against every existing skill; >= threshold is a
@@ -168,8 +171,17 @@ class _Checks:
 # --------------------------------------------------------------------------- public API
 
 
-def validate(proposal: dict, existing_skills: list, task_id: str, remaining_task_ids: list[str]) -> dict:
-    """Validate one proposal against the content rules in ``skills/SKILL_SCHEMA.md``."""
+def validate(
+    proposal: dict,
+    existing_skills: list,
+    task_id: str,
+    remaining_task_ids: list[str],
+    min_applicable_remaining: int = MIN_FUTURE_TASKS,
+) -> dict:
+    """Validate one proposal against the content rules in ``skills/SKILL_SCHEMA.md``.
+
+    ``min_applicable_remaining`` is the applicability gate; ``0`` skips that check entirely (D-25).
+    """
     if hasattr(proposal, "model_dump"):
         proposal = proposal.model_dump()
     proposal = dict(proposal or {})
@@ -231,12 +243,14 @@ def validate(proposal: dict, existing_skills: list, task_id: str, remaining_task
     applicable = {a.strip() for a in _as_list(proposal.get("applicable_task_ids")) if a.strip()}
     remaining = {r.strip() for r in _as_list(remaining_task_ids) if r.strip()} - {str(task_id)}
     future = sorted(applicable & remaining)
-    checks.add(
-        "applicability",
-        len(future) >= MIN_FUTURE_TASKS,
-        f"applies to {len(future)} remaining task(s) {future}; needs at least {MIN_FUTURE_TASKS} of {sorted(remaining)}",
-        REJECT,
-    )
+    minimum = int(min_applicable_remaining)
+    if minimum > 0:  # D-25: 0 removes the gate, and the check is not run at all rather than run and passed
+        checks.add(
+            "applicability",
+            len(future) >= minimum,
+            f"applies to {len(future)} remaining task(s) {future}; needs at least {minimum} of {sorted(remaining)}",
+            REJECT,
+        )
 
     # --- safety ------------------------------------------------------------------------
     all_text = " \n ".join(_text(proposal.get(f)) for f in TEXT_FIELDS)
@@ -254,7 +268,10 @@ def validate(proposal: dict, existing_skills: list, task_id: str, remaining_task
     task_refs = sorted(set(_TASK_ID_RE.findall(f"{trigger} {objective}")))
     if len(task_refs) == 1 or _SINGLE_TASK_SCOPE_RE.search(scoped_text):
         generality_hits.append(("single_task_scope", f"trigger/objective scoped to task {task_refs or ['a single task id']}"))
-    if len(applicable) == 1:
+    # How many task ids the operator happened to list is queue position, not generality (D-26). When the
+    # proposal gate is off, judge generality from the text alone: the trigger/objective scope test above and the
+    # hard-coded-findings patterns still apply, so a genuine one-off restatement is still rejected.
+    if len(applicable) == 1 and min_applicable_remaining >= 2:
         generality_hits.append(("single_task_scope", f"applicable_task_ids names a single task {sorted(applicable)}"))
     checks.add(
         "generality",

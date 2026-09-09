@@ -1,0 +1,62 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T2-caveat_descriptive",
+      "correction": "Add the 'descriptive_only' caveat to the write_report component to state that the analysis is descriptive and supports no causal or operational conclusion."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "Denial rate must use adjudicated claims (Paid, Denied, Adjusted) as the denominator to exclude pending claims and compute the rate with statistical discipline. Always record and report the denominator choice explicitly.",
+      "applicable_task_ids": [
+        "T3",
+        "T4"
+      ],
+      "source_feedback_ids": [
+        "T2-denial_rate_value",
+        "T2-denial_rate_denominator"
+      ]
+    },
+    {
+      "lesson": "Monthly volume trends should be keyed on service_date_from (when care began) rather than adjudication_date, as adjudication dates lag service and introduce inconsistency in trend interpretation.",
+      "applicable_task_ids": [
+        "T3",
+        "T4"
+      ],
+      "source_feedback_ids": [
+        "T2-monthly_date_column"
+      ]
+    },
+    {
+      "lesson": "Financial summaries of skewed distributions (billed, allowed, and paid amounts) must report distribution quantiles (median, p90, p99) alongside sums and means to capture the true distribution shape.",
+      "applicable_task_ids": [
+        "T3"
+      ],
+      "source_feedback_ids": [
+        "T2-paid_amount_quantiles"
+      ]
+    },
+    {
+      "lesson": "All rates in reports must be displayed explicitly as 'numerator / denominator = rate' to ensure transparency and enable readers to verify calculations and understand metric scope.",
+      "applicable_task_ids": [
+        "T3",
+        "T4",
+        "T5"
+      ],
+      "source_feedback_ids": [
+        "T2-show_denominators",
+        "T2-denominator_format"
+      ]
+    },
+    {
+      "lesson": "Descriptive analyses must include a caveat stating that the analysis is descriptive and supports no causal or operational conclusion, protecting readers from causal misinterpretation.",
+      "applicable_task_ids": [
+        "T3",
+        "T4"
+      ],
+      "source_feedback_ids": [
+        "T2-caveat_descriptive"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "steps": [
+    {
+      "component": "collect_findings",
+      "params": {
+        "sources": [
+          "T2",
+          "T5",
+          "T6",
+          "T7"
+        ]
+      }
+    },
+    {
+      "component": "brief_sections",
+      "params": {
+        "sections": [
+          "key_findings",
+          "model_results",
+          "limitations",
+          "synthetic_caveats",
+          "next_steps"
+        ],
+        "cite_artifacts": true,
+        "causal_language": "avoid"
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "synthetic_data",
+          "descriptive_only",
+          "association_not_causation",
+          "model_limitations"
+        ],
+        "cite_artifacts": true,
+        "show_denominators": false
+      }
+    }
+  ],
+  "skills_applied": [
+    "evolved_run_009_003"
+  ],
+  "rationale": "The prior plan omitted critical findings from the fraud exploration task (T5) and second predictive model (T7), limiting the scope of the executive brief. The revised plan now collects findings from all four required tasks: portfolio analysis (T2), fraud exploration (T5), and both models (T6, T7), providing comprehensive coverage for leadership decision-making. The brief now includes the synthetic_caveats section positioned before next_steps to ensure stakeholders encounter the data limitations early. Causal language is set to 'avoid' to enforce statistical discipline appropriate for a descriptive analysis on synthetic data—findings show associations, not causal mechanisms. The write_report component now explicitly includes the 'synthetic_data' caveat to transparently communicate the simulated data source and prevent stakeholder misinterpretation. The applied skill (evolved_run_009_003) provides procedure for including synthetic data caveats in analysis reports, ensuring transparency and appropriate result interpretation.",
+  "changes_summary": "Expanded collect_findings.sources from [T2, T6] to [T2, T5, T6, T7] to include fraud exploration and second model findings. Added 'synthetic_caveats' section to brief_sections sections list, positioned between limitations and next_steps. Changed brief_sections.causal_language from 'allow' to 'avoid' to enforce appropriate statistical discipline for synthetic data analysis. Added 'synthetic_data' caveat to write_report.caveats to explicitly communicate data source and prevent misinterpretation as production findings."
+}

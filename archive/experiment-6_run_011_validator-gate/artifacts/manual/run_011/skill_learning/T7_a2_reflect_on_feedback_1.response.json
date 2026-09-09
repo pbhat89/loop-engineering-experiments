@@ -1,0 +1,27 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T7-no_target_leakage",
+      "correction": "Removed billed_amount and allowed_amount from the feature set to eliminate information leakage. Retained only submission-time attributes (claim_type, cpt_category, place_of_service, provider_specialty, service_units, length_of_stay) that are available at claim intake for prospective scoring."
+    },
+    {
+      "feedback_id": "T7-roc_auc_range",
+      "correction": "Removed leaky financial features (billed_amount and allowed_amount) from the feature set. This brought held-out ROC-AUC values from unrealistic 0.9968–0.9972 into the expected 0.6–0.95 range by using only valid submission-time predictors."
+    },
+    {
+      "feedback_id": "T7-caveat_no_operational_use",
+      "correction": "Added the no_operational_use caveat to the report parameters to communicate that the ranking model must not be deployed operationally without clinical validation and expert sign-off."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When reporting predictive models for clinical or operational use cases, include the no_operational_use caveat if the model lacks external validation or has not been approved by domain experts. This explicit warning prevents premature operational adoption without proper clinical oversight and risk assessment.",
+      "applicable_task_ids": [
+        "T8"
+      ],
+      "source_feedback_ids": [
+        "T7-caveat_no_operational_use"
+      ]
+    }
+  ]
+}

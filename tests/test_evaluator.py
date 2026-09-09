@@ -78,11 +78,14 @@ def one(evaluation: dict) -> dict:
 def test_suite_shape(suite, tasks):
     assert suite["suite_version"] == "1"
     assert list(tasks) == ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12", "T13"]
-    # experiment 5 v2 runs the three convention-dense held-out tasks T11 -> T12 -> T13 (D-24); the order must be a
-    # subset of the specs and match experiment.yaml. (v1, D-23, ran [T9, T10, T5, T6].)
+    # tasks.yaml carries the experiment 5 v2 held-out order T11 -> T12 -> T13 (D-24) and is frozen, so it cannot
+    # follow the run being configured. (v1, D-23, ran [T9, T10, T5, T6].)
     assert suite["task_order"] == ["T11", "T12", "T13"] and set(suite["task_order"]) <= set(tasks)
     from src.utils import CONFIG_DIR, read_yaml
-    assert read_yaml(CONFIG_DIR / "experiment.yaml")["task_order"] == suite["task_order"]
+    # the run actually being executed is the one in experiment.yaml; it may reorder or subset the suite (experiment 6
+    # phase 1, D-25, re-runs [T1, T2, T4, T3, T7, T8]) but may never name a task the frozen suite does not define.
+    configured = read_yaml(CONFIG_DIR / "experiment.yaml")["task_order"]
+    assert configured and set(configured) <= set(tasks) and len(set(configured)) == len(configured)
     for tid, spec in tasks.items():
         for key in ("title", "objective", "tags", "input_tables", "golden_file", "required_artifacts", "components"):
             assert key in spec, (tid, key)

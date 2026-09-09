@@ -1,0 +1,28 @@
+{
+  "current_task_corrections": [
+    {
+      "feedback_id": "T1-candidate_keys",
+      "correction": "Ensure duplicate_check component tests all candidate keys including composite keys (e.g., adherence.member_id+therapeutic_class) to validate uniqueness of every natural key."
+    },
+    {
+      "feedback_id": "T1-caveat_synthetic",
+      "correction": "Add synthetic_data caveat to write_report parameters to document that the analyzed dataset is synthetic."
+    },
+    {
+      "feedback_id": "T1-caveat_sample_preview",
+      "correction": "Add sample_preview caveat to write_report parameters to clarify that value samples shown are illustrative previews, not findings."
+    }
+  ],
+  "reusable_lessons": [
+    {
+      "lesson": "When validating candidate keys for any table, test all candidate keys listed in the schema including composite keys using duplicate_check, to ensure complete uniqueness verification and identifier integrity.",
+      "source_feedback_ids": ["T1-candidate_keys"],
+      "applicable_task_ids": ["T3", "T6", "T7"]
+    },
+    {
+      "lesson": "All reconnaissance and analytical reports on synthetic datasets must include the synthetic_data caveat to clearly document the synthetic nature of the source data.",
+      "source_feedback_ids": ["T1-caveat_synthetic"],
+      "applicable_task_ids": ["T2", "T3", "T4", "T5", "T6", "T7", "T8"]
+    }
+  ]
+}

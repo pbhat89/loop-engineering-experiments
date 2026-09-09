@@ -1,0 +1,42 @@
+{
+  "proposal": {
+    "name": "Test Composite and Single-Column Candidate Keys for Uniqueness",
+    "tags": [
+      "data_quality",
+      "keys",
+      "uniqueness",
+      "cardinality"
+    ],
+    "trigger": "When validating natural keys in a table where the true key might be either a single column or a composite of multiple columns.",
+    "objective": "Systematically test both single-column and composite-key candidates to determine which is the actual natural key for a table, ensuring data integrity and trustworthy relationships for joins.",
+    "procedure": [
+      "Identify all candidate keys for the table under analysis—both single-column keys (e.g., member_id) and plausible composite keys (e.g., member_id + therapeutic_class).",
+      "Run a uniqueness check for each candidate key: calculate the row count and the count of distinct values for the key column(s).",
+      "Record n_rows, n_unique, duplicate_rows, and is_candidate_key (true if n_unique equals n_rows) for each candidate.",
+      "Compare results across all candidates to determine which key or keys qualify as true natural keys.",
+      "Document all candidate key results in metrics—not just the one that passed—to support downstream join validation and identify potential data quality issues."
+    ],
+    "required_checks": [
+      "All candidate keys are tested, including both single-column and composite combinations.",
+      "For each key tested, n_rows, n_unique, duplicate_rows, and is_candidate_key are recorded.",
+      "Comparison across candidate keys is documented to explain which is the true natural key."
+    ],
+    "expected_artifacts": [
+      "Metrics documenting the uniqueness status and cardinality of each candidate key."
+    ],
+    "failure_modes": [
+      "Testing only single-column keys while overlooking composite-key candidates, missing the true natural key.",
+      "Assuming a key is unique without running the test, leading to undetected duplicates.",
+      "Testing all candidates but reporting only the passing key, hiding evidence about the table structure."
+    ],
+    "example": "In a claims adherence table with columns (member_id, therapeutic_class, pdc, mpr, adherence_flag), both member_id alone and the composite (member_id + therapeutic_class) are plausible keys. Testing both reveals whether each member-class pair is unique or whether member_id alone serves as the true natural key.",
+    "applicable_task_ids": [
+      "T3",
+      "T7"
+    ],
+    "source_feedback_ids": [
+      "T1-candidate_keys"
+    ]
+  },
+  "reason_if_null": null
+}

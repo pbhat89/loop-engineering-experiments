@@ -1,0 +1,50 @@
+{
+  "steps": [
+    {
+      "component": "load_tables"
+    },
+    {
+      "component": "claim_volume",
+      "params": {
+        "by": ["claim_status"],
+        "figure": true
+      }
+    },
+    {
+      "component": "denial_rate",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "fraud_prevalence",
+      "params": {
+        "denominator": "all_claims"
+      }
+    },
+    {
+      "component": "financial_summary",
+      "params": {
+        "amount_columns": ["billed_amount", "allowed_amount", "paid_amount"],
+        "statistics": "sum_mean"
+      }
+    },
+    {
+      "component": "monthly_trend",
+      "params": {
+        "date_column": "adjudication_date",
+        "metrics": ["claim_count"]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": ["synthetic_data"],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "Plan addresses all task questions: claim counts and status splits via claim_volume with status breakdown; denial rate via denial_rate using all_claims denominator for breadth; fraud prevalence via fraud_prevalence; financial summary (billed, allowed, paid totals and per-claim statistics) via financial_summary; monthly volume trend via monthly_trend on adjudication_date. All standard artifacts produced: status distribution chart, monthly trend chart and table, financial summary table, report. Report configured to show denominators for clarity and cite artifacts for traceability."
+}

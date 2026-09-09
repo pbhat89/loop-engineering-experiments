@@ -1,0 +1,74 @@
+{
+  "steps": [
+    {
+      "component": "load_tables",
+      "params": {}
+    },
+    {
+      "component": "schema_summary",
+      "params": {}
+    },
+    {
+      "component": "missingness",
+      "params": {
+        "scope": "all_columns"
+      }
+    },
+    {
+      "component": "duplicate_check",
+      "params": {
+        "keys": [
+          "medical_claims.claim_id",
+          "pharmacy_claims.rx_claim_id",
+          "members.member_id",
+          "providers.provider_npi",
+          "adherence.member_id",
+          "adherence.member_id+therapeutic_class"
+        ]
+      }
+    },
+    {
+      "component": "date_ranges",
+      "params": {
+        "columns": [
+          "medical_claims.service_date_from",
+          "medical_claims.service_date_to",
+          "medical_claims.adjudication_date",
+          "pharmacy_claims.fill_date",
+          "pharmacy_claims.paid_date",
+          "members.enrollment_start",
+          "members.enrollment_end"
+        ],
+        "consistency_checks": true
+      }
+    },
+    {
+      "component": "join_check",
+      "params": {
+        "pairs": [
+          "medical_claims.member_id->members.member_id",
+          "medical_claims.rendering_npi->providers.provider_npi",
+          "medical_claims.billing_npi->providers.provider_npi",
+          "pharmacy_claims.member_id->members.member_id",
+          "pharmacy_claims.pharmacy_npi->providers.provider_npi",
+          "adherence.member_id->members.member_id"
+        ]
+      }
+    },
+    {
+      "component": "write_report",
+      "params": {
+        "caveats": [
+          "descriptive_only",
+          "synthetic_data",
+          "sample_preview"
+        ],
+        "show_denominators": true,
+        "cite_artifacts": true
+      }
+    }
+  ],
+  "skills_applied": [],
+  "rationale": "The revised plan addresses all three feedback items from the first execution. (1) The duplicate_check component now tests both adherence.member_id and the composite key adherence.member_id+therapeutic_class, ensuring complete candidate key validation per T1-candidate_keys feedback. (2) The write_report component adds the 'synthetic_data' caveat to clearly document that the dataset is synthetic, fulfilling T1-caveat_synthetic. (3) The 'sample_preview' caveat has been added to indicate that value samples shown are illustrative previews, addressing T1-caveat_sample_preview. All other components and parameters remain unchanged, preserving the comprehensive reconnaissance approach.",
+  "changes_summary": "Added adherence.member_id and adherence.member_id+therapeutic_class to duplicate_check keys parameter; added synthetic_data and sample_preview caveats to write_report caveats parameter."
+}

@@ -1,0 +1,158 @@
+{
+  "task_id": "T7",
+  "run_id": "run_012",
+  "condition": "skill_learning",
+  "attempt": 2,
+  "seed": 42,
+  "generated_at": "2026-09-09T03:52:53+00:00",
+  "plan_sha256": "316079c12db1e12a12dca0933fb7d6ea0201d04c413abe718a7a2ba9c360f79e",
+  "plan": {
+    "steps": [
+      {
+        "component": "load_tables",
+        "params": {}
+      },
+      {
+        "component": "split",
+        "params": {
+          "test_size": 0.25
+        }
+      },
+      {
+        "component": "target_definition",
+        "params": {
+          "amount_column": "paid_amount",
+          "percentile": 95,
+          "threshold_source": "train_only"
+        }
+      },
+      {
+        "component": "feature_set",
+        "params": {
+          "features": [
+            "claim_type",
+            "cpt_category",
+            "place_of_service",
+            "provider_specialty",
+            "network_status",
+            "service_units",
+            "length_of_stay",
+            "er_flag",
+            "elective_flag",
+            "preventive_flag",
+            "auth_required_flag",
+            "primary_icd10_cm",
+            "drg_present"
+          ]
+        }
+      },
+      {
+        "component": "preprocessing",
+        "params": {
+          "fit_on": "train_only",
+          "scaling": "none"
+        }
+      },
+      {
+        "component": "models",
+        "params": {
+          "models": [
+            "logistic_regression",
+            "random_forest"
+          ]
+        }
+      },
+      {
+        "component": "write_report",
+        "params": {
+          "caveats": [
+            "model_limitations"
+          ],
+          "show_denominators": true,
+          "cite_artifacts": true
+        }
+      }
+    ],
+    "skills_applied": [],
+    "rationale": "Task T7 requires an early-warning model for high-cost claims (top 5% by paid amount) for nurse review. Revised plan addresses three critical statistical discipline issues from prior evaluation: (1) threshold_source changed to 'train_only' to prevent test distribution leakage into target definition; (2) amount fields (billed_amount, allowed_amount, member_oop, cob_amount) removed from feature set to eliminate target leakage—these are directly or indirectly derived from paid_amount and violate submission-time feature requirement; (3) preprocessing.fit_on changed to 'train_only' to prevent test row information from affecting transformation parameters. Retained feature set includes clinical (cpt_category, primary_icd10_cm, drg_present, place_of_service, er_flag, elective_flag, preventive_flag), operational (provider_specialty, network_status, auth_required_flag, service_units, length_of_stay), and claim-level attributes (claim_type), all available at submission time. One-hot encode categoricals fitted on training only, no scaling for tree compatibility. Logistic regression and random forest for ranking model comparison. Report with model_limitations caveat, denominator notation for clarity, and artifact citations per standard practice.",
+    "changes_summary": "Fixed three critical statistical leakage issues: (1) target_definition.threshold_source changed from 'all_data' to 'train_only'—threshold must be computed on training data only to prevent test distribution from leaking into target; (2) feature_set.features reduced from 17 to 13 by removing billed_amount, allowed_amount, member_oop, and cob_amount—these amount fields are directly or indirectly derived from the target (paid_amount) and violate the submission-time feature principle; retained features are available at claim submission and do not encode target information; (3) preprocessing.fit_on changed from 'all_data' to 'train_only'—encoder and scaler must be fitted on training data only to prevent test row distributions from affecting transformation parameters."
+  },
+  "tables": {
+    "medical_claims": {
+      "rows": 12845,
+      "columns": 54
+    }
+  },
+  "split": {
+    "test_size": 0.25,
+    "seed": 42,
+    "n_train": 9633,
+    "n_test": 3212
+  },
+  "target_definition": {
+    "amount_column": "paid_amount",
+    "percentile": 95,
+    "threshold_source": "train_only",
+    "threshold_value": 3198.9879999999994,
+    "positive_rate_train": 0.05003633343714315,
+    "positive_rate_test": 0.046699875466998754,
+    "n_positive_train": 482,
+    "n_positive_test": 150
+  },
+  "feature_set": {
+    "features": [
+      "claim_type",
+      "cpt_category",
+      "place_of_service",
+      "provider_specialty",
+      "network_status",
+      "service_units",
+      "length_of_stay",
+      "er_flag",
+      "elective_flag",
+      "preventive_flag",
+      "auth_required_flag",
+      "primary_icd10_cm",
+      "drg_present"
+    ],
+    "n_categorical": 6,
+    "n_numeric": 7,
+    "id_fields_present": [],
+    "target_derived_present": []
+  },
+  "preprocessing": {
+    "fit_on": "train_only",
+    "scaling": "none",
+    "n_features_out": 103
+  },
+  "models": {
+    "logistic_regression": {
+      "pr_auc": 0.22148583749627626,
+      "roc_auc": 0.9060232963204878,
+      "precision_at_top_5pct": 0.22981366459627328,
+      "recall_at_top_5pct": 0.24666666666666667,
+      "n_test": 3212
+    },
+    "random_forest": {
+      "pr_auc": 0.19725579955307304,
+      "roc_auc": 0.8874569997822775,
+      "precision_at_top_5pct": 0.2236024844720497,
+      "recall_at_top_5pct": 0.24,
+      "n_test": 3212
+    }
+  },
+  "report": {
+    "caveats": [
+      "model_limitations"
+    ],
+    "show_denominators": true,
+    "cite_artifacts": true,
+    "sections": [
+      "Summary",
+      "Results",
+      "Artifacts",
+      "Caveats",
+      "Method"
+    ]
+  }
+}
