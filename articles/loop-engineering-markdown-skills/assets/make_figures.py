@@ -13,9 +13,10 @@ Writes into --out (default: this folder):
   results_grid.png     attempts-to-pass and final score, one cell per (task, arm) -- the
                         main results figure; grows a "held-out" block of rows underneath
                         when --transfer-run has records
-  transfer_curve.png   first-attempt checker score across all ten tasks (six learning +
-                        four held-out) for the three arms that ran on both -- only drawn
-                        when --transfer-run has records; skipped without error otherwise
+  oneshot_test.png     first attempt only (no feedback yet) on the three held-out tasks --
+                        three employees given the same tasks, one attempt each, nothing
+                        learned during the test -- only drawn when --transfer-run has
+                        records; skipped without error otherwise
 Every number comes from <logs>/experiment_events.jsonl, <logs>/skill_events.jsonl and
 <logs>/graph_events.jsonl for --run-id, and the same files under --transfer-logs (default:
 the same directory as --logs) for --transfer-run.
@@ -79,7 +80,7 @@ SKILL_ARM = "skill_learning"
 TRANSFER_TASKS = ["T11", "T12", "T13"]
 TRANSFER_TASK_LABEL = {
     "T11": "7 · Portfolio deep-dive",
-    "T12": "8 · High-cost model, top 10 %",
+    "T12": "8 · High-cost model (top 10 %)",
     "T13": "9 · Brief for the CFO",
 }
 TRANSFER_TASK_SHORT = {
@@ -291,88 +292,99 @@ def fig_results_grid(d: dict, out_dir: Path, d_transfer: dict | None = None) -> 
     plt.close(fig)
 
 
-# --------------------------------------------------------------------------- figure: transfer curve
-def fig_transfer_curve(d: dict, d_transfer: dict, out_dir: Path) -> None:
-    """First-attempt checker score across all ten tasks, for the three arms that ran on both runs."""
-    line_arms = ["reflection_only", "feedback_memory", "skill_learning"]
-    markers = {"reflection_only": "o", "feedback_memory": "s", "skill_learning": "D"}
+# --------------------------------------------------------------------------- figure: one-shot test
+ONESHOT_ARMS = [
+    ("reflection_only", "New joiner — checker only, nothing carried"),
+    ("feedback_memory", "Colleague A — carries a raw log of past comments"),
+    ("skill_learning", "Colleague B — carries two self-written skills"),
+]
+ONESHOT_SHORT = {"reflection_only": "New joiner", "feedback_memory": "Colleague A", "skill_learning": "Colleague B"}
 
-    task_specs = [(t, TASK_SHORT[t], d) for t in TASKS] + \
-                 [(t, TRANSFER_TASK_SHORT[t], d_transfer) for t in TRANSFER_TASKS]
-    n_total = len(task_specs)
-    n_learn = len(TASKS)
-    positions = list(range(1, n_total + 1))
 
-    fig, ax = plt.subplots(figsize=(13, 5.5))
+def fig_oneshot(d_transfer: dict, out_dir: Path) -> None:
+    """Three employees given the same three held-out tasks, one attempt each, no feedback,
+    nothing learned during the test: first attempt only (status == attempt, attempt == 1)
+    from the transfer run, per (task, employee)."""
+    attempts = d_transfer["attempts"]
+    first: dict[tuple[str, str], tuple[int, bool, float]] = {}
+    for arm, _ in ONESHOT_ARMS:
+        for task in TRANSFER_TASKS:
+            rows = [r for r in attempts.get((arm, task), []) if r.get("attempt") == 1]
+            if rows:
+                r = rows[0]
+                first[(arm, task)] = (r["n_failed_checks"], bool(r["passed"]), r["evaluator_score_total"])
 
-    # gather every arm's first-attempt score per position first, so annotations can be
-    # placed relative to the full stack at that x (never colliding with another arm's
-    # line or marker), and so the y-range can be sized to fit both the data and the labels
-    ys_by_arm: dict[str, list[float | None]] = {}
-    for arm in line_arms:
-        ys = []
-        for t, _, dd in task_specs:
-            rows = dd["attempts"].get((arm, t), [])
-            ys.append(rows[0]["evaluator_score_total"] if rows else None)
-        ys_by_arm[arm] = ys
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(13.5, 5.8), gridspec_kw={"width_ratios": [2.2, 1.3]})
 
-    all_scores = [v for ys in ys_by_arm.values() for v in ys if v is not None]
-    y_lo = min(all_scores + [0]) - 1.05
-    y_hi = max(all_scores + [4]) + 1.55
+    # ---- left: problems the checker found in the single attempt, per task x employee
+    x = list(range(len(TRANSFER_TASKS)))
+    w = 0.26
+    for i, (arm, label) in enumerate(ONESHOT_ARMS):
+        offs = [xi + (i - 1) * w for xi in x]
+        vals = [first[(arm, t)][0] for t in TRANSFER_TASKS]
+        bars = ax.bar(offs, vals, w, color=ARM_COLOR[arm], label=label, edgecolor=PAPER, lw=0.8, zorder=3)
+        for b, t in zip(bars, TRANSFER_TASKS):
+            n, passed, _ = first[(arm, t)]
+            mark_color = "#0a7a4f" if passed else FAIL
+            ax.text(b.get_x() + b.get_width() / 2, n + 0.18, f"{n} {'✓' if passed else '✗'}",
+                    ha="center", va="bottom", fontsize=10, color=mark_color,
+                    fontweight="bold" if passed else "normal", zorder=4)
 
-    # shaded band over the held-out tasks + section labels pinned near the top of the axes
-    ax.axvspan(n_learn + 0.5, n_total + 0.5, color="#e9e9e3", alpha=0.7, zorder=0)
-    xaxis_frac = ax.get_xaxis_transform()  # x in data coords, y in axes-fraction
-    ax.text((n_learn + 0.5 + n_total + 0.5) / 2, 0.97,
-            "held-out test: memory carried over and frozen; checker only starts cold",
-            ha="center", va="top", fontsize=9.5, color=INK2, style="italic", transform=xaxis_frac)
-    ax.text((0.5 + n_learn + 0.5) / 2, 0.97, "learning tasks",
-            ha="center", va="top", fontsize=9.5, color=INK2, style="italic", transform=xaxis_frac)
+    max_problems = max(v[0] for v in first.values())
+    ax.set_xticks(x)
+    ax.set_xticklabels([TRANSFER_TASK_LABEL[t] for t in TRANSFER_TASKS], fontsize=10.5)
+    ax.set_ylim(0, max_problems + 1.7)
+    ax.set_ylabel("problems the checker found in the single attempt")
+    ax.grid(axis="y", color=LINE, lw=0.6, zorder=0)
+    ax.set_axisbelow(True)
+    ax.set_title("One attempt, no feedback, nothing learned during the test", loc="left", fontweight="bold", fontsize=13)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=1, frameon=False, fontsize=10.5)
+    ax.text(0.5, -0.66, "number = problems found  ·  ✓ accepted  ·  ✗ sent back", transform=ax.transAxes,
+            ha="center", va="top", fontsize=9, color=INK2)
 
-    # pass mark
-    ax.axhline(3.5, color=INK2, lw=1.2, ls="--", zorder=1)
-    ax.text(n_total + 0.45, 3.5, "pass mark (3.5)", ha="left", va="center", fontsize=9.5, color=INK2,
-            zorder=5, bbox=dict(fc=PAPER, ec="none", pad=1.5))
+    # ---- right: average score of the single attempt per employee
+    means, accepted, problems = [], [], []
+    for arm, _ in ONESHOT_ARMS:
+        vals = [first[(arm, t)] for t in TRANSFER_TASKS]
+        means.append(sum(v[2] for v in vals) / len(vals))
+        accepted.append(sum(1 for v in vals if v[1]))
+        problems.append(sum(v[0] for v in vals))
 
-    for arm in line_arms:
-        ax.plot(positions, ys_by_arm[arm], marker=markers[arm], ms=8.5, lw=2.2, color=ARM_COLOR[arm],
-                mec="white", mew=0.9, label=ARM_LABEL[arm], zorder=3)
+    bar_colors = [ARM_COLOR[arm] for arm, _ in ONESHOT_ARMS]
+    bars = ax2.bar(range(3), means, 0.6, color=bar_colors, edgecolor=PAPER, zorder=3)
+    for i, (b, m) in enumerate(zip(bars, means)):
+        ax2.text(b.get_x() + b.get_width() / 2, m + 0.1, f"{m:.2f}", ha="center", va="bottom",
+                  fontsize=12, fontweight="bold", color=bar_colors[i], zorder=4)
 
-    # annotate: "N notes" above the highest line at that position, "N skills" below the
-    # lowest -- so a label never sits on top of a marker or another arm's line
-    for i, (pos, (t, _, dd)) in enumerate(zip(positions, task_specs)):
-        col_vals = [ys_by_arm[a][i] for a in line_arms if ys_by_arm[a][i] is not None]
-        if not col_vals:
-            continue
-        top_v, bot_v = max(col_vals), min(col_vals)
-        if ys_by_arm["feedback_memory"][i] is not None:
-            n_notes = dd["done"].get(("feedback_memory", t), {}).get("past_feedback_count", 0)
-            ax.text(pos, top_v + 0.3, f"{n_notes} notes", ha="center", va="bottom",
-                    fontsize=8, color=ARM_COLOR["feedback_memory"], zorder=4)
-        if ys_by_arm["skill_learning"][i] is not None:
-            n_skills = len(dd["done"].get(("skill_learning", t), {}).get("skills_retrieved") or [])
-            ax.text(pos, bot_v - 0.3, f"{n_skills} skill" + ("s" if n_skills != 1 else ""), ha="center", va="top",
-                    fontsize=8, color=ARM_COLOR["skill_learning"], zorder=4)
+    ax2.axhline(3.5, color=INK2, lw=1.2, ls="--", zorder=2)
+    ax2.text(2.35, 3.5, "pass mark", ha="left", va="center", fontsize=9.5, color=INK2, zorder=5,
+             bbox=dict(fc=PAPER, ec="none", pad=1.5))
 
-    ax.set_xlim(0.4, n_total + 1.15)
-    ax.set_ylim(y_lo, y_hi)
-    ax.set_xticks(positions)
-    ax.set_xticklabels([label for _, label, _ in task_specs], fontsize=9.2, linespacing=1.25)
-    ax.set_yticks([0, 1, 2, 3, 4])
-    ax.set_ylabel("Checker score, first attempt (0-4)")
-    ax.grid(axis="y", color=LINE, lw=0.7, alpha=0.6, zorder=0)
-    ax.tick_params(axis="x", length=0)
+    ax2.set_xlim(-0.55, 3.05)
+    ax2.set_ylim(0, 4.2)
+    ax2.set_yticks([0, 1, 2, 3, 4])
+    ax2.set_xticks(range(3))
+    ax2.set_xticklabels([])
+    ax2.tick_params(axis="x", length=0)
+    for i, (arm, _) in enumerate(ONESHOT_ARMS):
+        ax2.text(i, -0.06, ONESHOT_SHORT[arm], transform=ax2.get_xaxis_transform(),
+                  ha="center", va="top", fontsize=9.5, fontweight="bold", color=INK)
+        ax2.text(i, -0.16, f"accepted {accepted[i]} of {len(TRANSFER_TASKS)}", transform=ax2.get_xaxis_transform(),
+                  ha="center", va="top", fontsize=8.3, color=INK2)
+        ax2.text(i, -0.245, f"{problems[i]} problem" + ("s" if problems[i] != 1 else ""),
+                  transform=ax2.get_xaxis_transform(), ha="center", va="top", fontsize=8.3, color=INK2)
+    ax2.set_ylabel("average score of the single attempt (0–4)")
+    ax2.grid(axis="y", color=LINE, lw=0.6, zorder=0)
+    ax2.set_axisbelow(True)
+    ax2.set_title("Average score of the single attempt", loc="left", fontweight="bold", fontsize=12)
 
-    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=3, frameon=False, fontsize=10.5)
-
-    fig.text(0.012, 0.99, "Does what was learned carry over to new tasks?", fontsize=15.5, fontweight="bold", va="top")
-    fig.text(0.012, 0.935,
-             "Score of the first attempt on each task, before any feedback on that task. Left: the six tasks memory was\n"
-             "built on. Right: three held-out tasks that reuse the conventions but ask different questions, with the memory frozen.",
+    fig.text(0.1, 0.975,
+             "Same frozen checker, same tasks, same model. The colleagues carry what they learned on six earlier\n"
+             "tasks; nothing is added during the test.",
              fontsize=10.3, color=INK2, va="top", linespacing=1.4)
 
-    fig.tight_layout(rect=(0, 0.1, 1, 0.855))
-    fig.savefig(out_dir / "transfer_curve.png", dpi=170)
+    fig.subplots_adjust(left=0.065, right=0.965, top=0.74, bottom=0.34, wspace=0.32)
+    fig.savefig(out_dir / "oneshot_test.png", dpi=170)
     plt.close(fig)
 
 
@@ -494,8 +506,8 @@ def main() -> int:
     fig_hero(out_dir)
     names = ["hero", "loop_diagram", "results_grid"]
     if has_transfer:
-        fig_transfer_curve(d, d_transfer, out_dir)
-        names.append("transfer_curve")
+        fig_oneshot(d_transfer, out_dir)
+        names.append("oneshot_test")
     for name in names:
         print("wrote", out_dir / f"{name}.png")
     return 0

@@ -160,6 +160,18 @@ uv run python articles/loop-engineering-markdown-skills/assets/make_figures.py -
 
 19 operator requests total (9 / 5 / 5), 0 validation re-requests, 0 execution errors. No skill was written, proposed or persisted — the frozen memory closes that path by construction (D-24).
 
+### One-shot reading
+
+Reframed as three employees given the same three held-out tasks, one attempt each, no feedback, nothing learned during the test: **New joiner** (`reflection_only`, checker only, nothing carried), **Colleague A** (`feedback_memory`, carries a raw log of past comments) and **Colleague B** (`skill_learning`, carries two self-written skills).
+
+| | New joiner | Colleague A | Colleague B |
+|---|---|---|---|
+| Accepted on the single attempt | 0 / 3 | 2 / 3 | 2 / 3 |
+| Problems found | 14 | 3 | 8 |
+| Mean first-attempt score | 2.81 | 3.58 | 3.52 |
+
+The first attempt is a valid one-shot measure: the plan request carries no retry budget of its own, and every arm's memory was already frozen before the run started, so nothing here can have been learned during the test itself. The article's figure `oneshot_test.png` shows this view; per-attempt detail (including the second attempt each cold or partly-warm cell needed) remains in the table above.
+
 **First-try findings — what transferred, what was new:**
 
 | Task | Cold arm's first-try failures | Warm-arm first-try failures | Reading |
@@ -203,7 +215,7 @@ The first attempt at the transfer test ran four held-out tasks, T9 → T10 → T
 
 `logs/experiment_events.jsonl` (attempt and done records: `score_by_attempt`, `attempts_to_pass`, `n_failed_checks`, `n_feedback_shown`, `skills_applied`, `self_declared_pass`, `past_feedback_count`, `evaluator_score_by_dimension`) · `logs/skill_events.jsonl` (`memory_retrieved` / `memory_written` for the two memory arms, plus the skill lifecycle) · `logs/graph_events.jsonl` (`self_evaluate` verdicts next to the frozen score) · `logs/feedback_events.jsonl` (what was shown, with `source`) · `artifacts/manual/run_006/` (115 request/response pairs) · `artifacts/memory/run_006/` (`feedback_memory.jsonl`, 19 notes; `self_refine_memory.jsonl`, 10 notes) · `artifacts/tasks/run_006/` (every attempt's metrics, report and charts) · `skills/evolved/run_006/` (the two persisted skills) · `artifacts/reports/run_summaries.json` · `config/freeze_manifest.json`.
 
-**Experiment 5 v2 (`run_008`) additions:** `logs/runs/run_008.json` (`"seeding"` block — source run, redaction rule, records/tokens redacted, skill listing mode, `memory_read_only: true`) · `artifacts/memory/run_008/feedback_memory.jsonl` (19 seeded notes stamped `seeded_from: run_006`, unchanged at 19 for the whole run — recall only, no writes) · `skills/evolved/run_006/` (listed read-only into `run_008`'s retrieval, never copied; nothing new persisted under `skills/evolved/run_008/`) · `artifacts/manual/run_008/` (19 request/response pairs across the three arms) · `scripts/seed_audit.py --run-id run_008 --holdout T11,T12,T13` (clean; names the one golden value — `12339` — the redaction removed) · `archive/experiment-5_stub_006_smoke/` (the stub gate before the manual run) · `goldens/T11_portfolio_deep_dive_metrics.json`, `goldens/T12_high_cost_p90_model_contract.json`, `goldens/T13_cfo_brief_rubric.yaml` · `artifacts/reports/run_summaries.json` (`run_006` and `run_008` entries) · `config/freeze_manifest.json` (`bab215a5fbcc…`) · `articles/loop-engineering-markdown-skills/assets/transfer_curve.png`, `results_grid.png` (regenerated from `run_006` and `run_008`).
+**Experiment 5 v2 (`run_008`) additions:** `logs/runs/run_008.json` (`"seeding"` block — source run, redaction rule, records/tokens redacted, skill listing mode, `memory_read_only: true`) · `artifacts/memory/run_008/feedback_memory.jsonl` (19 seeded notes stamped `seeded_from: run_006`, unchanged at 19 for the whole run — recall only, no writes) · `skills/evolved/run_006/` (listed read-only into `run_008`'s retrieval, never copied; nothing new persisted under `skills/evolved/run_008/`) · `artifacts/manual/run_008/` (19 request/response pairs across the three arms) · `scripts/seed_audit.py --run-id run_008 --holdout T11,T12,T13` (clean; names the one golden value — `12339` — the redaction removed) · `archive/experiment-5_stub_006_smoke/` (the stub gate before the manual run) · `goldens/T11_portfolio_deep_dive_metrics.json`, `goldens/T12_high_cost_p90_model_contract.json`, `goldens/T13_cfo_brief_rubric.yaml` · `artifacts/reports/run_summaries.json` (`run_006` and `run_008` entries) · `config/freeze_manifest.json` (`bab215a5fbcc…`) · `articles/loop-engineering-markdown-skills/assets/oneshot_test.png`, `results_grid.png` (regenerated from `run_006` and `run_008`).
 
 **Held-out v1 (`run_007`), archived:** `archive/experiment-5_run_007_heldout-v1/` — logs, checkpoints, task artifacts, operator transcripts, its memory log (25 notes at task end) and its one learned skill (`evolved_run_007_001`); superseded by decision D-24.
 

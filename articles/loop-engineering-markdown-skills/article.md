@@ -6,7 +6,7 @@ Photo credits:
   - assets/hero.png — "Image by Author" (matplotlib). Swap for an Unsplash photo if you prefer; "spiral staircase" fits the theme.
   - assets/loop_diagram.png — "Image by Author" (matplotlib)
   - assets/results_grid.png — "Image by Author" (matplotlib, from logs/experiment_events.jsonl and logs/skill_events.jsonl, run_006 + run_008)
-  - assets/transfer_curve.png — "Image by Author" (matplotlib, first-attempt scores from run_006 and the held-out test run_008)
+  - assets/oneshot_test.png — "Image by Author" (matplotlib, first attempts of the held-out test run_008)
 -->
 
 # Loop engineering: five ways to close a self-improvement loop, tried on the same six tasks
@@ -96,21 +96,22 @@ And the caveat that applies to all of it: one run, a model that is not determini
 
 ## Does what was learned carry over?
 
-The six tasks above are where the memory was built, so they cannot show whether it transfers. For that I ran a held-out test. Think of two employees given the same three pieces of work: a new joiner who has never seen this data, and a colleague who has been corrected on it for months. The new joiner is the checker-only design, starting cold. The colleague is each memory design, carrying exactly what it held at the end of task 6 — the raw log's nineteen notes, or the two skills — with the memory **frozen** for the test: nothing appended, no new skills, so what you see is carry-over and nothing else.
+The six tasks above are where the memory was built, so they cannot show whether it transfers. For that I ran a held-out test with a simple rule: **one attempt per task, no feedback, nothing learned along the way.** Think of three employees handed the same three pieces of work. The first is a new joiner who has never seen this data. The other two have worked through the six tasks above and were corrected along the way: Colleague A kept a raw log of every comment the checker made, nineteen notes; Colleague B wrote two skills. For the test both memories are frozen, so what you see is what each employee walked in knowing, and nothing else. In loop terms, the new joiner is the checker-only design starting cold, and the colleagues are the two memory designs.
 
-The three tasks are deliberately dense in the conventions the learning tasks taught, and they ask different questions: a fuller description of the book (status mix, denial rate, fraud flag, how the amounts are distributed, monthly volume and spend); an early-warning model for the most expensive 10 % of claims instead of 5 %; and a one-page brief for the CFO built from those two results. On catalogue defaults these tasks score between 1.2 and 1.7; with the conventions applied they score 4.0, so there is room for experience to show. To make sure no answers travelled with the memory, every number in the seeded notes was replaced by a placeholder, and an audit compared what remained against every value in the new answer keys. It caught one: the adjudicated-claims denominator count from task 2, which the book question would have reused.
+The three tasks are deliberately dense in the conventions the earlier tasks taught, and they ask different questions: a fuller description of the book (status mix, denial rate, fraud flag, how the amounts are distributed, monthly volume and spend); an early-warning model for the most expensive 10 % of claims instead of 5 %; and a one-page brief for the CFO built from those two results. On catalogue defaults these tasks score between 1.2 and 1.7; with the conventions applied they score 4.0, so there is room for experience to show. To make sure no answers travelled with the memory, every number in the seeded notes was replaced by a placeholder, and an audit compared what remained against every value in the new answer keys. It caught one: the adjudicated-claims denominator count from task 2, which the book question would have reused.
 
-![First-attempt score across the learning tasks and the held-out test](assets/transfer_curve.png)
+![One attempt on three held-out tasks: problems found and average score per employee](assets/oneshot_test.png)
 *Image by Author*
 
-| Held-out tasks 7 to 9 | New joiner: checker only | Colleague: checker + raw log | Colleague: checker + skills |
+| The single attempt on tasks 7 to 9 | New joiner | Colleague A, raw log | Colleague B, skills |
 |---|---|---|---|
-| Passed on the first attempt | 0 of 3 | 2 of 3 | 2 of 3 |
-| Attempts to pass all three | 6 | 4 | 4 |
-| Failed checks on first tries | 14 | 3 | 8 |
-| Mean first-attempt score | 2.81 | 3.58 | 3.52 |
+| Accepted by the checker | **0 of 3** | 2 of 3 | 2 of 3 |
+| Problems the checker found | 14 | 3 | 8 |
+| Average score (pass mark 3.5) | 2.81 | 3.58 | 3.52 |
 
-The new joiner made the classic mistakes on every task: the wrong denial-rate denominator and the wrong month on the book, leaked amount fields and an implausible AUC on the model, causal wording and missing sections on the brief. The raw-log colleague made almost none of them — one missing caveat on the book, a clean first pass on the model — and one genuinely new mistake on the brief: causal wording, which no note in its log had ever mentioned, because in the learning run it had been corrected on citations and sources, not on wording. The skills colleague applied its denominator lesson on the book and its caveat lesson on the brief, and had nothing in its two skills about the model's leakage rule, so it failed that once, like the new joiner.
+Acceptance is the score plus no critical miss, not a count of problems, which is why Colleague B got through task 7 with four light problems and was sent back from task 8 with four heavy ones.
+
+The new joiner's work came back on every task, with the classic mistakes: the wrong denial-rate denominator and the wrong month on the book, leaked amount fields and an implausible AUC on the model, causal wording and missing sections on the brief. Colleague A made almost none of them — one missing caveat on the book, a clean pass on the model — and one genuinely new mistake on the brief: causal wording, which no note in its log had ever mentioned, because in the learning run it had been corrected on citations and sources, not on wording. Colleague B applied its denominator lesson on the book and its caveat lesson on the brief, and had nothing in its two skills about the model's leakage rule, so it failed that one like the new joiner did.
 
 That is the honest shape of the result, and it holds in both directions: **memory transfers conventions, not competence.** A design remembers the corrections it has received and stops repeating them; it cannot pre-empt a convention it has never been corrected on, and it should not be expected to. A first held-out set I built before this one had tasks a cold start could nearly pass anyway, and showed only a sliver of a gap; it is archived with its numbers, because a test set has to be hard enough for experience to matter.
 
