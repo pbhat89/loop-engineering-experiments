@@ -6,7 +6,7 @@ An educational, reproducible **LangGraph** experiment in loop engineering on syn
 
 - **Synthetic data only.** HLT-008 synthetic healthcare claims sample (CC-BY-NC-4.0). Nothing here is medical, actuarial, fraud, underwriting, pricing, adjudication, legal, regulatory, or operational evidence.
 - **External procedural memory, not training.** The "learning" is Markdown skill files retrieved into the planner's context; no model weights change.
-- **No model API calls.** In `manual` mode the graph pauses on a LangGraph interrupt at each decision node and a fresh, **stateless Claude Code subagent** answers one JSON request (experiment 1: Claude Fable 5.1; experiment 3: Claude Haiku 4.5). In `rule_learner` mode a deterministic convention learner answers instead — no LLM at all (experiment 2). `stub` mode uses trivial fixtures for tests and is always labelled non-LLM simulation. No API key, Agent SDK, headless-CLI bridge, or session-credential reuse of any kind.
+- **No model API calls.** In `manual` mode the graph pauses on a LangGraph interrupt at each decision node and a fresh, **stateless Claude Code subagent** answers one JSON request (experiment 1: Claude Fable 5.1; experiments 3-6: Claude Haiku 4.5; experiment 7: Claude Fable 5.1). In `rule_learner` mode a deterministic convention learner answers instead — no LLM at all (experiment 2). `stub` mode uses trivial fixtures for tests and is always labelled non-LLM simulation. No API key, Agent SDK, headless-CLI bridge, or session-credential reuse of any kind.
 - **Illustrative results.** One run per arm; comparisons are reported as illustrative, populated only from the recorded logs.
 
 ## Results so far
@@ -19,25 +19,32 @@ An educational, reproducible **LangGraph** experiment in loop engineering on syn
 | 4 — `run_006` | stateless **Claude Haiku 4.5** subagents, **blinded** briefs (T1 and T8 blinded too) and operator, feedback capped to the 3 most severe findings, 5 attempts, **five arms** — two of them a plain raw-memory log instead of the checker/self-review split | 6 tasks: T1 → T2 → T4 → T3 → T7 → T8 | **Checker, no memory:** 14 attempts to pass 6 tasks, 39 first-try failures. **Checker + raw log:** 11 attempts, 20 failures — passed T3 first try with 9 past notes already logged. **Checker + skills:** 13 attempts, 28 failures; 2 learned skills, 5 reuses. **Self-review only:** declared 6/6 done, checker passed 1/6 (T7 only); revised a checker-passing T8 attempt into a fail. **Self-review + raw log:** same pattern; a memory of its own past verdicts did not help (lowest mean final score of all five arms, 2.89) | `docs/writeup.md`, `articles/loop-engineering-markdown-skills/` |
 | 5 — `run_008` (v2; supersedes `run_007`, archived) | stateless **Claude Haiku 4.5** subagents, **blinded** briefs and operator, a **held-out transfer test with the memory frozen** — two arms seeded (read-only) from `run_006`'s memory and skills, one arm cold, feedback capped to the 3 most severe findings, 5 attempts, no memory writes for the whole run | 3 convention-dense held-out tasks built verbatim from earlier components: T11 (T2's) → T12 (T7's, 90th percentile) → T13 (T8's, sourced only from T11/T12) | **Cold (no memory):** 6 attempts to pass 3 tasks, 14 first-try failures, first-attempt mean 2.81, 0/3 first-try passes. **Warm, raw log (19 notes seeded, frozen):** 4 attempts, 3 failures, first-attempt mean 3.58, 2/3 first-try passes. **Warm, seeded skills (2 inherited, frozen — none new written):** 4 attempts, 8 failures, first-attempt mean 3.52, 2/3 first-try passes. Both warm arms opened at or above the cold arm on every task; the raw log beat the skills on T12 (leakage/AUC — no seeded skill covers it), the skills beat the raw log on T13 (causal language — no seeded note covers it). `run_007` (4 easier held-out tasks, memory still learning) hit a ceiling — cold first attempts 3.09–3.68 — and is archived at `archive/experiment-5_run_007_heldout-v1/` | `docs/writeup.md` (Part B; v1 in Part B′), `articles/loop-engineering-markdown-skills/` |
 
-All five are single runs on synthetic data — illustrative, not evidence of anything operational. The article about the experiments (Substack-ready Markdown + a self-contained web version) is in `articles/loop-engineering-markdown-skills/`; read it online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
+| 7 — the underwriting apprentice (built, **not yet run live**) | stateless **Claude Fable 5.1** subagents (`model: fable`), one per request; the starter manual is the only written practice and **fourteen house rules are never shown** | **one job, 38 times**: rate a life-insurance application — 30 training cases with a reviewer markup after each, then 8 held-out with memories frozen | Five arms: `new_joiner` · `notebook` · `written_rules` · `precedent` · `ask_senior`. Headline metric: rating distance in ladder steps. Built and gated by a stub smoke (all five arms, leakage audit 0). The measured floor — what a careful reader of the manual alone scores — is **0.933** training / **0.875** held-out; that is the most any memory can recover | `docs/underwriting-apprentice-design.md`, decision D-27, `archive/experiment-7_stub_smoke/` (stub) |
+
+Experiments 1-5 are single runs on synthetic data — illustrative, not evidence of anything operational. Experiment 7 has been built and stub-gated; no live result exists yet. The article about the experiments (Substack-ready Markdown + a self-contained web version) is in `articles/loop-engineering-markdown-skills/`; read it online at https://claude.ai/code/artifact/541293ef-bde3-4a40-95ff-11449a825aee.
 
 ## Repository layout
 
 ```text
 config/        experiment.yaml, graph.yaml (A1) · tasks.yaml, rubric.yaml (A3) · freeze_manifest.json (L0, Phase 1.5)
+               underwriting.yaml (experiment 7)
 data/          raw/ (git-ignored CSVs) · processed/manifest.json (data contract) · README.md (source, licence, schema)
+               underwriting/ (experiment 7: starter manual, house rules, 38 cases, goldens, freeze manifest)
 docs/          idea, spec, plan (interface contract), tasks (backlog), security-review, decision-log, verification-log, writeup, OPERATOR_PROTOCOL
+               underwriting-apprentice-design, underwriting-build-brief (experiment 7)
 goldens/       golden evaluation pack T1–T10, built once by independent reference code and frozen by hash
 skills/        SKILL_SCHEMA.md · foundational/ (6 curated skills, not used in experiment 3) · evolved/<run_id>/ (learned, immutable) · archived/ · index.json
 src/           llm_provider, graph_state, claims_graph, graph_nodes, run_experiment (L0) · download_data, profile_data (A2)
                build_goldens, evaluator (A3) · skill_store, skill_validator (A4) · experiment_logger, dashboard, charts (A5)
                task_runner + analyses/ (A6) · rule_learner (experiment 2) · agent_tracker, utils (L0)
-tests/         offline pytest suite (stub mode; data-dependent tests skip without data)
-scripts/       bootstrap.sh, run_all.sh, verify.sh (+ Python equivalents) · summarize_run.py · archive_run.py
+               underwriting/ (experiment 7: the rating engines, the five arms, its own graph and runner)
+tests/         offline pytest suite (stub mode; data-dependent tests skip without data) · underwriting/ (experiment 7)
+scripts/       bootstrap.sh, run_all.sh, verify.sh (+ Python equivalents) · summarize_run.py · archive_run.py · summarize_uw_run.py
 logs/          agent_status.json, agent_events.jsonl, experiment/graph/skill/feedback JSONL, experiment_status.json, checkpoints/
 artifacts/     dashboard/progress.html · figures/ · graphs/ · tasks/<run_id>/… · manual/<run_id>/… (operator transcripts) · memory/<run_id>/<condition>.jsonl (raw-memory arms) · data_profile/ · reports/
+               uw/<run_id>/ (experiment 7: requests, responses, per-arm logs and memories)
 archive/       experiments 1 and 2 and the pre-fix / smoke runs, each with a README
-.claude/agents/  the builder subagents plus the two stateless operators (experiment-operator, experiment-operator-blind)
+.claude/agents/  the builder subagents plus the three stateless operators (experiment-operator, experiment-operator-blind, underwriter-operator)
 ```
 
 ## Quickstart
@@ -46,7 +53,7 @@ archive/       experiments 1 and 2 and the pre-fix / smoke runs, each with a REA
 uv sync --extra dev                      # pinned environment (Python 3.12; pandas 3, scikit-learn 1.9, langgraph 1.2)
 cp .env.example .env                     # optional — defaults already select manual mode, no key needed
 ./scripts/bootstrap.sh                   # validate config → one-time dataset download → profile → build goldens
-uv run --extra dev pytest -q             # offline tests (192)
+uv run --extra dev pytest -q             # offline tests (314 collected)
 ./scripts/run_all.sh                     # config check → data → profile → topology → run conditions → refresh dashboard/charts → verify
 ./scripts/verify.sh                      # tests, log validation, freeze check, security greps
 ```
@@ -63,6 +70,74 @@ Python equivalents: `uv run python -m src.download_data` · `uv run python -m sr
 | `anthropic_api` | | thin fail-closed adapter around `langchain-anthropic`; refuses to start without `ANTHROPIC_API_KEY`; **not used in this study** | separate Anthropic Console billing, never the Claude Code subscription |
 
 Set with `CLAIMS_SKILL_LOOP_LLM_MODE`; see `.env.example` and `docs/plan.md` §2.
+
+## Experiment 7: the underwriting apprentice (`config/underwriting.yaml`, decision D-27)
+
+A different job on the same machinery, because the claims experiment failed for one structural reason: a learning curve needs **the same job repeated**, and six different tasks each with their own conventions is six one-shot trials. So: **one job, thirty-eight times** — rate a life-insurance application — against **fourteen house rules nobody is told**.
+
+30 training cases with a reviewer markup after each, then 8 held-out cases with memories frozen and no markup. Five loop designs, identical in every respect except what each is handed before it decides and what it keeps afterwards:
+
+| Arm | Handed at decide time | Kept afterwards |
+|---|---|---|
+| `new_joiner` | the starter manual | nothing. Permanently on day one |
+| `notebook` | + every past markup, verbatim, newest first | appends the markup as written (no model call) |
+| `written_rules` | + its own house-rule book | a reflection call rewrites the whole book in its own words |
+| `precedent` | + the 3 nearest past cases with their correct answers | files this case with its correct answer (no model call) |
+| `ask_senior` | may first ask up to 4 questions, answered by a deterministic oracle | nothing. Pays the cost again every case |
+
+Headline metric: **rating distance in ladder steps** (Pref+ 0 · Pref 1 · Std+ 2 · Std 3 · Table 2 4 · Table 4 5 · Table 6 6 · Table 8 7 · Decline 8). Postpone sits off the ladder and costs a fixed 2 when exactly one side postpones. Also scored per case: decision exact match, modifier F1 with the flat-extra band included, driver recall.
+
+Everything the operator sees is the ~985-word starter manual (`data/underwriting/starter_manual.md`) plus the case. The manual carries every number it has and is honest about its gaps — twelve lines saying *refer to underwriting judgement*, none of them saying what fills the gap. House rules, tier labels and goldens never reach a request payload, and `src/underwriting/audit.py` asserts that over every request file a run writes.
+
+Case tiers are **derived, never assigned**: a rule *fires* when switching it off alone changes the scored answer, and the tier is the count. 30 training cases run 9 clean / 13 judgement / 8 compound with the mix held constant across every window of ten, and case 1 is not clean. Each of rules 1–12 fires in at least three training cases in at least two shapes; rules 13 and 14 appear only in the held-out set, so everyone should miss those two.
+
+### Running it (manual mode, five arms, train then held-out)
+
+```bash
+python -m src.underwriting.data verify              # re-derives the pack from code and checks the freeze
+
+# training. Arms are independent - these five may run at the same time.
+python -m src.underwriting.run --run-id uw_001 --condition new_joiner    --phase train
+python -m src.underwriting.run --run-id uw_001 --condition notebook      --phase train
+python -m src.underwriting.run --run-id uw_001 --condition written_rules --phase train
+python -m src.underwriting.run --run-id uw_001 --condition precedent     --phase train
+python -m src.underwriting.run --run-id uw_001 --condition ask_senior    --phase train
+#   OPERATOR NEEDED [notebook/train] -> artifacts/uw/uw_001/requests/notebook/train_case01_decide.json
+#                    response -> artifacts/uw/uw_001/responses/notebook/train_case01_decide.json
+# spawn one fresh underwriter-operator subagent per request (prompt template in
+# docs/OPERATOR_PROTOCOL.md), then run the same command again. Repeat until it prints DONE.
+
+# held-out, per arm, only once that arm's training has printed DONE. Memories are frozen here:
+# the arm still reads what training left behind and writes nothing back.
+python -m src.underwriting.run --run-id uw_001 --condition new_joiner    --phase holdout
+python -m src.underwriting.run --run-id uw_001 --condition notebook      --phase holdout
+python -m src.underwriting.run --run-id uw_001 --condition written_rules --phase holdout
+python -m src.underwriting.run --run-id uw_001 --condition precedent     --phase holdout
+python -m src.underwriting.run --run-id uw_001 --condition ask_senior    --phase holdout
+
+python -m src.underwriting.run status --run-id uw_001         # per-arm, per-phase progress
+python -m src.underwriting.run audit  --run-id uw_001         # leakage audit over every request file
+python scripts/summarize_uw_run.py --run-id uw_001 --json artifacts/uw/uw_001/summary.json
+```
+
+Add `--poll` if you would rather the runner waited for each response file than returned. Add `--mode stub --max-cases N` for a dry run with the deterministic stub operator (always labelled stub).
+
+Expected live calls: 38 + 38 + 68 + 38 + 76 = **258** (written_rules adds a reflection per training case; ask_senior asks before it decides).
+
+### Where things are
+
+```text
+config/underwriting.yaml        the five arms, the two phases, the operator, the caps
+data/underwriting/              starter_manual.md · house_rules.json (never shown) · cases.json · goldens.json
+                                + freeze_manifest.json (freeze d95f49f1f930...)
+src/underwriting/               tables · manual · house_rules · engine · cases · scorer · markup · memory
+                                precedent · senior · state · nodes · graph · run · stub · audit · data
+artifacts/uw/<run_id>/          requests/ · responses/ · <arm>/cases.jsonl · notebook/ · written_rules/ · precedent/
+scripts/summarize_uw_run.py     per-arm tables, trailing-5 series, the three registered validation checks
+.claude/agents/underwriter-operator.md   the stateless operator (model: fable)
+archive/experiment-7_stub_smoke/         the stub gate - labelled stub, no model called
+tests/underwriting/             119 tests
+```
 
 ## Experiment 5 in one screen (`config/experiment.yaml`, decision D-24; v1 was D-23)
 

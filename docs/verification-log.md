@@ -275,3 +275,103 @@ All results below were observed by the lead in the build session (agent-reported
   - First-try failed-check counts, from `logs/experiment_events.jsonl` (cross-checked against the write-up's per-task findings): reflection_only 6/4/4 = 14; feedback_memory 1/0/2 = 3; skill_learning 4/4/0 = 8.
 - Figures regenerated from the logs (confirmed live via `artifacts/figures/figures_manifest.json`, `generated_at 2026-09-08T09:57:28+00:00`, `run_ids` now including `run_004`, `run_005`, `run_006`, `run_007`, `run_008`, `stub_003`–`stub_006`): `uv run python -m src.charts` (6 figures + topology), `uv run python -m src.dashboard`; article figures via `articles/loop-engineering-markdown-skills/assets/make_figures.py` regenerate `transfer_curve.png` and `results_grid.png` from `run_006` and `run_008` (the manifest's `task_ids` list now runs T1–T13).
 - Caveat recorded for the write-up: the winnability figures (catalogue-defaults 1.18/1.69/1.57 and house-conventions 4.00/4.00/4.00) come from decision D-24 and `docs/OPERATOR_PROTOCOL.md`, both consistent with each other; no standalone script reproducing that pre-run check was found in `scripts/` in this session, so it is cited as documented, not independently re-derived.
+
+## Builder · 2026-09-11 · Experiment 7 — the underwriting apprentice, built and stub-gated (no live run)
+
+Every command below was run in this session from the repo root on Windows. **All counts come from
+`.venv/Scripts/python.exe`.** The `python` on PATH here is a different interpreter
+(`D:\analytics\envs\py312`) that lacks `langgraph-checkpoint-sqlite` and the git-ignored raw CSVs; it
+reports `9 failed, 186 passed` on the same tree for those two environmental reasons alone. Numbers
+below are from the repo's own environment.
+
+### Baseline, before any experiment-7 code
+
+- `.venv/Scripts/python.exe -m pytest --tb=no` → **`1 failed, 194 passed in 68.77s`** at commit `7f38480`,
+  working tree clean. The single failure is pre-existing and belongs to experiment 6:
+  `tests/test_graph_routes.py::test_run_config_reads_the_current_experiment_yaml` asserts
+  `config/experiment.yaml` holds run_009's phase-1 settings (`memory_read_only: false`) while the
+  committed file holds run_010's phase-2 settings (`memory_read_only: true`). It fails identically
+  before and after everything in this session; nothing in experiment 7 touches it.
+
+### The frozen data pack
+
+- `.venv/Scripts/python.exe -m src.underwriting.data build` → `wrote 4 files to
+  D:/Projects/SkillRL/claims-skill-loop/data/underwriting`, `cases: 30 train, 8 holdout`,
+  `freeze_sha256: d95f49f1f9301ecf17facd75aa2d63353f179ea161aa18958f029cba882bee8d`.
+- `.venv/Scripts/python.exe -m src.underwriting.data verify` → `underwriting data pack clean`. This
+  re-derives the manual, the house rules, the 38 cases and the goldens from code, compares them byte
+  for byte with `data/underwriting/`, re-runs the whole section-5 schedule check and verifies the
+  manifest. Re-run after the final commit: still clean, same digest.
+- Starter manual: **985 words**, ASCII only, sixteen sections, twelve *refer to underwriting
+  judgement* gap lines. Verified by test that every band table in `src/underwriting/tables.py`
+  appears in the rendered text exactly as the engine reads it.
+- Schedule, read off the derived goldens (`sanity()` reports 0 problems):
+  training **9 clean / 13 judgement / 8 compound**, case 1 compound, every window of ten within
+  2–4 clean / 4–5 judgement / 2–3 compound; held-out **2 clean / 4 judgement / 2 compound** with
+  exactly two novel-rule cases (`HR-13` at UW-H04, `HR-14` at UW-H08). Each of `HR-01`…`HR-12` fires
+  in 3 training cases (`HR-04` in 4) in 3 distinct shapes each; neither held-out rule fires in
+  training. 37 rule-firings in total.
+- Measured floor (what `rate_manual_only` scores against the golden): mean ladder distance **0.933**
+  over the 30 training cases (0.000 clean / 1.154 judgement / 1.625 compound) and **0.875** over the
+  8 held-out ones. Recorded in D-27 as the most any memory can recover.
+
+### The stub smoke (`archive/experiment-7_stub_smoke/`) — labelled stub, no model called
+
+- Ten commands, `--mode stub`, run_id `uw_stub_smoke`: for each of the five arms,
+  `--phase train --max-cases 6` then `--phase holdout --max-cases 2`. All ten completed; `status`
+  shows `6` and `2` cases done per arm with no pending request.
+- `.venv/Scripts/python.exe -m src.underwriting.run audit --run-id uw_stub_smoke` →
+  **`leakage audit: 0 problem(s)`** over every request file written. **54 request files** and 54
+  responses, counted on disk in the archive: 8 per arm for the four non-asking arms (6 train + 2
+  held-out decide), 14 for `written_rules` (8 decide + 6 reflect, none in the held-out phase) and 16
+  for `ask_senior` (8 ask + 8 decide).
+- `.venv/Scripts/python.exe scripts/summarize_uw_run.py --run-id uw_stub_smoke`:
+  new_joiner / notebook / written_rules / precedent all **1.167** mean training ladder distance,
+  ask_senior **0.167** (25 questions). Held-out: 1.000 / 1.500 / 1.500 / 1.000 / 0.000. Validation
+  checks: cases 1–3 dead heat across the four non-asking arms **PASS**; clean tier flat for every arm
+  at 0.000 **PASS**. The four non-asking arms tie because every rule that fires in cases 1–6 fires
+  there for the first time — six cases cannot show a learning curve, which is why the full pass below
+  was run as well.
+- Full 30 + 8 stub pass, run_id `uw_stub_full`, same five arms, no `--max-cases`:
+  `leakage audit: 0 problem(s)`; new_joiner **0.933** training (1.200 over the last five, held-out
+  0.875), notebook and written_rules **0.367** (0.000 over the last five, held-out 0.250), precedent
+  **0.933** (its memory carries answers, not rules, and the stub does no inference), ask_senior
+  **0.033** with 120 questions — an upper bound, since the stub asks perfectly aimed questions. All
+  three validation checks pass; every arm except `ask_senior` misses both novel-rule held-out cases
+  (1.000), and `ask_senior` scores 0.500 because the senior knows rules 13 and 14 and will say them
+  if asked.
+- Archived with `.venv/Scripts/python.exe scripts/archive_run.py --uw-run-id uw_stub_smoke --folder
+  experiment-7_stub_smoke` and `--uw-run-id uw_stub_full --folder experiment-7_stub_smoke
+  --logs-only`. `checkpoints/` was skipped in both (4.7 MB and 22 MB of rebuildable LangGraph SQLite);
+  the full pass's transcript was skipped too (3.4 MB of requests). Archive total **1.2 MB**.
+  `artifacts/uw/*/checkpoints/` added to `.gitignore`, matching the existing `logs/checkpoints/` rule.
+
+### Tests
+
+- After commit (a) (engines, manual, house rules, case pack, freeze): `pytest --tb=no` →
+  **`1 failed, 244 passed in 184.47s`** (50 new).
+- After commit (b) (graph, runner, stubs, smoke, archive): `pytest --tb=no` →
+  **`1 failed, 313 passed in 235.78s`** (69 more; **119 new in total**). The one failure is the
+  pre-existing experiment-6 config test named above.
+- `pytest tests/underwriting` on its own → **`119 passed in 108.62s`**.
+- What the new tests assert, against the brief's section 10 list: the manual prints every engine
+  table verbatim; each of rules 1–12 fires in ≥ 3 training cases in ≥ 2 shapes and 13–14 only in the
+  held-out set; the tier counts, the sliding-window mix and case 1 not clean; clean cases have
+  `manual_only == golden`; no markup the generator can produce carries a digit beyond the case id,
+  the rating-class names and the lab name `A1c`; ladder distance including the postpone rule;
+  precedent distance symmetric and zero on self; oracle narrowness in four directions (a relevant
+  rule is quoted, the same question on an irrelevant case falls back to the manual, a manual topic is
+  read back, an unplaceable question gets the flat refusal); the leakage audit over every request
+  file a fresh stub run writes **and** over the committed archive, plus a planted-leak test that
+  proves the audit is not vacuous; the compiled graph against the designed topology and each arm's
+  route history; the stub end to end for all five arms; and the manual-mode runner protocol —
+  request written, response consumed, invalid response re-requested with its errors, three invalid
+  responses scored at distance 2 and flagged `unparseable`.
+
+### Not done here
+
+- **No live run.** No model was called at any point; every number above is deterministic stub output
+  or a property of the frozen pack, and both archived runs say so in their README.
+- No figures. `articles/.../make_figures.py` is untouched and the claims article is untouched.
+- `scripts/verify.sh`, `scripts/pipeline.py` and the dashboard were not extended to cover
+  experiment 7; they remain claims-only.
