@@ -1,0 +1,120 @@
+{
+  "run_id": "uw_stub_full",
+  "created_at": "2026-09-11T07:52:17+00:00",
+  "freeze_sha256": "d95f49f1f9301ecf17facd75aa2d63353f179ea161aa18958f029cba882bee8d",
+  "config": {
+    "seed": 42,
+    "max_rerequests": 2,
+    "precedent_k": 3,
+    "max_questions": 4,
+    "trailing_window": 5
+  },
+  "arms": {
+    "new_joiner": {
+      "train": {
+        "next_case_index": 31,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 30,
+        "started_at": "2026-09-11T07:52:17+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:18+00:00"
+      },
+      "holdout": {
+        "next_case_index": 9,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 8,
+        "started_at": "2026-09-11T07:52:21+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:21+00:00"
+      }
+    },
+    "notebook": {
+      "train": {
+        "next_case_index": 31,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 30,
+        "started_at": "2026-09-11T07:52:23+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:26+00:00"
+      },
+      "holdout": {
+        "next_case_index": 9,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 8,
+        "started_at": "2026-09-11T07:52:28+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:29+00:00"
+      }
+    },
+    "written_rules": {
+      "train": {
+        "next_case_index": 31,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 30,
+        "started_at": "2026-09-11T07:52:31+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:35+00:00"
+      },
+      "holdout": {
+        "next_case_index": 9,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 8,
+        "started_at": "2026-09-11T07:52:37+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:37+00:00"
+      }
+    },
+    "precedent": {
+      "train": {
+        "next_case_index": 31,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 30,
+        "started_at": "2026-09-11T07:52:39+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:41+00:00"
+      },
+      "holdout": {
+        "next_case_index": 9,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 8,
+        "started_at": "2026-09-11T07:52:44+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:44+00:00"
+      }
+    },
+    "ask_senior": {
+      "train": {
+        "next_case_index": 31,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 30,
+        "started_at": "2026-09-11T07:52:46+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:49+00:00"
+      },
+      "holdout": {
+        "next_case_index": 9,
+        "status": "done",
+        "pending_request": null,
+        "cases_done": 8,
+        "started_at": "2026-09-11T07:52:51+00:00",
+        "current_case": null,
+        "finished_at": "2026-09-11T07:52:52+00:00"
+      }
+    }
+  },
+  "mode": "stub",
+  "provider": {
+    "provider_mode": "stub",
+    "operator": "stub-learner",
+    "model_identifier": "deterministic-learner-v1"
+  }
+}

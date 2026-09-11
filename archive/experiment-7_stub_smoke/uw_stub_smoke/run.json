@@ -1,0 +1,110 @@
+{
+  "run_id": "uw_stub_smoke",
+  "created_at": "2026-09-11T07:51:09+00:00",
+  "freeze_sha256": "d95f49f1f9301ecf17facd75aa2d63353f179ea161aa18958f029cba882bee8d",
+  "config": {
+    "seed": 42,
+    "max_rerequests": 2,
+    "precedent_k": 3,
+    "max_questions": 4,
+    "trailing_window": 5
+  },
+  "arms": {
+    "new_joiner": {
+      "train": {
+        "next_case_index": 7,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 6,
+        "started_at": "2026-09-11T07:51:09+00:00",
+        "current_case": null
+      },
+      "holdout": {
+        "next_case_index": 3,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 2,
+        "started_at": "2026-09-11T07:51:11+00:00",
+        "current_case": null
+      }
+    },
+    "notebook": {
+      "train": {
+        "next_case_index": 7,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 6,
+        "started_at": "2026-09-11T07:51:14+00:00",
+        "current_case": null
+      },
+      "holdout": {
+        "next_case_index": 3,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 2,
+        "started_at": "2026-09-11T07:51:16+00:00",
+        "current_case": null
+      }
+    },
+    "written_rules": {
+      "train": {
+        "next_case_index": 7,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 6,
+        "started_at": "2026-09-11T07:51:19+00:00",
+        "current_case": null
+      },
+      "holdout": {
+        "next_case_index": 3,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 2,
+        "started_at": "2026-09-11T07:51:21+00:00",
+        "current_case": null
+      }
+    },
+    "precedent": {
+      "train": {
+        "next_case_index": 7,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 6,
+        "started_at": "2026-09-11T07:51:24+00:00",
+        "current_case": null
+      },
+      "holdout": {
+        "next_case_index": 3,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 2,
+        "started_at": "2026-09-11T07:51:26+00:00",
+        "current_case": null
+      }
+    },
+    "ask_senior": {
+      "train": {
+        "next_case_index": 7,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 6,
+        "started_at": "2026-09-11T07:51:29+00:00",
+        "current_case": null
+      },
+      "holdout": {
+        "next_case_index": 3,
+        "status": "running",
+        "pending_request": null,
+        "cases_done": 2,
+        "started_at": "2026-09-11T07:51:31+00:00",
+        "current_case": null
+      }
+    }
+  },
+  "mode": "stub",
+  "provider": {
+    "provider_mode": "stub",
+    "operator": "stub-learner",
+    "model_identifier": "deterministic-learner-v1"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "total cholesterol"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}

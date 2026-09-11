@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure treatment",
+    "A1c",
+    "tobacco",
+    "family history",
+    "liver enzymes",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}

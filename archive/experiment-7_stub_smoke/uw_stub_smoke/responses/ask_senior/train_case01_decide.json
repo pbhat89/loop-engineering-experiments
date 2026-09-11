@@ -1,0 +1,18 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "motorsport",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "occupation class",
+    "motorsport",
+    "moving violations",
+    "liver enzymes"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}

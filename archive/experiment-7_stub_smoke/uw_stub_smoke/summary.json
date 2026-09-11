@@ -1,0 +1,268 @@
+{
+  "run_id": "uw_stub_smoke",
+  "provider": {
+    "provider_mode": "stub",
+    "operator": "stub-learner",
+    "model_identifier": "deterministic-learner-v1"
+  },
+  "mode": "stub",
+  "freeze_sha256": "d95f49f1f9301ecf17facd75aa2d63353f179ea161aa18958f029cba882bee8d",
+  "arms": {
+    "new_joiner": {
+      "train_cases": 6,
+      "holdout_cases": 2,
+      "mean_distance_train": 1.1667,
+      "mean_distance_first5": 1.0,
+      "mean_distance_last5": 1.0,
+      "mean_distance_holdout": 1.0,
+      "mean_distance_holdout_novel": null,
+      "decision_accuracy_train": 0.6667,
+      "modifier_f1_train": 0.8333,
+      "driver_recall_train": 0.8929,
+      "questions_asked": 0,
+      "rerequests": 0,
+      "unparseable": 0,
+      "memory_size_final": 0,
+      "nearest_distance_holdout": [
+        null,
+        null
+      ],
+      "trailing_mean": [
+        2.0,
+        2.0,
+        1.3333,
+        1.25,
+        1.0,
+        1.0
+      ],
+      "per_case_distance": [
+        2.0,
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "by_tier": {
+        "clean": 0.0,
+        "judgement": 1.6667,
+        "compound": 2.0
+      },
+      "model_identifier": "deterministic-learner-v1"
+    },
+    "notebook": {
+      "train_cases": 6,
+      "holdout_cases": 2,
+      "mean_distance_train": 1.1667,
+      "mean_distance_first5": 1.0,
+      "mean_distance_last5": 1.0,
+      "mean_distance_holdout": 1.5,
+      "mean_distance_holdout_novel": null,
+      "decision_accuracy_train": 0.6667,
+      "modifier_f1_train": 0.8333,
+      "driver_recall_train": 0.8929,
+      "questions_asked": 0,
+      "rerequests": 0,
+      "unparseable": 0,
+      "memory_size_final": 5,
+      "nearest_distance_holdout": [
+        null,
+        null
+      ],
+      "trailing_mean": [
+        2.0,
+        2.0,
+        1.3333,
+        1.25,
+        1.0,
+        1.0
+      ],
+      "per_case_distance": [
+        2.0,
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "by_tier": {
+        "clean": 0.0,
+        "judgement": 1.6667,
+        "compound": 2.0
+      },
+      "model_identifier": "deterministic-learner-v1"
+    },
+    "written_rules": {
+      "train_cases": 6,
+      "holdout_cases": 2,
+      "mean_distance_train": 1.1667,
+      "mean_distance_first5": 1.0,
+      "mean_distance_last5": 1.0,
+      "mean_distance_holdout": 1.5,
+      "mean_distance_holdout_novel": null,
+      "decision_accuracy_train": 0.6667,
+      "modifier_f1_train": 0.8333,
+      "driver_recall_train": 0.8929,
+      "questions_asked": 0,
+      "rerequests": 0,
+      "unparseable": 0,
+      "memory_size_final": 6,
+      "nearest_distance_holdout": [
+        null,
+        null
+      ],
+      "trailing_mean": [
+        2.0,
+        2.0,
+        1.3333,
+        1.25,
+        1.0,
+        1.0
+      ],
+      "per_case_distance": [
+        2.0,
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "by_tier": {
+        "clean": 0.0,
+        "judgement": 1.6667,
+        "compound": 2.0
+      },
+      "model_identifier": "deterministic-learner-v1"
+    },
+    "precedent": {
+      "train_cases": 6,
+      "holdout_cases": 2,
+      "mean_distance_train": 1.1667,
+      "mean_distance_first5": 1.0,
+      "mean_distance_last5": 1.0,
+      "mean_distance_holdout": 1.0,
+      "mean_distance_holdout_novel": null,
+      "decision_accuracy_train": 0.6667,
+      "modifier_f1_train": 0.8333,
+      "driver_recall_train": 0.8929,
+      "questions_asked": 0,
+      "rerequests": 0,
+      "unparseable": 0,
+      "memory_size_final": 3,
+      "nearest_distance_holdout": [
+        7.0,
+        10.5
+      ],
+      "trailing_mean": [
+        2.0,
+        2.0,
+        1.3333,
+        1.25,
+        1.0,
+        1.0
+      ],
+      "per_case_distance": [
+        2.0,
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "by_tier": {
+        "clean": 0.0,
+        "judgement": 1.6667,
+        "compound": 2.0
+      },
+      "model_identifier": "deterministic-learner-v1"
+    },
+    "ask_senior": {
+      "train_cases": 6,
+      "holdout_cases": 2,
+      "mean_distance_train": 0.1667,
+      "mean_distance_first5": 0.2,
+      "mean_distance_last5": 0.0,
+      "mean_distance_holdout": 0.0,
+      "mean_distance_holdout_novel": null,
+      "decision_accuracy_train": 1.0,
+      "modifier_f1_train": 1.0,
+      "driver_recall_train": 1.0,
+      "questions_asked": 25,
+      "rerequests": 0,
+      "unparseable": 0,
+      "memory_size_final": 0,
+      "nearest_distance_holdout": [
+        null,
+        null
+      ],
+      "trailing_mean": [
+        1.0,
+        0.5,
+        0.3333,
+        0.25,
+        0.2,
+        0.0
+      ],
+      "per_case_distance": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "by_tier": {
+        "clean": 0.0,
+        "judgement": 0.0,
+        "compound": 1.0
+      },
+      "model_identifier": "deterministic-learner-v1"
+    }
+  },
+  "validation": {
+    "dead_heat_first_3_non_asking": {
+      "passed": true,
+      "per_arm": {
+        "new_joiner": [
+          2.0,
+          2.0,
+          0.0
+        ],
+        "notebook": [
+          2.0,
+          2.0,
+          0.0
+        ],
+        "written_rules": [
+          2.0,
+          2.0,
+          0.0
+        ],
+        "precedent": [
+          2.0,
+          2.0,
+          0.0
+        ]
+      }
+    },
+    "clean_tier_flat": {
+      "passed": true,
+      "per_arm": {
+        "new_joiner": 0.0,
+        "notebook": 0.0,
+        "written_rules": 0.0,
+        "precedent": 0.0,
+        "ask_senior": 0.0
+      }
+    },
+    "novel_rule_holdout": {
+      "per_arm": {
+        "new_joiner": null,
+        "notebook": null,
+        "written_rules": null,
+        "precedent": null,
+        "ask_senior": null
+      }
+    }
+  }
+}

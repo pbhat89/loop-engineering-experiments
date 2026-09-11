@@ -1,0 +1,10 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "DUI",
+    "sleep apnea"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}

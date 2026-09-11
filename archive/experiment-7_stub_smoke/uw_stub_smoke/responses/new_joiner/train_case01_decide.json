@@ -1,0 +1,19 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 6",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "motorsport",
+      "amount_per_1000": 5.0
+    }
+  ],
+  "drivers": [
+    "occupation class",
+    "motorsport",
+    "moving violations",
+    "liver enzymes",
+    "sleep apnea"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}

@@ -8,6 +8,17 @@ What moves (only for the given run id; other runs' records stay where they are):
   artifacts/tasks/<run_id>/, artifacts/manual/<run_id>/, artifacts/memory/<run_id>/, skills/evolved/<run_id>/
   skills/index.json                                     entries whose run_id == <run_id> are cut out into the archive copy
 The archive folder gets a README.md stub naming the run, the date and the note. Nothing is deleted; ``git mv`` is up to the caller.
+
+Experiment 7 (the underwriting apprentice) keeps everything one run leaves behind under a
+single directory, so it archives with ``--uw-run-id`` instead::
+
+    python scripts/archive_run.py --uw-run-id uw_stub_smoke --folder experiment-7_stub_smoke
+    python scripts/archive_run.py --uw-run-id uw_stub_full  --folder experiment-7_stub_smoke --logs-only
+
+``artifacts/uw/<run_id>/`` moves wholesale. ``checkpoints/`` is never archived - it is a
+LangGraph SQLite database the runner rebuilds, and it dwarfs everything else. ``--logs-only``
+additionally leaves the request/response transcript behind, for a supporting run whose
+per-case logs are the point.
 """
 from __future__ import annotations
 
@@ -53,14 +64,58 @@ def move(src: Path, dst: Path) -> bool:
     return True
 
 
+UW_SKIP_ALWAYS = ("checkpoints",)          # rebuilt by the runner; tens of megabytes of SQLite
+UW_SKIP_LOGS_ONLY = ("requests", "responses")
+
+
+def archive_uw_run(run_id: str, dest: Path, logs_only: bool = False) -> list[str]:
+    """Move ``artifacts/uw/<run_id>/`` into the archive, minus the rebuildable checkpoints."""
+    source = ARTIFACTS_DIR / "uw" / run_id
+    if not source.is_dir():
+        return [f"artifacts/uw/{run_id}: absent"]
+    skip = set(UW_SKIP_ALWAYS) | (set(UW_SKIP_LOGS_ONLY) if logs_only else set())
+    target = dest / run_id
+    ensure_dir(target)
+    report: list[str] = []
+    for child in sorted(source.iterdir()):
+        if child.name in skip:
+            report.append(f"artifacts/uw/{run_id}/{child.name}: skipped")
+            continue
+        report.append(f"artifacts/uw/{run_id}/{child.name}: {'moved' if move(child, target / child.name) else 'absent'}")
+    remaining = [p.name for p in source.iterdir()] if source.is_dir() else []
+    if remaining:
+        report.append(f"artifacts/uw/{run_id}: left in place -> {', '.join(sorted(remaining))}")
+    return report
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--run-id", required=True)
+    ap.add_argument("--run-id", default=None, help="a claims run id (experiments 1-6)")
+    ap.add_argument("--uw-run-id", default=None, help="an underwriting run id (experiment 7)")
     ap.add_argument("--folder", required=True, help="name under archive/")
     ap.add_argument("--note", default="")
+    ap.add_argument("--logs-only", action="store_true", help="experiment 7: leave the request/response transcript behind")
     args = ap.parse_args(argv)
-    run_id, dest = args.run_id, REPO_ROOT / "archive" / args.folder
+    dest = REPO_ROOT / "archive" / args.folder
     ensure_dir(dest)
+
+    if args.uw_run_id:
+        report = archive_uw_run(args.uw_run_id, dest, logs_only=args.logs_only)
+        readme = dest / "README.md"
+        if not readme.exists():
+            readme.write_text(
+                f"# Archive - `{args.uw_run_id}` ({utc_now()[:10]})\n\n"
+                f"{args.note or 'Moved here unchanged by scripts/archive_run.py --uw-run-id.'}\n\n"
+                "## What moved\n\n" + "\n".join(f"- {line}" for line in report) + "\n",
+                encoding="utf-8",
+            )
+        print("\n".join(report))
+        print(f"archived {args.uw_run_id} -> {dest.relative_to(REPO_ROOT)}")
+        return 0
+
+    if not args.run_id:
+        ap.error("one of --run-id or --uw-run-id is required")
+    run_id = args.run_id
     report: list[str] = []
     for name in JSONL:
         moved, kept = split_jsonl(LOGS_DIR / f"{name}.jsonl", run_id, dest / "logs" / f"{name}.jsonl")

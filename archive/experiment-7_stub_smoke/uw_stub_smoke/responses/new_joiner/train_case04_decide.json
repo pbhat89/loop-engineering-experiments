@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure reading",
+    "total cholesterol",
+    "lipid ratio",
+    "A1c",
+    "family history",
+    "occupation class"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}

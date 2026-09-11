@@ -1,0 +1,15 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure reading",
+    "blood pressure treatment",
+    "total cholesterol",
+    "A1c",
+    "tobacco",
+    "family history",
+    "liver enzymes"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}

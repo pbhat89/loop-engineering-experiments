@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "DUI",
+    "sleep apnea"
+  ],
+  "rationale": "Rated from the manual tables and whatever practice this file was given."
+}
