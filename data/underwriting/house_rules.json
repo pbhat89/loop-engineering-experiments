@@ -1,0 +1,334 @@
+{
+  "rules": [
+    {
+      "rule_id": "HR-01",
+      "title": "Treated, controlled blood pressure charges the treatment band only",
+      "area": "blood pressure",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "Where blood pressure is treated and the current reading is at or below 145/90, charge the treatment debit of 25 only. Do not add the reading band on top.",
+      "markup_sentence": "Blood pressure that is treated and controlled carries the treatment charge only; the reading is not charged on top.",
+      "oracle_keywords": [
+        [
+          "blood pressure",
+          "bp",
+          "hypertension"
+        ],
+        [
+          "treat",
+          "medicat",
+          "controll"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-02",
+      "title": "Private aviation under a hundred hours a year is a flat extra, never a rating",
+      "area": "avocation",
+      "scope": "training",
+      "effect": "modifier",
+      "statement": "A private pilot flying fewer than 100 hours a year takes a flat extra of $2.50 per $1,000 and no rating debits. Private aviation at that level is never declined.",
+      "markup_sentence": "Private aviation at a modest number of hours a year takes a flat extra rather than rating debits, and is never declined for the flying alone.",
+      "oracle_keywords": [
+        [
+          "pilot",
+          "aviation",
+          "flying",
+          "aircraft"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-03",
+      "title": "Family-history debits lapse once the applicant is older than the qualifying age",
+      "area": "family history",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "Family-history debits are dropped entirely once the applicant is over 60.",
+      "markup_sentence": "Family-history debits are dropped once the applicant is older than the family-history qualifying age.",
+      "oracle_keywords": [
+        [
+          "family history",
+          "familial",
+          "father",
+          "mother",
+          "sibling",
+          "parent",
+          "family"
+        ],
+        [
+          "age",
+          "older",
+          "over",
+          "lapse",
+          "expire",
+          "drop",
+          "still"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-04",
+      "title": "Three or more cardiac risk factors together carry an interaction charge",
+      "area": "cardiac",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "When three or more of these appear together - a blood pressure debit, a lipid debit, an A1c debit, BMI of 31 or above, current tobacco use, or a charged family history of cardiac disease - add a further 25 debits as an interaction charge.",
+      "markup_sentence": "Several cardiac risk factors appearing together carry an interaction charge on top of the individual debits.",
+      "oracle_keywords": [
+        [
+          "cardiac",
+          "heart",
+          "risk factor",
+          "combination",
+          "combine",
+          "interact",
+          "together"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-05",
+      "title": "Late-onset type 2 diabetes with a controlled A1c earns a credit",
+      "area": "diabetes",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "Type 2 diabetes first diagnosed after age 45 with an A1c below 7.0 earns a credit of 25 debits, floored at zero.",
+      "markup_sentence": "Adult-onset diabetes first diagnosed in later middle age, with the A1c well controlled, earns a credit against the debits.",
+      "oracle_keywords": [
+        [
+          "diabet",
+          "a1c",
+          "t2d"
+        ],
+        [
+          "diagnos",
+          "onset",
+          "late",
+          "credit",
+          "age",
+          "allowance"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-06",
+      "title": "Hazardous occupation plus hazardous avocation takes an exclusion rider",
+      "area": "avocation",
+      "scope": "training",
+      "effect": "modifier",
+      "statement": "An occupation in class C combined with a hazardous avocation takes an exclusion rider for the avocation rather than a flat extra or avocation debits.",
+      "markup_sentence": "A hazardous occupation combined with a hazardous avocation takes an exclusion rider for the avocation, not a flat extra and not debits.",
+      "oracle_keywords": [
+        [
+          "occupation",
+          "class c",
+          "hazardous",
+          "job",
+          "work"
+        ],
+        [
+          "avocation",
+          "exclusion",
+          "rider",
+          "hobby",
+          "sport",
+          "pastime"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-07",
+      "title": "Where cholesterol and the ratio disagree, the ratio governs",
+      "area": "lipids",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "Where the total cholesterol band and the ratio band disagree, the ratio governs. Charge the ratio band only.",
+      "markup_sentence": "Where the total cholesterol band and the ratio band disagree, the ratio governs; the cholesterol band is not charged.",
+      "oracle_keywords": [
+        [
+          "cholesterol",
+          "lipid",
+          "ratio",
+          "hdl"
+        ],
+        [
+          "disagree",
+          "conflict",
+          "which",
+          "govern",
+          "both",
+          "differ",
+          "apply"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-08",
+      "title": "A large face amount at a high multiple of income is postponed",
+      "area": "financial",
+      "scope": "training",
+      "effect": "decision",
+      "statement": "A face amount above $1,000,000 at more than 20 times income is postponed for financial evidence, not rated.",
+      "markup_sentence": "A large face amount at a high multiple of income is postponed for financial evidence rather than rated.",
+      "oracle_keywords": [
+        [
+          "face amount",
+          "face",
+          "income",
+          "financial",
+          "coverage"
+        ],
+        [
+          "postpone",
+          "refer",
+          "multiple",
+          "large",
+          "limit",
+          "times",
+          "justif"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-09",
+      "title": "Recent weight loss is added back at half before the build band is read",
+      "area": "build",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "Weight lost in the past 12 months is added back at half before the build band is read.",
+      "markup_sentence": "Weight lost in the past year is added back at half before the build band is read.",
+      "oracle_keywords": [
+        [
+          "weight",
+          "build",
+          "bmi"
+        ],
+        [
+          "lost",
+          "loss",
+          "lose",
+          "gain",
+          "change",
+          "reduc",
+          "dropped"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-10",
+      "title": "A recent DUI is a postpone, not a rating",
+      "area": "driving",
+      "scope": "training",
+      "effect": "decision",
+      "statement": "A DUI within the last 3 years is a postpone, not a rating.",
+      "markup_sentence": "A recent DUI is postponed, not rated.",
+      "oracle_keywords": [
+        [
+          "dui",
+          "dwi",
+          "impaired driving",
+          "drink driving",
+          "drunk"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-11",
+      "title": "Sleep apnea on documented CPAP compliance carries no debit",
+      "area": "sleep apnea",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "Where CPAP compliance is documented, sleep apnea carries no debit at all - the 50 does not apply.",
+      "markup_sentence": "Sleep apnea with documented CPAP compliance carries no debit.",
+      "oracle_keywords": [
+        [
+          "sleep apnea",
+          "apnoea",
+          "apnea",
+          "cpap"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-12",
+      "title": "Mildly elevated liver enzymes with no alcohol history carry no debit",
+      "area": "liver",
+      "scope": "training",
+      "effect": "debits",
+      "statement": "Elevated liver enzymes below twice the upper limit of normal, with no alcohol history, carry no debit.",
+      "markup_sentence": "Mildly elevated liver enzymes with no alcohol history carry no debit.",
+      "oracle_keywords": [
+        [
+          "liver",
+          "enzyme",
+          "alt",
+          "ast",
+          "ggt",
+          "transaminase"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-13",
+      "title": "Two relatives with the same cancer break the family-history cap",
+      "area": "family history",
+      "scope": "heldout",
+      "effect": "debits",
+      "statement": "Two first-degree relatives with the same cancer before 60 add a further 25 debits on top of the family-history cap.",
+      "markup_sentence": "Where two first-degree relatives have had the same cancer young, the family-history cap does not hold and a further charge applies.",
+      "oracle_keywords": [
+        [
+          "cancer"
+        ],
+        [
+          "two",
+          "both",
+          "second",
+          "relatives",
+          "cap",
+          "same",
+          "multiple"
+        ]
+      ],
+      "notes": ""
+    },
+    {
+      "rule_id": "HR-14",
+      "title": "Deep or overhead-environment scuba takes a flat extra",
+      "area": "avocation",
+      "scope": "heldout",
+      "effect": "modifier",
+      "statement": "Scuba to a depth greater than 100 feet, or any cave or wreck penetration, takes a flat extra of $5.00 per $1,000 regardless of the number of dives, and no scuba depth debit.",
+      "markup_sentence": "Scuba beyond recreational depth, or any cave or wreck penetration, takes a flat extra regardless of how often the applicant dives.",
+      "oracle_keywords": [
+        [
+          "scuba",
+          "dive",
+          "diving"
+        ],
+        [
+          "depth",
+          "deep",
+          "feet",
+          "cave",
+          "wreck",
+          "penetration"
+        ]
+      ],
+      "notes": ""
+    }
+  ]
+}

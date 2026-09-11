@@ -1,0 +1,1537 @@
+{
+  "goldens": [
+    {
+      "decision": "accept_with_modification",
+      "rating_class": "Table 2",
+      "total_debits": 75,
+      "debits": {
+        "occupation class": 50,
+        "moving violations": 25
+      },
+      "modifiers": [
+        {
+          "type": "exclusion",
+          "detail": "motorsport",
+          "amount_per_1000": null
+        }
+      ],
+      "drivers": [
+        "occupation class",
+        "motorsport",
+        "moving violations"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T01",
+      "case_index": 1,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-06",
+        "HR-11",
+        "HR-12"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept_with_modification",
+        "rating_class": "Table 6",
+        "total_debits": 150,
+        "debits": {
+          "occupation class": 50,
+          "moving violations": 25,
+          "liver enzymes": 25,
+          "sleep apnea": 50
+        },
+        "modifiers": [
+          {
+            "type": "flat_extra",
+            "detail": "motorsport",
+            "amount_per_1000": 5.0
+          }
+        ],
+        "drivers": [
+          "occupation class",
+          "motorsport",
+          "moving violations",
+          "liver enzymes",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "postpone",
+      "rating_class": null,
+      "total_debits": 25,
+      "debits": {
+        "tobacco": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "tobacco",
+        "face amount to income"
+      ],
+      "postpone_reasons": [
+        "financial justification"
+      ],
+      "case_id": "UW-T02",
+      "case_index": 2,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-08"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Standard",
+        "total_debits": 25,
+        "debits": {
+          "tobacco": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "tobacco"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "build": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "build"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T03",
+      "case_index": 3,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Standard",
+        "total_debits": 25,
+        "debits": {
+          "build": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "build"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 8",
+      "total_debits": 200,
+      "debits": {
+        "blood pressure reading": 25,
+        "lipids": 25,
+        "A1c": 50,
+        "family history": 25,
+        "occupation class": 50,
+        "cardiac risk interaction": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "blood pressure reading",
+        "total cholesterol",
+        "lipid ratio",
+        "A1c",
+        "family history",
+        "occupation class",
+        "cardiac risk interaction"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T04",
+      "case_index": 4,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-04"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 6",
+        "total_debits": 175,
+        "debits": {
+          "blood pressure reading": 25,
+          "lipids": 25,
+          "A1c": 50,
+          "family history": 25,
+          "occupation class": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "blood pressure reading",
+          "total cholesterol",
+          "lipid ratio",
+          "A1c",
+          "family history",
+          "occupation class"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Preferred",
+      "total_debits": 0,
+      "debits": {},
+      "modifiers": [],
+      "drivers": [],
+      "postpone_reasons": [],
+      "case_id": "UW-T05",
+      "case_index": 5,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Preferred",
+        "total_debits": 0,
+        "debits": {},
+        "modifiers": [],
+        "drivers": [],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "postpone",
+      "rating_class": null,
+      "total_debits": 50,
+      "debits": {
+        "sleep apnea": 50
+      },
+      "modifiers": [],
+      "drivers": [
+        "DUI",
+        "sleep apnea"
+      ],
+      "postpone_reasons": [
+        "recent DUI"
+      ],
+      "case_id": "UW-T06",
+      "case_index": 6,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-10"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 4",
+        "total_debits": 100,
+        "debits": {
+          "DUI": 50,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "DUI",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard Plus",
+      "total_debits": 0,
+      "debits": {},
+      "modifiers": [],
+      "drivers": [],
+      "postpone_reasons": [],
+      "case_id": "UW-T07",
+      "case_index": 7,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Standard Plus",
+        "total_debits": 0,
+        "debits": {},
+        "modifiers": [],
+        "drivers": [],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 2",
+      "total_debits": 75,
+      "debits": {
+        "tobacco": 25,
+        "sleep apnea": 50
+      },
+      "modifiers": [],
+      "drivers": [
+        "tobacco",
+        "sleep apnea"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T08",
+      "case_index": 8,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-12"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 4",
+        "total_debits": 100,
+        "debits": {
+          "tobacco": 25,
+          "liver enzymes": 25,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "tobacco",
+          "liver enzymes",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "postpone",
+      "rating_class": null,
+      "total_debits": 150,
+      "debits": {
+        "blood pressure reading": 25,
+        "lipids": 25,
+        "A1c": 50,
+        "moving violations": 25,
+        "cardiac risk interaction": 25
+      },
+      "modifiers": [
+        {
+          "type": "flat_extra",
+          "detail": "aviation",
+          "amount_per_1000": 2.5
+        }
+      ],
+      "drivers": [
+        "blood pressure reading",
+        "total cholesterol",
+        "lipid ratio",
+        "A1c",
+        "aviation",
+        "moving violations",
+        "DUI",
+        "cardiac risk interaction"
+      ],
+      "postpone_reasons": [
+        "recent DUI"
+      ],
+      "case_id": "UW-T09",
+      "case_index": 9,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-02",
+        "HR-04",
+        "HR-10"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 8",
+        "total_debits": 225,
+        "debits": {
+          "blood pressure reading": 25,
+          "lipids": 25,
+          "A1c": 50,
+          "aviation": 50,
+          "moving violations": 25,
+          "DUI": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "blood pressure reading",
+          "total cholesterol",
+          "lipid ratio",
+          "A1c",
+          "aviation",
+          "moving violations",
+          "DUI"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept_with_modification",
+      "rating_class": "Table 6",
+      "total_debits": 175,
+      "debits": {
+        "build": 100,
+        "A1c": 50,
+        "tobacco": 25,
+        "moving violations": 25,
+        "late-onset diabetes credit": -25
+      },
+      "modifiers": [
+        {
+          "type": "flat_extra",
+          "detail": "aviation",
+          "amount_per_1000": 2.5
+        }
+      ],
+      "drivers": [
+        "build",
+        "A1c",
+        "tobacco",
+        "aviation",
+        "moving violations",
+        "late-onset diabetes credit"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T10",
+      "case_index": 10,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-02",
+        "HR-05",
+        "HR-09"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 8",
+        "total_debits": 200,
+        "debits": {
+          "build": 50,
+          "A1c": 50,
+          "tobacco": 25,
+          "aviation": 50,
+          "moving violations": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "A1c",
+          "tobacco",
+          "aviation",
+          "moving violations"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 2",
+      "total_debits": 50,
+      "debits": {
+        "tobacco": 25,
+        "liver enzymes": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "tobacco",
+        "liver enzymes"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T11",
+      "case_index": 11,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 50,
+        "debits": {
+          "tobacco": 25,
+          "liver enzymes": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "tobacco",
+          "liver enzymes"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "liver enzymes": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "liver enzymes"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T12",
+      "case_index": 12,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-11"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 75,
+        "debits": {
+          "liver enzymes": 25,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "liver enzymes",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 2",
+      "total_debits": 75,
+      "debits": {
+        "build": 25,
+        "occupation class": 50
+      },
+      "modifiers": [],
+      "drivers": [
+        "build",
+        "occupation class"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T13",
+      "case_index": 13,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-03"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 4",
+        "total_debits": 100,
+        "debits": {
+          "build": 25,
+          "family history": 25,
+          "occupation class": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "family history",
+          "occupation class"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 6",
+      "total_debits": 150,
+      "debits": {
+        "build": 100,
+        "sleep apnea": 50
+      },
+      "modifiers": [],
+      "drivers": [
+        "build",
+        "sleep apnea"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T14",
+      "case_index": 14,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-09"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 4",
+        "total_debits": 100,
+        "debits": {
+          "build": 50,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 2",
+      "total_debits": 50,
+      "debits": {
+        "moving violations": 50
+      },
+      "modifiers": [],
+      "drivers": [
+        "moving violations"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T15",
+      "case_index": 15,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 50,
+        "debits": {
+          "moving violations": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "moving violations"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "tobacco": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "tobacco"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T16",
+      "case_index": 16,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Standard",
+        "total_debits": 25,
+        "debits": {
+          "tobacco": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "tobacco"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 6",
+      "total_debits": 175,
+      "debits": {
+        "build": 25,
+        "blood pressure treatment": 25,
+        "A1c": 50,
+        "moving violations": 50,
+        "sleep apnea": 50,
+        "late-onset diabetes credit": -25
+      },
+      "modifiers": [],
+      "drivers": [
+        "build",
+        "blood pressure treatment",
+        "A1c",
+        "moving violations",
+        "sleep apnea",
+        "late-onset diabetes credit"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T17",
+      "case_index": 17,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-01",
+        "HR-05",
+        "HR-09"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 8",
+        "total_debits": 200,
+        "debits": {
+          "blood pressure reading": 25,
+          "blood pressure treatment": 25,
+          "A1c": 50,
+          "moving violations": 50,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "blood pressure reading",
+          "blood pressure treatment",
+          "A1c",
+          "moving violations",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 4",
+      "total_debits": 100,
+      "debits": {
+        "lipids": 25,
+        "tobacco": 25,
+        "sleep apnea": 50
+      },
+      "modifiers": [],
+      "drivers": [
+        "lipid ratio",
+        "tobacco",
+        "sleep apnea"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T18",
+      "case_index": 18,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-07"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 6",
+        "total_debits": 150,
+        "debits": {
+          "lipids": 75,
+          "tobacco": 25,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "total cholesterol",
+          "tobacco",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 2",
+      "total_debits": 75,
+      "debits": {
+        "occupation class": 25,
+        "moving violations": 50
+      },
+      "modifiers": [],
+      "drivers": [
+        "occupation class",
+        "moving violations"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T19",
+      "case_index": 19,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 75,
+        "debits": {
+          "occupation class": 25,
+          "moving violations": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "occupation class",
+          "moving violations"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 8",
+      "total_debits": 200,
+      "debits": {
+        "build": 25,
+        "blood pressure reading": 25,
+        "lipids": 25,
+        "A1c": 50,
+        "tobacco": 25,
+        "occupation class": 25,
+        "cardiac risk interaction": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "build",
+        "blood pressure reading",
+        "lipid ratio",
+        "A1c",
+        "tobacco",
+        "occupation class",
+        "cardiac risk interaction"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T20",
+      "case_index": 20,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-03",
+        "HR-04",
+        "HR-07"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "decline",
+        "rating_class": "Decline",
+        "total_debits": 275,
+        "debits": {
+          "build": 25,
+          "blood pressure reading": 25,
+          "lipids": 75,
+          "A1c": 50,
+          "tobacco": 25,
+          "family history": 50,
+          "occupation class": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "blood pressure reading",
+          "total cholesterol",
+          "A1c",
+          "tobacco",
+          "family history",
+          "occupation class"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept_with_modification",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "tobacco": 25
+      },
+      "modifiers": [
+        {
+          "type": "flat_extra",
+          "detail": "aviation",
+          "amount_per_1000": 2.5
+        }
+      ],
+      "drivers": [
+        "tobacco",
+        "aviation"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T21",
+      "case_index": 21,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-02"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 75,
+        "debits": {
+          "tobacco": 25,
+          "aviation": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "tobacco",
+          "aviation"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "blood pressure treatment": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "blood pressure treatment"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T22",
+      "case_index": 22,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-01"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 50,
+        "debits": {
+          "blood pressure reading": 25,
+          "blood pressure treatment": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "blood pressure reading",
+          "blood pressure treatment"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept_with_modification",
+      "rating_class": "Table 4",
+      "total_debits": 100,
+      "debits": {
+        "build": 25,
+        "occupation class": 50,
+        "liver enzymes": 25
+      },
+      "modifiers": [
+        {
+          "type": "exclusion",
+          "detail": "climbing",
+          "amount_per_1000": null
+        }
+      ],
+      "drivers": [
+        "build",
+        "occupation class",
+        "climbing",
+        "liver enzymes"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T23",
+      "case_index": 23,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-06"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 6",
+        "total_debits": 150,
+        "debits": {
+          "build": 25,
+          "occupation class": 50,
+          "climbing": 50,
+          "liver enzymes": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "occupation class",
+          "climbing",
+          "liver enzymes"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "postpone",
+      "rating_class": null,
+      "total_debits": 125,
+      "debits": {
+        "occupation class": 50,
+        "moving violations": 50,
+        "liver enzymes": 25
+      },
+      "modifiers": [
+        {
+          "type": "exclusion",
+          "detail": "climbing",
+          "amount_per_1000": null
+        }
+      ],
+      "drivers": [
+        "occupation class",
+        "climbing",
+        "moving violations",
+        "DUI",
+        "liver enzymes"
+      ],
+      "postpone_reasons": [
+        "recent DUI"
+      ],
+      "case_id": "UW-T24",
+      "case_index": 24,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-06",
+        "HR-07",
+        "HR-10"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "decline",
+        "rating_class": "Decline",
+        "total_debits": 250,
+        "debits": {
+          "lipids": 25,
+          "occupation class": 50,
+          "climbing": 50,
+          "moving violations": 50,
+          "DUI": 50,
+          "liver enzymes": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "total cholesterol",
+          "occupation class",
+          "climbing",
+          "moving violations",
+          "DUI",
+          "liver enzymes"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 4",
+      "total_debits": 100,
+      "debits": {
+        "build": 25,
+        "occupation class": 50,
+        "moving violations": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "build",
+        "occupation class",
+        "moving violations"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T25",
+      "case_index": 25,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 4",
+        "total_debits": 100,
+        "debits": {
+          "build": 25,
+          "occupation class": 50,
+          "moving violations": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "occupation class",
+          "moving violations"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "A1c": 50,
+        "late-onset diabetes credit": -25
+      },
+      "modifiers": [],
+      "drivers": [
+        "A1c",
+        "late-onset diabetes credit"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T26",
+      "case_index": 26,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-05"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 50,
+        "debits": {
+          "A1c": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "A1c"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Preferred",
+      "total_debits": 0,
+      "debits": {},
+      "modifiers": [],
+      "drivers": [],
+      "postpone_reasons": [],
+      "case_id": "UW-T27",
+      "case_index": 27,
+      "phase": "train",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Preferred",
+        "total_debits": 0,
+        "debits": {},
+        "modifiers": [],
+        "drivers": [],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "postpone",
+      "rating_class": null,
+      "total_debits": 25,
+      "debits": {
+        "tobacco": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "tobacco",
+        "face amount to income"
+      ],
+      "postpone_reasons": [
+        "financial justification"
+      ],
+      "case_id": "UW-T28",
+      "case_index": 28,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-03",
+        "HR-08",
+        "HR-11"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 4",
+        "total_debits": 125,
+        "debits": {
+          "tobacco": 25,
+          "family history": 50,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "tobacco",
+          "family history",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 6",
+      "total_debits": 150,
+      "debits": {
+        "build": 25,
+        "blood pressure reading": 25,
+        "lipids": 25,
+        "A1c": 50,
+        "cardiac risk interaction": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "build",
+        "blood pressure reading",
+        "total cholesterol",
+        "lipid ratio",
+        "A1c",
+        "cardiac risk interaction"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-T29",
+      "case_index": 29,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-04"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 4",
+        "total_debits": 125,
+        "debits": {
+          "build": 25,
+          "blood pressure reading": 25,
+          "lipids": 25,
+          "A1c": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "blood pressure reading",
+          "total cholesterol",
+          "lipid ratio",
+          "A1c"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "postpone",
+      "rating_class": null,
+      "total_debits": 25,
+      "debits": {
+        "blood pressure treatment": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "blood pressure treatment",
+        "face amount to income"
+      ],
+      "postpone_reasons": [
+        "financial justification"
+      ],
+      "case_id": "UW-T30",
+      "case_index": 30,
+      "phase": "train",
+      "fired_rule_ids": [
+        "HR-01",
+        "HR-08",
+        "HR-12"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 75,
+        "debits": {
+          "blood pressure reading": 25,
+          "blood pressure treatment": 25,
+          "liver enzymes": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "blood pressure reading",
+          "blood pressure treatment",
+          "liver enzymes"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "lipids": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "lipid ratio"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-H01",
+      "case_index": 1,
+      "phase": "holdout",
+      "fired_rule_ids": [
+        "HR-07"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 75,
+        "debits": {
+          "lipids": 75
+        },
+        "modifiers": [],
+        "drivers": [
+          "total cholesterol"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 6",
+      "total_debits": 175,
+      "debits": {
+        "blood pressure treatment": 25,
+        "A1c": 50,
+        "tobacco": 25,
+        "family history": 25,
+        "liver enzymes": 25,
+        "cardiac risk interaction": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "blood pressure treatment",
+        "A1c",
+        "tobacco",
+        "family history",
+        "liver enzymes",
+        "cardiac risk interaction"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-H02",
+      "case_index": 2,
+      "phase": "holdout",
+      "fired_rule_ids": [
+        "HR-01",
+        "HR-04",
+        "HR-07"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 8",
+        "total_debits": 225,
+        "debits": {
+          "blood pressure reading": 25,
+          "blood pressure treatment": 25,
+          "lipids": 50,
+          "A1c": 50,
+          "tobacco": 25,
+          "family history": 25,
+          "liver enzymes": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "blood pressure reading",
+          "blood pressure treatment",
+          "total cholesterol",
+          "A1c",
+          "tobacco",
+          "family history",
+          "liver enzymes"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Preferred",
+      "total_debits": 0,
+      "debits": {},
+      "modifiers": [],
+      "drivers": [],
+      "postpone_reasons": [],
+      "case_id": "UW-H03",
+      "case_index": 3,
+      "phase": "holdout",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Preferred",
+        "total_debits": 0,
+        "debits": {},
+        "modifiers": [],
+        "drivers": [],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Table 4",
+      "total_debits": 100,
+      "debits": {
+        "family history": 75,
+        "liver enzymes": 25
+      },
+      "modifiers": [],
+      "drivers": [
+        "family history",
+        "liver enzymes"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-H04",
+      "case_index": 4,
+      "phase": "holdout",
+      "fired_rule_ids": [
+        "HR-13"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 75,
+        "debits": {
+          "family history": 50,
+          "liver enzymes": 25
+        },
+        "modifiers": [],
+        "drivers": [
+          "family history",
+          "liver enzymes"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "postpone",
+      "rating_class": null,
+      "total_debits": 0,
+      "debits": {},
+      "modifiers": [],
+      "drivers": [
+        "DUI"
+      ],
+      "postpone_reasons": [
+        "recent DUI"
+      ],
+      "case_id": "UW-H05",
+      "case_index": 5,
+      "phase": "holdout",
+      "fired_rule_ids": [
+        "HR-10"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 50,
+        "debits": {
+          "DUI": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "DUI"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept_with_modification",
+      "rating_class": "Table 4",
+      "total_debits": 100,
+      "debits": {
+        "build": 50,
+        "occupation class": 50
+      },
+      "modifiers": [
+        {
+          "type": "exclusion",
+          "detail": "climbing",
+          "amount_per_1000": null
+        }
+      ],
+      "drivers": [
+        "build",
+        "occupation class",
+        "climbing"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-H06",
+      "case_index": 6,
+      "phase": "holdout",
+      "fired_rule_ids": [
+        "HR-06",
+        "HR-09",
+        "HR-11"
+      ],
+      "tier": "compound",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 6",
+        "total_debits": 175,
+        "debits": {
+          "build": 25,
+          "occupation class": 50,
+          "climbing": 50,
+          "sleep apnea": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "build",
+          "occupation class",
+          "climbing",
+          "sleep apnea"
+        ],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept",
+      "rating_class": "Standard",
+      "total_debits": 0,
+      "debits": {},
+      "modifiers": [],
+      "drivers": [],
+      "postpone_reasons": [],
+      "case_id": "UW-H07",
+      "case_index": 7,
+      "phase": "holdout",
+      "fired_rule_ids": [],
+      "tier": "clean",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Standard",
+        "total_debits": 0,
+        "debits": {},
+        "modifiers": [],
+        "drivers": [],
+        "postpone_reasons": []
+      }
+    },
+    {
+      "decision": "accept_with_modification",
+      "rating_class": "Standard",
+      "total_debits": 25,
+      "debits": {
+        "tobacco": 25
+      },
+      "modifiers": [
+        {
+          "type": "flat_extra",
+          "detail": "scuba",
+          "amount_per_1000": 5.0
+        }
+      ],
+      "drivers": [
+        "tobacco",
+        "scuba"
+      ],
+      "postpone_reasons": [],
+      "case_id": "UW-H08",
+      "case_index": 8,
+      "phase": "holdout",
+      "fired_rule_ids": [
+        "HR-14"
+      ],
+      "tier": "judgement",
+      "manual_only": {
+        "decision": "accept",
+        "rating_class": "Table 2",
+        "total_debits": 75,
+        "debits": {
+          "tobacco": 25,
+          "scuba": 50
+        },
+        "modifiers": [],
+        "drivers": [
+          "tobacco",
+          "scuba"
+        ],
+        "postpone_reasons": []
+      }
+    }
+  ]
+}

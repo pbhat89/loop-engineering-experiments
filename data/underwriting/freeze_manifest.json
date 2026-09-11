@@ -1,0 +1,11 @@
+{
+  "experiment": "experiment-7-underwriting-apprentice",
+  "frozen_at": "2026-09-11T07:36:04+00:00",
+  "files": {
+    "starter_manual.md": "62560badda2d05f7074cf3a326fbe019c43b3d3ce778d0d18f1d552733aa2060",
+    "house_rules.json": "27dfa00bee3b44cbcc8dbe86c9429020ec80e6617cb5df84173ceae8b7a05345",
+    "cases.json": "d55a62a997b15434c02e26d48b550d987df5dab5b2ec29efda76fcefa9825b23",
+    "goldens.json": "6eba24267b3d759335a513623cf751c92844a65f30e503d21534572ce1ccc937"
+  },
+  "freeze_sha256": "d95f49f1f9301ecf17facd75aa2d63353f179ea161aa18958f029cba882bee8d"
+}
