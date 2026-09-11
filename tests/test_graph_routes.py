@@ -682,10 +682,10 @@ def test_run_config_reads_the_current_experiment_yaml():
     from src.utils import CONFIG_DIR
 
     cfg = RunConfig.from_experiment_yaml("run_x", "manual", ["reflection_only"], path=CONFIG_DIR / "experiment.yaml")
-    # experiment 6 phase 1 (run_009, D-25) re-runs the learning phase: the memory learns again, nothing is seeded,
-    # and the skill-proposal gate is off. Phase 2 (run_010) flips memory_read_only / seed_from_run back on.
-    assert cfg.memory_read_only is False and cfg.seed_from_run is None and cfg.task_index_offset == 0
-    assert cfg.task_order == ["T1", "T2", "T4", "T3", "T7", "T8"]
+    # experiment 6 phase 2 (run_013, D-26): the held-out test seeded from run_012 with the memory frozen and the
+    # skill-proposal gate off. Phase 1 (run_012) had memory_read_only false, no seed and task_index_offset 0.
+    assert cfg.memory_read_only is True and cfg.seed_from_run == "run_012" and cfg.task_index_offset == 6
+    assert cfg.task_order == ["T11", "T12", "T13"]
     assert cfg.skill_min_applicable_remaining == 0
     for key in ("memory_read_only", "skill_min_applicable_remaining"):
         assert key in cfg.to_dict()  # so it lands in logs/runs/<run_id>.json
