@@ -46,6 +46,7 @@ ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 from summarize_uw_run import NOVEL_RULES, load_run, summarize  # noqa: E402
+from src.underwriting.data import goldens_by_case_id  # noqa: E402
 
 # --------------------------------------------------------------------------- shared look
 # Same palette / type treatment as articles/loop-engineering-markdown-skills/assets/make_figures.py
@@ -201,53 +202,66 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
 
 
 # --------------------------------------------------------------------------- figure B: holdout
-def fig_holdout(summary: dict, run_id: str, out_dir: Path) -> None:
-    arms = summary["arms"]
+def fig_holdout(summary: dict, run_id: str, out_dir: Path, run_root: Path | None = None) -> None:
+    """How many of the eight held-out files each design rated exactly right.
 
-    main_vals, novel_vals = {}, {}
+    Counted upward on purpose. The earlier version of this figure plotted average error,
+    where the longest bar was the worst design and readers reliably drew the opposite
+    conclusion. Two of the eight files turn on a house rule that appears in no training
+    file, so six is the most any design could get; that appears as a ceiling line rather
+    than as a second bar, because a bar that is identical for every design carries no
+    comparison and invites being read as a score.
+    """
+    data_by_arm = load_run(run_id, run_root if run_root is not None else ROOT / "artifacts" / "uw")["arms"]
+    goldens = goldens_by_case_id()
+    unlearnable = {
+        cid for cid, g in goldens.items()
+        if g.get("phase") == "holdout" and set(g.get("fired_rule_ids", [])) & set(NOVEL_RULES)
+    }
+
+    exact, total = {}, 0
     for arm in ARM_ORDER:
-        if arm not in arms:
+        held = [r for r in data_by_arm.get(arm, []) if r["phase"] == "holdout"]
+        if not held:
             continue
-        s = arms[arm]
-        main_vals[arm] = s["mean_distance_holdout"] or 0.0
-        novel_vals[arm] = s["mean_distance_holdout_novel"] or 0.0
+        total = len(held)
+        exact[arm] = sum(1 for r in held if r["ladder_distance"] == 0)
 
-    present = [a for a in ARM_ORDER if a in main_vals]
-    n = len(present)
-    max_val = max(list(main_vals.values()) + list(novel_vals.values()) + [0.1])
+    present = [a for a in ARM_ORDER if a in exact]
+    ceiling = total - len(unlearnable)
 
-    fig, ax = plt.subplots(figsize=(11, 5.6))
-    y_pos = list(range(n))
-    for i, arm in enumerate(present):
-        y = y_pos[i]
-        ax.barh(y, main_vals[arm], height=0.42, color=ARM_COLOR[arm], zorder=3)
-        ax.text(main_vals[arm] + max_val * 0.02, y, f"{main_vals[arm]:.2f}", va="center", ha="left",
-                fontsize=11, fontweight="bold", color=ARM_COLOR[arm], zorder=4)
+    fig, ax = plt.subplots(figsize=(11, 5.4))
+    y_pos = list(range(len(present)))
+    for y, arm in zip(y_pos, present):
+        ax.barh(y, exact[arm], height=0.5, color=ARM_COLOR[arm], zorder=3)
+        ax.text(exact[arm] + 0.12, y, f"{exact[arm]} of {total}", va="center", ha="left",
+                fontsize=11.5, fontweight="bold", color=ARM_COLOR[arm], zorder=4)
 
-        y_thin = y + 0.34
-        ax.barh(y_thin, novel_vals[arm], height=0.16, color=ARM_COLOR[arm], alpha=0.55,
-                edgecolor=INK, lw=0.6, zorder=3)
-        ax.text(novel_vals[arm] + max_val * 0.02, y_thin, f"novel {novel_vals[arm]:.2f}", va="center", ha="left",
-                fontsize=8.6, color=INK2, style="italic", zorder=4)
+    ax.axvline(ceiling, color=INK, lw=1.2, ls=(0, (5, 3)), zorder=5)
+    ax.text(ceiling - 0.12, -0.72, f"{ceiling} is the most anyone could get",
+            ha="right", va="center", fontsize=9.4, style="italic", color=INK, zorder=6)
 
     ax.set_yticks(y_pos)
     ax.set_yticklabels([DISPLAY[a] for a in present], fontsize=11.5, fontweight="bold", color=INK)
     ax.invert_yaxis()
-    ax.set_xlim(0, max_val * 1.4)
-    ax.set_ylim(n - 0.35, -0.75)
-    ax.set_xlabel("average deviation from the actual rating")
+    ax.set_xlim(0, total + 0.6)
+    ax.set_ylim(len(present) - 0.4, -1.0)
+    ax.set_xticks(list(range(total + 1)))
+    ax.set_xlabel("held-out files rated exactly right (longer is better)")
     ax.grid(axis="x", color=LINE, lw=0.6, zorder=0)
     ax.set_axisbelow(True)
 
-    fig.text(0.012, 0.99, "Two of the eight held-out files could not be learned by anyone", fontsize=15, fontweight="bold", va="top")
+    fig.text(0.012, 0.99, "On unseen files, the designs that kept something got nearly everything right",
+             fontsize=15, fontweight="bold", va="top")
     subtitle = textwrap.fill(
-        "Solid bar: average deviation from the actual rating over the 8 held-out files. Thin bar: the 2 of those 8 "
-        "that turn on a house rule which never appeared in training, so nothing written down covers them.",
-        width=104)
+        f"Eight fresh files, memory frozen, one attempt each and no feedback. {len(unlearnable)} of the {total} turn on a "
+        f"house rule that appears in no training file, so nothing written down could cover them and every design missed "
+        f"both. That puts the ceiling at {ceiling}, and the two note-taking designs reached it.",
+        width=106)
     fig.text(0.012, 0.945, subtitle, fontsize=9.8, color=INK2, va="top", linespacing=1.45)
 
     _stub_watermark(fig, run_id)
-    fig.tight_layout(rect=(0, 0.01, 1, 0.83))
+    fig.tight_layout(rect=(0, 0.01, 1, 0.85))
     fig.savefig(out_dir / "holdout.png", dpi=170)
     plt.close(fig)
 
@@ -348,7 +362,7 @@ def main(argv: list[str] | None = None) -> int:
     summary = load_summary(args.run_id, root, args.window)
 
     fig_learning_curve(args.run_id, root, out_dir)
-    fig_holdout(summary, args.run_id, out_dir)
+    fig_holdout(summary, args.run_id, out_dir, root)
     fig_what_each_gets(args.run_id, out_dir)
 
     for name in ("learning_curve", "holdout", "what_each_gets"):

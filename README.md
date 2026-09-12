@@ -37,7 +37,7 @@ The agent gets a 900-word starter manual containing every rating table, so a str
 Three things the data says:
 
 - **Keeping anything beats keeping nothing, by a wide margin.** 0.25 against 0.88 on unseen work, same model, same manual, same eight files.
-- **Two of the eight held-out files turn on a rule that appears in no training file, and all four designs missed both.** That is the ceiling. A learning loop captures only what its feedback has actually covered, so the coverage of your examples binds harder than the cleverness of your memory.
+- **Two of the eight held-out files turn on a rule that appears in no training file, and all four designs missed both.** That puts the ceiling at six of eight, and the two note-taking designs reached it: every file that could be got right, they got. A learning loop captures only what its feedback has actually covered, so the coverage of your examples binds harder than the cleverness of your memory.
 - **Cheap memory nearly matched clever memory.** Pasting the raw markups in reverse order landed level with a self-written rule book that cost a second model call on every file.
 
 Two checks were registered before the run and both passed: the designs must be a dead heat over the first seven files, where they hold identical information, and performance on files the manual fully covers must not change with experience.

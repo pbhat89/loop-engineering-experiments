@@ -153,22 +153,24 @@ Watch what the running average does when the feedback stops. The new joiner's li
 ![Held-out files](assets/holdout.png)
 *Image by Author*
 
-| Design | Average deviation, 8 held-out files | Rated exactly right |
+| Design | Rated exactly right | Average deviation |
 |---|---|---|
-| New joiner | 0.88 | 2 of 8 |
-| Running notebook | 0.25 | 6 of 8 |
-| Written rules | 0.25 | 6 of 8 |
-| Precedent file | 0.38 | 5 of 8 |
+| New joiner | 2 of 8 | 0.88 |
+| Running notebook | 6 of 8 | 0.25 |
+| Written rules | 6 of 8 | 0.25 |
+| Precedent file | 5 of 8 | 0.38 |
 
 The new joiner's 0.88 is almost exactly the 0.88 that a careful, literal reader of the manual alone scores on the same eight files. Thirty files of experience existed in that office and she had access to none of it. That is the honest price of house practice nobody writes down: roughly two thirds of a class per file, forever.
 
 ## The two files nobody could get right
 
-Look at the thin bars on that chart. Every one of them sits at a full position, for all four designs, including the two that spent thirty files taking careful notes.
+Look at where the dashed line sits on that chart, at six rather than eight.
 
 Two of the eight held-out files were built to be unlearnable. Each turns on a house rule that **never appears in any of the thirty training files**. No correction was ever given on it, nothing in the manual covers it, and no amount of rereading a notebook or rewriting a rule book can produce it. There is simply no path from anything the agent has ever been shown to the right answer.
 
-All four missed both. That is not a failure of the memory designs. It is the ceiling, and it is the most portable lesson here.
+All four missed both, which puts the highest possible score at six rather than eight. Read the chart again with that in mind and it says something sharper than it first appears: the notebook and the rule book did not merely do well, they got **every file that could be got right**, and the only two they dropped were the two that no amount of note-taking could reach. The precedent file dropped one it could have had. The new joiner dropped four.
+
+That is not a failure of the memory designs. It is the ceiling, and it is the most portable lesson here.
 
 A learning loop can only ever capture what its feedback has actually covered. If the work your agent sees during training does not contain a situation, then no memory design, no retrieval strategy and no amount of reflection will produce the right answer when that situation finally turns up in production. **The coverage of your examples is the binding constraint, not the cleverness of your memory.** Teams reach for a better retrieval layer when what they actually need is a more comprehensive and representative set of cases with corrections attached.
 
