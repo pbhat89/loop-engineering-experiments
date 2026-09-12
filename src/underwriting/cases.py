@@ -17,7 +17,7 @@ shapes. Those two are arithmetically incompatible: twelve rules at three firings
 three each) supply at most 35. The mix is therefore **9 clean / 13 judgement / 8
 compound** - one case moved from judgement to compound, the smallest change that makes
 the set satisfiable - and every other constraint in section 5 is met as written. See
-decision D-27.
+decision D-01.
 """
 from __future__ import annotations
 

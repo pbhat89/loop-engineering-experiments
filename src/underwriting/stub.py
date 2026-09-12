@@ -18,7 +18,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from src.llm_provider import BaseProvider, ProviderSettings
+from src.underwriting.provider import BaseProvider, ProviderSettings
 from src.underwriting.engine import rate, rate_manual_only
 from src.underwriting.house_rules import HOUSE_RULES
 from src.underwriting.memory import EMPTY_RULEBOOK

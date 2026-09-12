@@ -134,7 +134,7 @@ class PrecedentFile:
 
     # The brief calls this file ``precedent/cases.jsonl``; that collides with the per-arm run log
     # ``<arm>/cases.jsonl`` (also in the brief), because the arm is itself called ``precedent``.
-    # Renamed to ``filed_cases.jsonl``; recorded as a deviation in decision D-27.
+    # Renamed to ``filed_cases.jsonl``; recorded as a deviation in decision D-01.
     FILENAME = "filed_cases.jsonl"
 
     def __init__(self, root: Path | str):

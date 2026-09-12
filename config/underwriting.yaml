@@ -1,4 +1,4 @@
-# Experiment 7 - the Underwriting Apprentice (decision D-27).
+# Experiment 7 - the Underwriting Apprentice (decision D-01).
 #
 # One job repeated 38 times: rate a life-insurance application. Five arms, identical in
 # every respect except what each is handed before it decides and what it keeps afterwards.
@@ -24,7 +24,7 @@ mode: manual                      # manual | stub
 operator: claude-code-subagent
 # Operator model. The run uw_001 began on claude-fable-5-1 and every case logged before 2026-09-12 14:45
 # carries that identifier. The Fable quota was exhausted account-wide with 37 calls left on two arms, and the
-# lead chose to finish on Opus 5 rather than pause (D-28). Each case record carries the model that produced
+# lead chose to finish on Opus 5 rather than pause (D-02). Each case record carries the model that produced
 # it, so the switch is visible per case in artifacts/uw/<run>/<arm>/cases.jsonl.
 model_identifier: claude-opus-5
 stub_operator: learner            # stub mode only: naive | learner

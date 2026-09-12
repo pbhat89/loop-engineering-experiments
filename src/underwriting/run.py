@@ -31,7 +31,7 @@ import sys
 import time
 from pathlib import Path
 
-from src.llm_provider import ManualProvider, ProviderError, ProviderSettings, read_response_file
+from src.underwriting.provider import ManualProvider, ProviderError, ProviderSettings, read_response_file
 from src.underwriting.audit import audit_run
 from src.underwriting.data import goldens_by_case_id, load_cases, load_manual, verify_freeze
 from src.underwriting.graph import build_underwriting_graph

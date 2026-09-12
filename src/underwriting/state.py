@@ -1,6 +1,6 @@
 """Graph state, operator request/response models, and the operator instruction texts.
 
-Mirrors ``src/graph_state.py`` and the ``OperatorRequest`` half of ``src/llm_provider.py``:
+The request/response contract the operator sees, and the graph state behind it:
 one typed state a LangGraph node can update piecemeal, one Pydantic model per operator
 step whose JSON schema is embedded in every request, and one request envelope that knows
 where its request and response files live.

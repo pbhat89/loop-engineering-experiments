@@ -1,9 +1,0 @@
-{
-  "current_task_corrections": [
-    {
-      "feedback_id": "T6-caveat_no_operational_use",
-      "correction": "Add 'no_operational_use' to the write_report caveats parameter to explicitly state that the baseline model must not be used operationally."
-    }
-  ],
-  "reusable_lessons": []
-}

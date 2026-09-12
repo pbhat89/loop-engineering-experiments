@@ -1,9 +1,0 @@
-{
-  "current_task_corrections": [
-    {
-      "feedback_id": "T8-causal_language_setting",
-      "correction": "Set brief_sections.causal_language parameter to 'avoid'. This corrects the parameter configuration error (changed from 'allow') and eliminates causal phrasing ('drives', 'causes', 'leads to') from the executive brief. For a descriptive study of synthetic data, all relationships must be expressed associatively only (e.g., 'is associated with' rather than 'drives'). This single parameter fix addresses both the parameter value error and the resulting language violations."
-    }
-  ],
-  "reusable_lessons": []
-}

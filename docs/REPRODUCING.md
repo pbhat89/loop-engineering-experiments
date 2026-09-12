@@ -1,6 +1,6 @@
-# Reproducing these experiments
+# Reproducing this experiment
 
-Everything here runs from a clean clone. The parts that need no model run in a couple of minutes. The live experiment needs something that can answer 258 JSON requests, and you can plug in whatever you have.
+Everything runs from a clean clone. The parts that need no model finish in a couple of minutes. The live experiment needs something that can answer 182 JSON requests, and you choose what that is.
 
 ## 1. Install
 
@@ -10,14 +10,14 @@ Python 3.12 or 3.13, and [uv](https://docs.astral.sh/uv/).
 git clone https://github.com/pbhat89/loop-engineering-experiments.git
 cd loop-engineering-experiments
 uv sync --extra dev
-uv run pytest          # 314 tests, about four minutes
+uv run pytest            # 119 tests, about two minutes
 ```
 
 If `uv run` warns that `VIRTUAL_ENV` does not match the project environment, it is telling you it ignored an already-active venv and used the project's own. That is what you want.
 
 ## 2. Check the frozen data
 
-The underwriting pack is generated from code and frozen by hash. This command regenerates all of it and compares:
+The whole dataset is generated from code and frozen by hash. This regenerates all of it and compares:
 
 ```bash
 uv run python -m src.underwriting.data verify
@@ -30,11 +30,11 @@ freeze_sha256: d95f49f1f9301ecf17facd75aa2d63353f179ea161aa18958f029cba882bee8d
 underwriting data pack clean
 ```
 
-That single check covers the starter manual, the fourteen house rules, all thirty-eight application files, every answer, the derived difficulty tiers and the whole schedule, including that every rule fires in at least three training files in at least two different shapes. If it reports drift, nothing downstream is comparable with the committed results.
+That one check covers the starter manual, the fourteen house rules, all thirty-eight application files, every answer, the derived difficulty tiers and the whole schedule, including that every rule fires in at least three training files in at least two different shapes. If it reports drift, nothing downstream compares with the committed results.
 
 ## 3. Run it with no model at all
 
-Deterministic stub operators answer every request. Useful for checking the machinery end to end before spending anything.
+Deterministic stubs answer every request. Worth doing first: it proves the graph, the scorer, the memories and the leakage audit all work before you spend anything.
 
 ```bash
 for arm in new_joiner notebook written_rules precedent; do
@@ -44,22 +44,18 @@ done
 uv run python scripts/summarize_uw_run.py --run-id uw_demo
 ```
 
-Stub results are labelled stub everywhere they appear and are not a result about anything. They exist to prove the graph, the scorer, the memories and the leakage audit all work.
+Stub output is labelled stub everywhere it appears and is not a result about anything.
 
-## 4. Run it live
+## 4. How the live loop works
 
-### How the runner works
-
-There is no model client in this repository. The graph pauses on a LangGraph `interrupt()` at every decision, writes a request file, and returns. You answer the request by writing a response file. You run the same command again and it resumes from its checkpoint.
+There is no model client in this repository. The graph pauses on a LangGraph `interrupt()` at every decision, writes a request file, and returns. You write the response file. You run the same command again and it resumes from its checkpoint.
 
 ```text
 artifacts/uw/<run_id>/requests/<arm>/<phase>_case<NN>_<step>[_rN].json
 artifacts/uw/<run_id>/responses/<arm>/<same file name>.json
 ```
 
-`<phase>` is `train` or `holdout`. `<step>` is `decide`, or `reflect` for the written-rules arm, or `ask` for the ask-a-senior arm. Each request carries the file to rate, the starter manual, the arm's memory block, and a JSON schema for the answer. A response that fails validation is re-requested as `_r2` and then `_r3` with the errors attached.
-
-Start an arm's `--phase holdout` only after its `--phase train` prints `DONE`. The four arms are independent and can proceed in parallel, but **the runner rewrites a shared `run.json`, so never have two runner processes running at once.**
+`<phase>` is `train` or `holdout`. `<step>` is `decide`, or `reflect` for the written-rules design, or `ask` for the excluded ask-a-senior design.
 
 ```bash
 uv run python -m src.underwriting.run --run-id uw_002 --condition notebook --phase train
@@ -69,27 +65,93 @@ uv run python -m src.underwriting.run --run-id uw_002 --condition notebook --pha
 uv run python -m src.underwriting.run status --run-id uw_002
 ```
 
-Add `--poll` if you would rather the runner wait for each response file than return and be re-invoked.
+Start an arm's `--phase holdout` only after its `--phase train` prints `DONE`. The arms are independent and can proceed in parallel, but **the runner rewrites a shared `run.json`, so never have two runner processes running at once.** Add `--poll` if you would rather the runner wait for each response file than return and be re-invoked.
+
+### What a request looks like
+
+```json
+{
+  "request_id": "uw_002:notebook:train:case03:decide:a1",
+  "run_id": "uw_002", "condition": "notebook", "phase": "train",
+  "case_index": 3, "case_id": "UW-T03", "step": "decide", "attempt": 1,
+  "instructions": "Rate this life-insurance application. The starter manual ...",
+  "payload":  { "case": {}, "manual": "...", "memory": {} },
+  "response_schema": { "...": "JSON Schema for the answer" }
+}
+```
+
+Send `instructions` plus `payload` to your model, require a reply matching `response_schema`, and write it to the response path. A reply that fails validation is re-requested as `_r2` and then `_r3` with the errors attached under `validation_errors`. After that the answer is scored at the postpone-equivalent deviation of 2 and flagged `unparseable`, so a stubborn operator degrades the result rather than stalling the run.
+
+## 5. Configuring the model
+
+Two fields in [`config/underwriting.yaml`](../config/underwriting.yaml):
+
+```yaml
+mode: manual                  # manual | stub
+operator: claude-code-subagent
+model_identifier: claude-opus-5
+```
+
+These are **labels stamped into every case record** so a reader can tell what produced an answer. They are not client configuration, because there is no client. Set them to whatever you actually used, for example `operator: gemini-cli` and `model_identifier: gemini-3-pro`.
+
+**The one rule that changes the result: every call must be independent, with no conversation history carried between files.** A stateless operator is the premise of the whole experiment. If your operator remembers the previous file, the new-joiner design stops being a new joiner and the comparison is meaningless.
 
 ### Option A: Claude Code subagents, on a subscription
 
-This is how `uw_001` was produced. No API key is involved. For each request file, spawn one fresh subagent with the verbatim prompt template in [OPERATOR_PROTOCOL.md](OPERATOR_PROTOCOL.md), substituting only the two paths the runner printed. The agent definition is `.claude/agents/underwriter-operator.md`.
+This is how `uw_001` was produced. No API key is involved. For each request file, spawn one fresh subagent with the verbatim prompt template in [OPERATOR_PROTOCOL.md](OPERATOR_PROTOCOL.md), substituting only the two paths the runner printed. The agent definition is [`.claude/agents/underwriter-operator.md`](../.claude/agents/underwriter-operator.md). Never reuse a subagent, and never edit a response by hand: a bad response becomes a new request, and you answer that instead.
 
-Rules that matter for the result:
+### Option B: any API, in about forty lines
 
-- **One agent per request file.** Never reuse one, never give it conversation context. A stateless operator is the whole premise.
-- **Never edit a response by hand.** A bad response becomes a new request; answer that instead.
-- **Do not read request or response contents** while orchestrating, beyond checking a file exists.
+The worker below is provider-agnostic. Replace `call_model` and it works with Anthropic, Gemini, OpenAI, OpenRouter, Ollama or anything else that takes a prompt and returns text. Run it in one terminal and the runner with `--poll` in another.
 
-### Option B: your own model provider
+```python
+# worker.py  -- answers request files until you stop it
+import json, time, pathlib
 
-Write a small loop that watches the requests directory, sends `payload` plus `instructions` to your model, validates the reply against the embedded `response_schema`, and writes the response file. Roughly forty lines. Keep each call independent with no history, or you are measuring a different experiment.
+RUN = "uw_002"
+REQ = pathlib.Path(f"artifacts/uw/{RUN}/requests")
+RES = pathlib.Path(f"artifacts/uw/{RUN}/responses")
 
-The optional `anthropic` extra (`uv sync --extra anthropic`) installs `langchain-anthropic` if you prefer to wire a provider in directly. `ANTHROPIC_API_KEY` goes in a `.env` file, which is git-ignored. Copy `.env.example` to start.
+def call_model(prompt: str) -> str:
+    """Swap this one function for your provider. Return raw text containing JSON.
+
+    Anthropic:  client.messages.create(model=..., max_tokens=2000,
+                    messages=[{"role": "user", "content": prompt}]).content[0].text
+    Gemini:     client.models.generate_content(model=..., contents=prompt).text
+    OpenAI:     client.responses.create(model=..., input=prompt).output_text
+    Ollama:     requests.post("http://localhost:11434/api/generate",
+                    json={"model": ..., "prompt": prompt, "stream": False}).json()["response"]
+
+    Start a NEW call every time. Never pass previous messages.
+    """
+    raise NotImplementedError
+
+def answer(path: pathlib.Path) -> None:
+    req = json.loads(path.read_text(encoding="utf-8"))
+    prompt = (
+        f"{req['instructions']}\n\n"
+        f"INPUT:\n{json.dumps(req['payload'], indent=1)}\n\n"
+        f"Reply with JSON only, matching this schema:\n{json.dumps(req['response_schema'])}"
+    )
+    text = call_model(prompt).strip()
+    text = text.removeprefix("```json").removeprefix("```").removesuffix("```")
+    out = RES / path.parent.name / path.name
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(json.loads(text), indent=1), encoding="utf-8")
+    print("answered", out)
+
+while True:
+    pending = [p for p in REQ.rglob("*.json") if not (RES / p.parent.name / p.name).exists()]
+    for p in sorted(pending):
+        answer(p)
+    time.sleep(3)
+```
+
+If you would rather wire a provider into the graph itself, `uv sync --extra anthropic` installs `langchain-anthropic`. Put the key in a `.env` file, which is git-ignored; copy `.env.example` to start. Never commit a real key.
 
 ### Budget
 
-| Arm | Calls per file | Over 38 files |
+| Design | Calls per file | Over 38 files |
 |---|---|---|
 | `new_joiner` | 1 | 38 |
 | `notebook` | 1 | 38 |
@@ -97,11 +159,9 @@ The optional `anthropic` extra (`uv sync --extra anthropic`) installs `langchain
 | `precedent` | 1 | 38 |
 | **total** | | **182** |
 
-`uw_001` also ran a fifth `ask_senior` arm at 76 calls, making 258. That arm is excluded from the article for the reason recorded in decision **D-29**: its senior was a deterministic lookup that always knew the answer, so it measured the oracle rather than the loop. The code is still here if you want to build a better senior.
+Each request is about 11 KB. `uw_001` also ran the excluded `ask_senior` design at 76 calls, making 258, and took an evening across several sessions because of rate limits. Nothing is lost to an interruption: every checkpoint and file is on disk and the same command resumes.
 
-Each request is about 11 KB. `uw_001` took an evening, spread over several sessions because of rate limits. Nothing is lost to an interruption: every checkpoint and every file is on disk and the same command resumes.
-
-## 5. Read the results
+## 6. Read the results
 
 ```bash
 uv run python -m src.underwriting.run audit --run-id uw_002        # must print 0 problems
@@ -109,37 +169,25 @@ uv run python scripts/summarize_uw_run.py --run-id uw_002 --json artifacts/uw/uw
 uv run python articles/underwriting-apprentice/assets/make_figures.py --run-id uw_002
 ```
 
-The **audit** is the one to run first. It checks every request file for house rule text or identifiers, point values, tier labels, the file's own answer or markup, and any number appearing in a rule statement but nowhere in the manual. If it reports anything other than zero, the agent could see what it was meant to work out, and the run is void.
+Run the **audit** first. It checks every request file for house rule text or identifiers, point values, tier labels, the file's own answer or markup, and any number that appears in a rule statement but nowhere in the manual. Anything other than zero means the agent could see what it was meant to work out, and the run is void.
 
-The **summariser** prints per-arm results, per-tier means, the running series, and the three checks registered in advance:
+The **summariser** prints per-design results, per-tier means, the running series, and the three checks registered in advance:
 
-1. Files 1 to 3 must be a dead heat across the arms that cannot ask.
+1. Files 1 to 3 must be a dead heat across the designs that cannot ask.
 2. Files the manual fully covers must stay flat for everyone.
-3. The two held-out files turning on a rule absent from training should be missed by every arm that cannot ask.
+3. The two held-out files turning on a rule absent from training should be missed by every design that cannot ask.
 
-Checks 1 and 2 are pass or fail. If either fails, information leaked between arms and the numbers mean nothing.
+Checks 1 and 2 are pass or fail. If either fails, information leaked between designs and the numbers mean nothing.
 
-## 6. Compare against the committed run
+## 7. Compare against the committed run
 
-`uw_001` is committed in full: 258 request and response pairs, per-file logs, the three memories, and `summary.json`. Expect your own numbers to differ. One file per design is a coin-flip's worth of noise in places, models change, and there are no error bars here. What should survive is the **ordering**: the arms that keep something beat the one that does not, by a wide margin, and all of them miss the two unlearnable held-out files.
+`uw_001` is committed in full: 258 request and response pairs, per-file logs, the three memories and `summary.json`. Expect your own numbers to differ. One file per design is a coin flip's worth of noise in places, models change, and there are no error bars here. What should survive is the **ordering**: the designs that keep something beat the one that does not by a wide margin, and all of them miss the two unlearnable held-out files.
 
-Worth reading directly:
+Worth opening directly:
 
-- `artifacts/uw/uw_001/written_rules/rulebook.md` and its thirty versions under `history/`. The rule book the agent wrote for itself, which found the shape of the hidden rules and bracketed two thresholds slightly wrong.
-- `artifacts/uw/uw_001/notebook/markups.jsonl`. Every correction the senior gave, which is exactly what that arm keeps.
+- `artifacts/uw/uw_001/written_rules/rulebook.md` and its thirty revisions under `history/`. The rule book the agent wrote for itself.
+- `artifacts/uw/uw_001/notebook/markups.jsonl`. Every correction the senior gave.
 - `artifacts/uw/uw_001/precedent/filed_cases.jsonl`, with the nearest-neighbour distance recorded for every file.
-
-## 7. The claims experiments
-
-Experiments 1 to 6 use a synthetic healthcare claims dataset that is **not** redistributed here. Fetch it at the pinned revision first:
-
-```bash
-uv run python -m src.download_data
-```
-
-It reads `config/experiment.yaml` for the repository and commit, writes `data/raw/download_record.json` with sizes and hashes, and touches the network exactly once. The dataset is CC BY-NC 4.0; see [LICENSE](../LICENSE).
-
-From there the pattern is the same file protocol with a different runner, `src/run_experiment.py`, driven by `config/experiment.yaml`. Each archived run under `archive/` carries the configuration it ran with. `docs/writeup.md` is the long-form record and `docs/decision-log.md` explains every choice.
 
 ## Troubleshooting
 
@@ -149,4 +197,4 @@ From there the pattern is the same file protocol with a different runner, `src/r
 
 **Unicode errors on Windows.** Set `PYTHONIOENCODING=utf-8` before the command.
 
-**A response keeps failing validation.** Read the `validation_errors` key in the `_r2` request. After two re-requests the answer is scored at the postpone-equivalent deviation of 2 and flagged `unparseable` in the log, so a stubborn operator degrades the result rather than stalling the run.
+**Every design scores the same.** Check you are not carrying conversation history between calls. That is the single mistake that collapses the experiment.

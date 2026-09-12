@@ -1,5 +1,0 @@
-{
-  "verdict": "accept",
-  "findings": [],
-  "summary": "All prior leakage issues corrected. Feature set excludes adjudication-stage amounts; threshold and preprocessing fit on train_only. Execution succeeded; all artifacts produced. Model ranking performance sensible for 5% base-rate task. Output ready for sponsor."
-}

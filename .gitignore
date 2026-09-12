@@ -34,3 +34,36 @@ archive/**/checkpoints/
 
 # Tooling caches
 .ruff_cache/
+
+# ---------------------------------------------------------------- credentials
+# Nothing in this project needs a secret committed. These patterns exist so an
+# accidental one is refused by git rather than caught in review.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.keystore
+id_rsa*
+id_ed25519*
+*.credentials
+credentials.json
+client_secret*.json
+service-account*.json
+.netrc
+.npmrc
+.pypirc
+.aws/
+.ssh/
+.gnupg/
+
+# Local agent/editor state that can carry account or session identifiers
+.claude/settings.local.json
+.claude/*.local.*
+.claude/sessions/
+.claude/shell-snapshots/
+.claude/todos/
+.vscode/settings.json
+.idea/
