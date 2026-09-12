@@ -22,7 +22,11 @@ phases:
 
 mode: manual                      # manual | stub
 operator: claude-code-subagent
-model_identifier: claude-fable-5-1
+# Operator model. The run uw_001 began on claude-fable-5-1 and every case logged before 2026-09-12 14:45
+# carries that identifier. The Fable quota was exhausted account-wide with 37 calls left on two arms, and the
+# lead chose to finish on Opus 5 rather than pause (D-28). Each case record carries the model that produced
+# it, so the switch is visible per case in artifacts/uw/<run>/<arm>/cases.jsonl.
+model_identifier: claude-opus-5
 stub_operator: learner            # stub mode only: naive | learner
 
 max_rerequests: 2                 # first request + 2 re-requests, then the answer is scored unparseable
