@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "tobacco quit within the last 5 years",
+    "total coverage above the income multiple"
+  ],
+  "rationale": "Only debit is tobacco cessation 1-5 years ago (nicotine negative), which also bars the preferred classes: Standard. Build, BP, lipids, A1c, family history, occupation, driving, liver and sleep apnea are all clean. Total cover $2.0M against a $1.7M income multiple; the manual refers this to judgement, so I used judgement: the excess is modest for a 40-year-old on 30-year term and does not warrant postponing. Notebook entry does not apply."
+}

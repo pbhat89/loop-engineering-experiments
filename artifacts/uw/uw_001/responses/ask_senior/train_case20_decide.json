@@ -1,0 +1,16 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "A1c in the 6.5-6.9 band with no diabetes diagnosis",
+    "Build: BMI in the 28.0-30.9 band",
+    "Untreated blood pressure, systolic in the 139-148 band",
+    "Lipids: TC/HDL ratio in the 5.1-6.5 band (ratio governs over total cholesterol per senior)",
+    "Tobacco quit within the last 5 years",
+    "Class B occupation (site foreman)",
+    "Interaction charge for three concurrent cardiac risk-factor debits (BP, lipids, A1c) per senior",
+    "Family history waived: applicant over 60 per senior"
+  ],
+  "rationale": "Debits: build 25, untreated systolic BP 25, lipids 25 (ratio governs per senior), A1c 50, tobacco quit within 5 years 25, class B occupation 25, plus 25 interaction charge for three concurrent cardiac risk-factor debits (BP, lipids, A1c) per senior. Family history waived: applicant over 60 per senior. A1c referral unanswered; judgement used to apply the table charge as written. Financial limit satisfied. Total 200: Table 8, accept."
+}

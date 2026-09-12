@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Preferred",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure reading",
+    "total cholesterol",
+    "tobacco"
+  ],
+  "rationale": "Zero debits across every table: BMI 24.9 stable, BP 133/72 untreated, TC 217 with ratio 3.8, A1c 5.2, no family history, class A pharmacist, clean MVR, normal liver, no apnea. Face plus in-force ($1.25M) sits well inside the 30x income limit, so no financial postponement. Preferred Plus is barred by systolic 133, TC over 200 and tobacco quit rather than never; all Preferred criteria are met."
+}

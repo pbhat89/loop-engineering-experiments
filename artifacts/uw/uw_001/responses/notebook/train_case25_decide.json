@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "occupation class",
+    "moving violations"
+  ],
+  "rationale": "Debits: build (BMI 30.1) 25, occupation class C (high-voltage lineman) 50, two moving violations in three years 25; total 100, Table 4. Blood pressure, lipids, A1c, tobacco, family history, liver chemistry and sleep apnea all carry nothing, so no cardiac-risk interaction arises. No hazardous avocation, so no exclusion rider. Total cover $650,000 sits well inside the 25x income multiple for age 38. Accept at Table 4."
+}

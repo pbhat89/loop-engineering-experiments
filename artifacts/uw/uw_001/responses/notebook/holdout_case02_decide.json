@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "A1c",
+    "blood pressure treatment",
+    "tobacco",
+    "family history",
+    "liver enzymes",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Debits: tobacco quit within five years; treated blood pressure at treatment charge only, reading 140/88 controlled; A1c 6.7 undiagnosed; brother MI at 47; liver enzymes over twice normal, not mild so charged despite no alcohol history. Cholesterol 305 not charged because the ratio 4.2 governs. Judgement used on the cardiac cluster (treated hypertension, dysglycemia, premature family MI, recent tobacco): modest interaction charge. Financials within limits. Total sits in Table 6."
+}

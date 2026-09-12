@@ -1,0 +1,19 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 6",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "amateur motorsport competition (club saloon racing, 14 events/yr)",
+      "amount_per_1000": 5.0
+    }
+  ],
+  "drivers": [
+    "hazardous occupation, class C (high-voltage lineman)",
+    "diagnosed sleep apnea",
+    "elevated liver enzymes",
+    "two moving violations in the last 3 years",
+    "amateur motorsport competition (flat extra)"
+  ],
+  "rationale": "Debits: class C occupation 50, diagnosed sleep apnea 50, elevated liver enzymes 25, two moving violations 25; total 150, Table 6. Build, BP, lipids, A1c, tobacco, family history and financials carry no debits; face is within the 25x income multiple. Club saloon racing takes the manual's $5.00 motorsport flat extra. Judgement used where the manual refers: treated sleep apnea, sub-2x liver chemistry, and the occupation-plus-avocation combination were each rated on the tables as written."
+}

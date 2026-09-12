@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "driving record",
+    "blood pressure",
+    "A1c"
+  ],
+  "rationale": "Every table returns zero debits: BMI 24.0, BP 135/81 untreated, TC 182 with ratio 3.7, A1c 6.1 without diagnosis, never-smoker, no family history, class A occupation, no hazardous avocation, normal liver, no apnea. Total cover is well inside the 20x income multiple. The single moving violation bars Standard Plus; systolic 135 and A1c 6.1 also bar Preferred. Zero debits meeting no preferred class is Standard. Beekeeping is not a rated hazard."
+}

@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "Treated hypertension: on medication since 2019 with reading still above target"
+  ],
+  "rationale": "Only debit is treated hypertension: on medication since 2019 with reading 141/83, still above target, so the treated charge applies and preferred classes are unavailable. Build, lipids, A1c, family history, occupation, driving, liver and sleep are all clean. Face amount is within the age-40 income multiple. Judgement used on the mild cardiac risk-factor combination (treated BP, borderline A1c, cholesterol 214): no extra debit as each sits in a zero band. Standard, accept."
+}

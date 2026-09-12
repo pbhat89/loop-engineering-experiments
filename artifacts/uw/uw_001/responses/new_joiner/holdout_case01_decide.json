@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "elevated total cholesterol",
+    "elevated total-cholesterol-to-HDL ratio"
+  ],
+  "rationale": "Otherwise clean file: build, blood pressure, A1c, tobacco, family history, occupation, driving, liver chemistry and financials all clear. The only adverse factor is lipids: total cholesterol falls in the top band and the ratio in the middle band, and the two tables disagree, so I used judgement. Stacking both would double-count one lab panel; with a protective HDL I charged the worse single band only. Total debits fall in the Table 2 band. Accept at Table 2, no modifiers."
+}

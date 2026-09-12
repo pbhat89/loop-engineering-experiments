@@ -1,0 +1,15 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "blood pressure reading",
+    "lipid ratio",
+    "A1c",
+    "tobacco",
+    "occupation class",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Total cover $900,000 sits inside the 10x multiple ($1.75M); no DUI. Lipid bands disagree (329, ratio 5.7): judgement used, ratio governs, cholesterol not charged. Family history (father stroke 49, mother cancer 58) credited to zero under judgement: at 63, near the settled point, treated as well past 60. Charged: build, blood pressure reading, lipid ratio, A1c (no diagnosis, no credit), tobacco, occupation class B. Four cardiac tables; combination considered, nothing added. Total 175 reads Table 6."
+}

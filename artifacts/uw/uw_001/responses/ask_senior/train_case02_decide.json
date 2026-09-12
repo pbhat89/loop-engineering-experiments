@@ -1,0 +1,11 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "face amount large relative to income",
+    "total cover exceeds the age income multiple",
+    "tobacco quit within the last five years"
+  ],
+  "rationale": "Postponed for financial evidence. Face $1,750,000 plus $250,000 in force totals $2,000,000, above the age-40 multiple of 25x income ($1,700,000); senior confirmed a face over $1,000,000 at more than 20x income is postponed, not rated. Medically the file carries 25 debits (tobacco quit within 5 years), all else in zero bands, so Standard would follow once financial justification is supplied. No modifiers."
+}

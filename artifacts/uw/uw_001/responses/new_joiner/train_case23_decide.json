@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "hazardous occupation (class C high-voltage lineman)",
+    "hazardous avocation (technical trad rock climbing)",
+    "elevated liver enzymes over twice the upper limit of normal",
+    "build (BMI in the 28.0-30.9 band)"
+  ],
+  "rationale": "Debits: build BMI 28.3 (25), class C occupation (50), technical rock climbing (50), liver enzymes over twice normal (25); everything else clean, financials within the 15x multiple. Total 150 reads Table 6. The manual refers combined hazardous occupation and avocation to judgement; with none available I charged both tables additively rather than excluding either hazard. Liver chemistry at over 2x is not borderline, so the flat 25 applies."
+}

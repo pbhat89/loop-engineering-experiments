@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "build (BMI read after adding back half of the 28 lb lost in 12 months)",
+    "diagnosed sleep apnea, untreated"
+  ],
+  "rationale": "Per senior guidance, half the 28 lb lost in 12 months is added back: 221 lb at 5'7\" is BMI 34.6, band 34.0-36.9, 100 debits. Diagnosed sleep apnea without CPAP takes the plain 50. BP, lipids, A1c, tobacco, family history, occupation, driving, liver and financials ($900k total within 20x income) carry nothing. Total 150, Table 6. On the cardiac-risk combination referral I used judgement and added nothing beyond the tables."
+}

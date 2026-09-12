@@ -1,0 +1,11 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "DUI conviction in 2025, within the last three years",
+    "Senior underwriting direction that a recent DUI is postponed rather than rated",
+    "No other adverse factor: build, blood pressure, lipids, A1c, family history, occupation and the financial multiple all sit in zero-debit bands"
+  ],
+  "rationale": "Section 11 charges a DUI 50 debits but refers a recent motoring conviction to underwriting judgement. The senior settles it: a DUI within the last three years is a postpone, not a rating. This conviction is dated 2025, about a year old, so the file is not ratable yet and carries no class. Every other factor - build, blood pressure, lipids, A1c, occupation, finances - sits inside its zero-debit band."
+}

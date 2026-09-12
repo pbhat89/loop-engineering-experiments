@@ -1,0 +1,153 @@
+{
+  "request_id": "uw_001:ask_senior:holdout:case03:decide:a1",
+  "run_id": "uw_001",
+  "condition": "ask_senior",
+  "phase": "holdout",
+  "case_index": 3,
+  "case_id": "UW-H03",
+  "step": "decide",
+  "attempt": 1,
+  "created_at": "2026-09-12T07:58:06+00:00",
+  "instructions": "Rate this life-insurance application. The starter manual in this request is the whole of the written practice; work from it and from anything else this request gives you. Return the decision, the rating class, any modifiers (flat extras with their band, and exclusion riders naming the hazard), the factors that drove the rating, and a rationale of at most 80 words. Use only the decisions and class names the manual defines. Where the manual says refer to underwriting judgement, decide anyway and say in the rationale that you did. One attempt: there is no resubmission.",
+  "payload": {
+    "case": {
+      "rendered": "Applicant: F, age 55.\nProduct: whole life, face $250,000.\nBuild: 5'10\", 150 lb, BMI 21.5; weight stable over the last 12 months.\nTobacco: quit more than 5 years ago; nicotine screen negative.\nBlood pressure: 129/71, untreated.\nLipids: total cholesterol 214, HDL 51, ratio 4.2.\nA1c: 5.2; no diabetes diagnosis.\nFamily history: nothing before age 60 in parents or siblings.\nOccupation: software engineer, class A.\nAvocation: none declared.\nDriving: 0 moving violation(s) in the last 3 years; no DUI.\nAlcohol and liver: liver enzymes normal; no alcohol history.\nSleep apnea: none reported.\nFinancial: income $140,000, $250,000 already in force.\nAlso on file: is a season-ticket holder at the local rugby club.",
+      "fields": {
+        "sex": "F",
+        "age": 55,
+        "product": "whole life",
+        "face_amount": 250000,
+        "height_in": 70,
+        "weight_lb": 150,
+        "bmi": 21.5,
+        "weight_change_lb_12mo": 0,
+        "tobacco_declared": "quit_over_5y",
+        "nicotine_lab": "negative",
+        "bp_systolic": 129,
+        "bp_diastolic": 71,
+        "bp_treated": false,
+        "bp_treatment_since": null,
+        "total_cholesterol": 214,
+        "hdl": 51,
+        "lipid_ratio": 4.2,
+        "a1c": 5.2,
+        "diabetes_dx_year": null,
+        "diabetes_medication": null,
+        "family_history": [],
+        "occupation": "software engineer",
+        "occupation_class": "A",
+        "avocation": {
+          "type": "none"
+        },
+        "mvr_violations": 0,
+        "dui_year": null,
+        "liver_enzymes": "normal",
+        "alcohol_treatment": false,
+        "sleep_apnea": false,
+        "cpap_compliant": false,
+        "annual_income": 140000,
+        "inforce_coverage": 250000,
+        "irrelevant_detail": "is a season-ticket holder at the local rugby club"
+      }
+    },
+    "manual": "# Individual life underwriting manual (starter edition)\n\nThis is the whole of the written practice. Rate every application from it. Where it says *refer to underwriting judgement*, the manual has nothing more to give you.\n\n## 1. Decision vocabulary\n\nFour decisions and no others: **accept**; **accept with modification** (a flat extra and/or an exclusion rider); **postpone** (do not decide yet); **decline**.\n\n## 2. Rating classes and the debit bands\n\nAdd the debits from sections 3-14 and read the class off the total: 0-49 Standard | 50-99 Table 2 | 100-149 Table 4 | 150-199 Table 6 | 200-249 Table 8 | 250+ Decline.\n\nA decline band in any single table declines the file whatever the total comes to. Three preferred classes sit above Standard. Each needs **zero debits** and, in addition:\n\n- **Standard Plus**: BMI 27.9 or under; BP 138/88 or under and untreated; TC 240 or under with ratio 5.0 or under; A1c 6.4 or under with no diabetes diagnosis; tobacco never or quit over 5 yr; 0 moving violations and no DUI in 5 yr; occupation class A or B; no hazardous avocation; at most 1 family-history event; no sleep apnea, no alcohol history, normal liver chemistry.\n- **Preferred**: BMI 27.0 or under; BP 134/84 or under and untreated; TC 220 or under with ratio 4.5 or under; A1c 6.0 or under with no diabetes diagnosis; tobacco never or quit over 5 yr; 0 moving violations and no DUI ever; occupation class A; no hazardous avocation; no qualifying family history; no sleep apnea, no alcohol history, normal liver chemistry.\n- **Preferred Plus**: BMI 26.0 or under; BP 128/80 or under and untreated; TC 200 or under with ratio 4.0 or under; A1c 5.6 or under with no diabetes diagnosis; tobacco never; 0 moving violations and no DUI ever; occupation class A; no hazardous avocation; no qualifying family history; no sleep apnea, no alcohol history, normal liver chemistry.\n\nZero debits meeting none of the three is **Standard**.\n\n## 3. Build\n\nHeight, weight and BMI are on the file. Read the BMI: up to 18.9 25 | 19.0-27.9 0 | 28.0-30.9 25 | 31.0-33.9 50 | 34.0-36.9 100 | 37.0-39.9 150 | 40.0+ decline.\n\nFor a recent change in build, refer to underwriting judgement.\n\n## 4. Blood pressure\n\nUntreated reading, systolic: up to 138 0 | 139-148 25 | 149-158 50 | 159-168 100 | 169+ decline. Diastolic: up to 88 0 | 89-94 25 | 95-99 50 | 100-104 100 | 105+ decline. Charge the worse of the two bands. On treatment: 25.\n\nFor a treated condition whose reading is now at target, refer to underwriting judgement.\n\n## 5. Lipids\n\nTotal cholesterol: up to 240 0 | 241-280 25 | 281-320 50 | 321+ 75. Total cholesterol to HDL ratio: up to 5.0 0 | 5.1-6.5 25 | 6.6+ 50. Both tables are in force.\n\nWhere two tables in this manual point at different bands, refer to underwriting judgement.\n\n## 6. Diabetes and A1c\n\nA1c: up to 6.4 0 | 6.5-6.9 50 | 7.0-7.9 75 | 8.0-8.9 125 | 9.0+ decline. Type 2 diabetes is rated on the A1c. The year of diagnosis and any medication are on the file.\n\nFor late-onset metabolic disease that is well controlled, refer to underwriting judgement.\n\n## 7. Tobacco\n\nNever used, or quit more than 5 years ago: non-smoker, 0. Quit 1 to 5 years ago: 25. Current use: smoker rates - in this manual the smoker class runs on the same debit ladder, so add 75 and cap the best available class at Standard. A nicotine-positive laboratory result against a declared *never* makes the applicant a current user.\n\n## 8. Family history\n\nA parent or sibling with myocardial infarction, stroke or cancer before age 60: 25 per event, capped at 50. The applicant's own age does not change the charge.\n\nFor applicants well past the family-history qualifying age, refer to underwriting judgement.\n\n## 9. Occupation\n\nClass A (0): office administrator, regional sales manager, software engineer, schoolteacher, pharmacist. Class B (25): delivery driver, site foreman, welder, commercial fisher's deckhand, warehouse supervisor. Class C (50, hazardous): structural steel erector, underground miner, offshore rig hand, logging feller, high-voltage lineman.\n\n## 10. Avocations\n\nFor private aviation, refer to underwriting judgement. Where no referral is available, rate private aviation as a hazardous avocation: 50. Scuba, by maximum depth: up to 60 ft 0 | 61-100 ft 25 | 101+ ft 50. Technical rock or ice climbing: 50. Amateur motorsport competition: a flat extra of $5.00 per $1,000.\n\nWhere a hazardous occupation and a hazardous avocation appear together, refer to underwriting judgement.\n\n## 11. Driving record\n\nMoving violations in the last 3 years: 0-1 0 | 2 25 | 3+ 50. A DUI conviction: rate 50.\n\nFor a recent motoring conviction, refer to underwriting judgement.\n\n## 12. Alcohol and liver\n\nElevated liver enzymes: 25. A history of treatment for alcohol use: 50.\n\nFor borderline liver chemistry, refer to underwriting judgement.\n\n## 13. Sleep apnea\n\nDiagnosed sleep apnea: 50.\n\nFor treated sleep-disordered breathing, refer to underwriting judgement.\n\n## 14. Financial underwriting\n\nThe face amount applied for, plus cover already in force, should sit within the income multiple for the applicant's age: 18-30 30x | 31-40 25x | 41-50 20x | 51-60 15x | 61+ 10x.\n\nWhere the face amount is large relative to income, refer to underwriting judgement.\n\n## 15. Modifiers\n\nA flat extra is charged per $1,000 of face amount in one of three bands: $2.50 / $5.00 / $7.50. An exclusion rider removes one named hazard from cover and carries no charge; name the hazard excluded. Either modifier makes the decision *accept with modification*.\n\n## 16. Where this manual stops\n\nFor combinations of cardiac risk factors, refer to underwriting judgement. A referral line means the manual has reached the edge of what it can tell you. Rate the file on what the tables do say, and expect the reviewer to correct you.\n",
+    "senior_answers": [
+      {
+        "question": "Section 2 says three preferred classes sit above Standard but does not say where they are offered. Are Preferred and Standard Plus available on a whole life policy of $250,000 for a 55-year-old, or is any product, face-amount or age restriction applied before a preferred class can be awarded?",
+        "answer": "That is in the manual, under Occupation. Class A (0): office administrator, regional sales manager, software engineer, schoolteacher, pharmacist. Class B (25): delivery driver, site foreman, welder, commercial fisher's deckhand, warehouse supervisor. Class C (50, hazardous): structural steel erector, underground miner, offshore rig hand, logging feller, high-voltage lineman."
+      },
+      {
+        "question": "The file declares no avocation but notes the applicant is a season-ticket holder at the local rugby club. Is spectator attendance at a sport treated as an avocation under section 10, or is it disregarded?",
+        "answer": "That is in the manual, under Avocations. For private aviation, refer to underwriting judgement. Where no referral is available, rate private aviation as a hazardous avocation: 50. Scuba, by maximum depth: up to 60 ft 0 | 61-100 ft 25 | 101+ ft 50. Technical rock or ice climbing: 50. Amateur motorsport competition: a flat extra of $5.00 per $1,000.\n\nWhere a hazardous occupation and a hazardous avocation appear together, refer to underwriting judgement."
+      },
+      {
+        "question": "Section 16 refers combinations of cardiac risk factors to underwriting judgement. Where every individual reading falls inside its zero-debit band but blood pressure (129/71 untreated) and lipids (total cholesterol 214, ratio 4.2) both sit in the upper part of those bands, does that combination attract any debit or bar a preferred class, or is it rated as zero?",
+        "answer": "That is in the manual, under Rating classes and the debit bands. Add the debits from sections 3-14 and read the class off the total: 0-49 Standard | 50-99 Table 2 | 100-149 Table 4 | 150-199 Table 6 | 200-249 Table 8 | 250+ Decline.\n\nA decline band in any single table declines the file whatever the total comes to. Three preferred classes sit above Standard. Each needs **zero debits** and, in addition:\n\n- **Standard Plus**: BMI 27.9 or under; BP 138/88 or under and untreated; TC 240 or under with ratio 5.0 or under; A1c 6.4 or under with no diabetes diagnosis; tobacco never or quit over 5 yr; 0 moving violations and no DUI in 5 yr; occupation class A or B; no hazardous avocation; at most 1 family-history event; no sleep apnea, no alcohol history, normal liver chemistry.\n- **Preferred**: BMI 27.0 or under; BP 134/84 or under and untreated; TC 220 or under with ratio 4.5 or under; A1c 6.0 or under with no diabetes diagnosis; tobacco never or quit over 5 yr; 0 moving violations and no DUI ever; occupation class A; no hazardous avocation; no qualifying family history; no sleep apnea, no alcohol history, normal liver chemistry.\n- **Preferred Plus**: BMI 26.0 or under; BP 128/80 or under and untreated; TC 200 or under with ratio 4.0 or under; A1c 5.6 or under with no diabetes diagnosis; tobacco never; 0 moving violations and no DUI ever; occupation class A; no hazardous avocation; no qualifying family history; no sleep apnea, no alcohol history, normal liver chemistry.\n\nZero debits meeting none of the three is **Standard**."
+      }
+    ]
+  },
+  "response_schema": {
+    "$defs": {
+      "ModifierResponse": {
+        "properties": {
+          "type": {
+            "description": "flat_extra or exclusion",
+            "title": "Type",
+            "type": "string"
+          },
+          "detail": {
+            "description": "The hazard the modifier applies to, e.g. aviation.",
+            "title": "Detail",
+            "type": "string"
+          },
+          "amount_per_1000": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "flat_extra only: dollars per $1,000 of face.",
+            "title": "Amount Per 1000"
+          }
+        },
+        "required": [
+          "type",
+          "detail"
+        ],
+        "title": "ModifierResponse",
+        "type": "object"
+      }
+    },
+    "description": "The rating. ``rating_class`` is null only when the decision is postpone.",
+    "properties": {
+      "decision": {
+        "description": "accept | accept_with_modification | postpone | decline",
+        "title": "Decision",
+        "type": "string"
+      },
+      "rating_class": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "A class name from the manual, or null for a postpone.",
+        "title": "Rating Class"
+      },
+      "modifiers": {
+        "items": {
+          "$ref": "#/$defs/ModifierResponse"
+        },
+        "title": "Modifiers",
+        "type": "array"
+      },
+      "drivers": {
+        "description": "The factors that drove the rating.",
+        "items": {
+          "type": "string"
+        },
+        "title": "Drivers",
+        "type": "array"
+      },
+      "rationale": {
+        "default": "",
+        "description": "At most 80 words.",
+        "title": "Rationale",
+        "type": "string"
+      }
+    },
+    "required": [
+      "decision"
+    ],
+    "title": "DecideResponse",
+    "type": "object"
+  }
+}

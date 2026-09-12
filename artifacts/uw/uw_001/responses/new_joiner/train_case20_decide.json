@@ -1,0 +1,16 @@
+{
+  "decision": "decline",
+  "rating_class": "Decline",
+  "modifiers": [],
+  "drivers": [
+    "total cholesterol in the top lipid band",
+    "total cholesterol to HDL ratio",
+    "A1c in the 6.5-6.9 band without diabetes diagnosis",
+    "two qualifying parental family-history events (stroke, cancer before 60)",
+    "build, BMI in the 28.0-30.9 band",
+    "untreated systolic blood pressure",
+    "tobacco quit within the last 5 years",
+    "class B occupation"
+  ],
+  "rationale": "Debits across build, untreated systolic BP, total cholesterol and ratio (both lipid tables applied), A1c 6.8 without diagnosis, tobacco quit under 5 years, two qualifying parental events, and class B occupation total above the 250 decline threshold. Manual refers combined cardiac risk factors and applicant age past family-history qualifying age to judgement; I used judgement and charged the tables as written, since discounting either referred item alone still leaves the file in the decline band. Financials within 10x."
+}

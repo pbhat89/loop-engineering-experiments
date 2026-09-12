@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "Build: BMI in the overweight debit band",
+    "Untreated blood pressure, systolic in the first debit band",
+    "Lipids: total cholesterol above target and an adverse total-cholesterol-to-HDL ratio, both tables charged",
+    "A1c in the pre-diabetic debit band with no diabetes diagnosis",
+    "Interaction charge for three clustered cardiac risk factors (blood pressure, lipids, A1c)"
+  ],
+  "rationale": "Debits for build, untreated systolic BP, both lipid tables and the A1c band, plus the house interaction charge for three clustered cardiac risk factors. Section 5's referral I settled by judgement: the manual says both lipid tables are in force, so both are charged, and the class is Table 6 either way. No single table reaches a decline band, and cover sits well inside the 15x income multiple for age 53."
+}

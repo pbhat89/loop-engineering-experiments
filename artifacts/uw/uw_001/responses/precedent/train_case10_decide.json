@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "diabetes/A1c",
+    "private aviation",
+    "tobacco",
+    "driving record"
+  ],
+  "rationale": "Build BMI 33.3 (50), A1c 6.6 type 2 diabetes (50), private aviation as hazardous avocation per manual fallback (50), tobacco quit under 5 years (25), two violations (25): total 200, Table 8. BP, lipids, family history, occupation, liver, financials clean. Judgement used: the 16 lb loss reads as intentional with the new diet-controlled diagnosis, so no extra build charge; late-onset controlled diabetes rated on the A1c table. Precedents not comparable."
+}

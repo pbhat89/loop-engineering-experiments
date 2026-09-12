@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "A1c in the 6.5-6.9 band with no diabetes diagnosis",
+    "Treated hypertension, reading at target on treatment",
+    "Tobacco quit within the last five years",
+    "Family history: brother's myocardial infarction before 60",
+    "Elevated liver enzymes",
+    "High total cholesterol offset by a favourable TC/HDL ratio"
+  ],
+  "rationale": "Debits: treated BP 25 (senior: treatment debit only at 140/88), A1c 6.7 50, tobacco quit within 5 years 25, brother's MI at 47 25, elevated liver enzymes 25 - total 150, Table 6. Lipids charged on the ratio band only (4.2, zero) per senior guidance despite TC 305. Section 16 refers cardiac-risk combinations to judgement; no referral available, so I used judgement and took the straight sum. Coverage well within 25x income."
+}

@@ -1,0 +1,18 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "build",
+    "occupation class",
+    "climbing",
+    "liver enzymes"
+  ],
+  "rationale": "Build BMI 28.3, class C occupation and liver enzymes above twice normal carry debits; BP, lipids, A1c, tobacco, driving, family history and financials are clean. Hazardous occupation with hazardous avocation is a manual referral; by judgement, consistent with prior reviewer practice, the climbing takes an exclusion rider rather than debits. Enzymes over twice normal are not mild, so the liver charge stands. Total lands in Table 4."
+}

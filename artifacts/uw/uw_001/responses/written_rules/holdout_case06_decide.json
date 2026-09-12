@@ -1,0 +1,17 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "technical rock climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "build",
+    "occupation class",
+    "climbing"
+  ],
+  "rationale": "Cover $500,000 inside the 25x ceiling; no DUI. Referrals live: weight down 23 lb, half added back under judgement - adjusted BMI 31.5, second band; class C lineman with technical climbing, so occupation charges and climbing is carved out by exclusion rider, no avocation debit; compliant CPAP apnea credited to zero. Other tables zero; bees are not an avocation. One cardiac table, no interaction. Total 100 reads Table 4; charges close the preferred classes. Accept with modification."
+}

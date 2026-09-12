@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "liver enzymes",
+    "sleep apnea"
+  ],
+  "rationale": "Tables: liver enzymes above twice normal 25; diagnosed sleep apnea 50; everything else zero. Total 75, Table 2. Treated apnea is a judgement referral: documented CPAP compliance earns credit, but with unexplained enzyme elevation over 2x ULN and A1c 6.1 I used judgement not to waive it to Standard; Table 2 holds either way. Abnormal liver chemistry and apnea bar the preferred classes. Financial: $900k total, well within the 25x ceiling."
+}

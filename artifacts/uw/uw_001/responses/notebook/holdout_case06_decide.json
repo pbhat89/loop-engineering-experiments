@@ -1,0 +1,17 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "technical rock climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "build",
+    "occupation class",
+    "climbing"
+  ],
+  "rationale": "Weight lost in the past year added back at half puts adjusted BMI about 31.4, build 50. High-voltage lineman class C, 50. Total 100, Table 4. Hazardous occupation with hazardous avocation: judgement applied, climbing taken as an exclusion rider rather than debits. Sleep apnea with documented CPAP compliance: judgement applied, no debit. BP, lipids, A1c, driving, liver, family history clean. Face plus in-force well within 25x income."
+}

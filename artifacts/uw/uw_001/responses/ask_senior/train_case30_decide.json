@@ -1,0 +1,11 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "financial underwriting: face plus in-force far above the age-44 income multiple",
+    "treated blood pressure, reading not at target (only medical debit on the file)",
+    "elevated liver enzymes below twice normal with no alcohol history (no debit)"
+  ],
+  "rationale": "Total face of $2,600,000 sits at roughly 50x income, far above the 20x limit at age 44, and above $1,000,000, so it is postponed for financial evidence rather than rated. Medically the file is light: build, lipids, A1c, family history, occupation and driving all clear; liver enzymes below twice normal with no alcohol history carry nothing. Treated blood pressure above target would be the only debit; I used judgement there."
+}

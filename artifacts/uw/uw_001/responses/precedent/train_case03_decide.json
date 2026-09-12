@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "build"
+  ],
+  "rationale": "BMI 29.3 charges 25 debits; all other tables read zero (BP 128/71 untreated, TC 175 ratio 4.6, A1c 6.2 undiagnosed, never-smoker with negative lab, clean MVR, class A, no avocation, family history, liver or apnea findings). Face is well within 25x income. Total 25 is Standard; build alone bars preferred. Overweight with A1c 6.2 and HDL 38 is a cardiometabolic cluster the manual refers to judgement; I used judgement and held to the tables. Precedents too distant to apply."
+}

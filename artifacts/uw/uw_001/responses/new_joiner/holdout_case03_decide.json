@@ -1,0 +1,18 @@
+{
+  "decision": "accept",
+  "rating_class": "Preferred",
+  "modifiers": [],
+  "drivers": [
+    "zero debits across all tables",
+    "normal build with stable weight",
+    "untreated blood pressure within Preferred limits",
+    "total cholesterol and ratio within Preferred limits",
+    "normal A1c with no diabetes diagnosis",
+    "ex-smoker quit over five years with negative nicotine screen",
+    "clean driving record",
+    "class A occupation with no hazardous avocation",
+    "no qualifying family history",
+    "face plus in-force well within income multiple"
+  ],
+  "rationale": "No debits on any table: build, blood pressure, lipids, A1c, tobacco, family history, occupation, avocation, driving, liver and sleep apnea all charge zero. Total cover of $500,000 sits far inside the 15x income multiple for age 55. Every Preferred threshold is met. Preferred Plus is missed on three counts: systolic pressure exceeds the ceiling, total cholesterol exceeds the ceiling, and Preferred Plus requires never-smoker status. Rugby season ticket is not an underwriting factor."
+}

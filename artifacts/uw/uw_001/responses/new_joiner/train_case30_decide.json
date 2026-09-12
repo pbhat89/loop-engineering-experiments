@@ -1,0 +1,9 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "Financial underwriting: face amount plus in-force coverage far exceeds the income multiple for age"
+  ],
+  "rationale": "Face $2.5M plus $100K in force is $2.6M on $52K income; the age-44 allowance is 20x, about $1.04M. The manual refers a face this large relative to income to judgement; with no referral I postpone pending financial justification rather than issue two and a half times the supported amount on a whole-life premium this income cannot carry. Provisionally the medicals rate Table 2: treated hypertension above target and mildly elevated liver enzymes, the latter a judgement call."
+}

@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "diagnosed sleep apnea, untreated (no CPAP in use)",
+    "tobacco quit within the last 5 years",
+    "elevated liver enzymes (under 2x upper limit of normal)"
+  ],
+  "rationale": "Debits: diagnosed sleep apnea untreated 50, tobacco quit within 5 years 25, elevated liver enzymes 25; total 100 reads Table 4. Build, BP, lipids, A1c, family history, occupation, driving and finances (900k total vs 15x income) carry nothing. Liver chemistry is mild with no alcohol history; the manual refers borderline chemistry to judgement, so I applied the elevated-enzyme table as written. Preferred classes are unavailable with debits present."
+}

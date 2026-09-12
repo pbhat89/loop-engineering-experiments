@@ -1,0 +1,15 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "A1c",
+    "total cholesterol",
+    "blood pressure treatment",
+    "tobacco",
+    "family history",
+    "liver enzymes",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Tables total 200: treated hypertension 25, TC 305 50, A1c 6.7 50, tobacco quit within 5 years 25, brother MI at 47 25, liver enzymes over 2x 25; build, ratio, occupation, driving, financial all clear. Judgement used twice: TC and ratio tables disagree, and hypertension, dysglycaemia, family history and recent tobacco form a cardiac-risk cluster. Protective HDL 73 offsets the cluster loading, so held at Table 8 rather than loading further or crediting down."
+}

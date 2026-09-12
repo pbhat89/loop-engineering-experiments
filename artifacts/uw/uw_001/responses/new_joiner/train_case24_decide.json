@@ -1,0 +1,14 @@
+{
+  "decision": "decline",
+  "rating_class": "Decline",
+  "modifiers": [],
+  "drivers": [
+    "hazardous occupation (class C, high-voltage lineman)",
+    "hazardous avocation (technical trad rock climbing)",
+    "moving violations (three in the last three years)",
+    "recent DUI conviction",
+    "elevated total cholesterol",
+    "elevated liver enzymes above twice normal"
+  ],
+  "rationale": "Debits: total cholesterol 25, class C occupation 50, technical climbing 50, three violations 50, DUI 50, elevated liver enzymes 25 - total 250, the decline band. Judgement used where the manual refers: lipid tables disagree (charged TC band, ratio clean), hazardous occupation with hazardous avocation charged additively, recent 2025 DUI charged at table. Build, BP, A1c, tobacco, family history and financial multiple are all clean but cannot offset."
+}

@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "tobacco",
+    "total cholesterol",
+    "lipid ratio",
+    "sleep apnea"
+  ],
+  "rationale": "Tobacco quit within five years, total cholesterol above 320 with a ratio over 5.0 (both lipid tables in force), and diagnosed sleep apnea without CPAP drive the debits into the Table 6 band. Build, blood pressure, A1c, driving, liver, occupation and family history are clean. Lipid tables point at different bands and no other cardiac factor is debited, so I used judgement and charged both without an interaction load. Face plus in-force sits well within the income multiple."
+}

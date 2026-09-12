@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "A1c",
+    "tobacco",
+    "aviation",
+    "moving violations",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Cover $350,000 sits inside the 15x ceiling of $1.65M; no DUI. Build (BMI 33.3), A1c 6.6, tobacco quit within five years, moving violations and private aviation charged as the tables read. Judgement used on three referred lines: recent weight loss rated on BMI as it stands; diet-controlled type 2 diabetes rated on its A1c; aviation on the manual's fallback. Build and A1c combination considered under judgement, nothing added. Total reads Table 8; accept."
+}

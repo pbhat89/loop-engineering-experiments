@@ -1,0 +1,17 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "build",
+    "occupation class",
+    "climbing"
+  ],
+  "rationale": "Build: BMI 29.9 with 23 lb lost in 12 months; by judgement I added back half the loss (BMI about 31.5), one band up. Class C occupation debited. Hazardous occupation and climbing together: by judgement, and consistent with precedent, climbing is removed by exclusion rider rather than debited. Sleep apnea with documented CPAP compliance: by judgement, no debit. BP, lipids, A1c, tobacco, family history, driving, liver and financials are clear. Total lands in Table 4."
+}

@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build (BMI in the 31.0-33.9 band)",
+    "type 2 diabetes with A1c in the 6.5-6.9 band",
+    "private aviation rated as a hazardous avocation",
+    "tobacco quit within the last 5 years",
+    "two moving violations in the last 3 years"
+  ],
+  "rationale": "Debits: BMI 33.3 build 50; A1c 6.6 with type 2 diabetes 50; private aviation rated hazardous per manual fallback 50; tobacco quit within 5 years 25; two moving violations 25. Total 200, Table 8. BP, lipids, family history, occupation, liver, sleep apnea clear; cover within the 15x income multiple. Judgement used: 16 lb loss treated as intentional under diet control and rated at current build; late-onset diet-controlled diabetes rated on the A1c table."
+}

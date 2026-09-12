@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "Driving record: one moving violation inside the last three years charges nothing on the section 11 table but fails the Standard Plus requirement of no moving violations in five years",
+    "Blood pressure: untreated systolic sits above the Preferred and Preferred Plus thresholds while staying inside the zero-debit band",
+    "Build, lipids, A1c, tobacco, family history, occupation, avocation, alcohol and liver, sleep apnea and financial multiple all clean, giving a zero debit total",
+    "Section 16 combination of cardiac risk factors in a male of this age, referred to underwriting judgement with no referral available"
+  ],
+  "rationale": "Every table charges zero: BMI 24.0, BP 135/81 untreated, TC 182 ratio 3.7, A1c 6.1 with no diagnosis, class A occupation, no family history, cover well inside the 20x multiple. One moving violation inside three years costs nothing but bars Standard Plus, which requires none in five years; 135 systolic also exceeds Preferred. Zero debits meeting no preferred tier is Standard. Section 16's cardiac-combination referral was unavailable, so I used judgement and added no debits."
+}

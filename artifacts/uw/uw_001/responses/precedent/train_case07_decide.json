@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard Plus",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure"
+  ],
+  "rationale": "Zero debits: BMI 24.0, TC 215/ratio 3.6, A1c 6.0 without diagnosis, never-smoker, clean MVR, class A, no avocation, no family history, normal liver, no apnea. Financial: $1.4M total against $3.9M capacity (15x at 53). Diastolic 86 exceeds the Preferred 84 and Preferred Plus 80 limits, so Standard Plus is the best class met. Nearest precedents do not alter this; no judgement referral needed."
+}

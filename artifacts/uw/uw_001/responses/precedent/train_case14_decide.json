@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "sleep apnea"
+  ],
+  "rationale": "BMI 32.4 takes a build debit; diagnosed sleep apnea with no CPAP is untreated, so the full apnea charge applies (the manual's referral covers treated apnea only). Together: Table 4. BP, lipids, A1c, tobacco, family history, occupation, driving, liver and financials ($900k cover within the 20x limit) add nothing. Judgement used on the 28 lb recent weight loss: build rated on BMI as read. The Standard apnea precedent reads as a treated case and does not govern."
+}

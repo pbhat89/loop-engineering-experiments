@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "A1c 6.7 in the 6.5-6.9 band (type 2 diabetes rated on A1c)",
+    "Late-onset diabetes credit: first diagnosed after age 45 with A1c below 7.0, per senior guidance"
+  ],
+  "rationale": "A1c 6.7 rates 50 debits (section 6). Senior confirmed house practice: type 2 diabetes first diagnosed after 45 with A1c below 7.0 earns a 25-debit credit; diagnosed 2019 at about 49, diet controlled, so net 25. Build, BP, lipids, tobacco, family history, occupation, driving, liver and financial multiple (15x) carry zero. Total 25 is Standard; the diabetes diagnosis bars preferred classes. Judgement used on the section 16 cardiac-combination referral: no additional charge."
+}

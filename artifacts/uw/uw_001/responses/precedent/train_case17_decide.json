@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "diabetes (A1c)",
+    "sleep apnea",
+    "moving violations",
+    "treated hypertension"
+  ],
+  "rationale": "Treated hypertension (140/85, above target), A1c 6.8 with type 2 diabetes, untreated sleep apnea and three moving violations sum to Table 6; other sections are clean. Judgement used: the 17 lb weight loss reads as intentional in a diet-controlled diabetic, so no build charge; diabetes diagnosed at 49 is not late-onset, so the A1c table stands; the hypertension-diabetes-apnea cluster is a cardiac-risk combination, noted but rated on the tables as written."
+}

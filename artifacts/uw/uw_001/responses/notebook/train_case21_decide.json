@@ -1,0 +1,16 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Standard",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "aviation",
+      "amount_per_1000": 2.5
+    }
+  ],
+  "drivers": [
+    "tobacco",
+    "aviation"
+  ],
+  "rationale": "Build, blood pressure, lipids, A1c, family history, occupation, driving, liver and sleep all carry no debits and the face amount sits well within the income multiple. Tobacco quit within the last 5 years takes the 1-5 year charge and bars the preferred classes. Private aviation is a referral item; using judgement, and consistent with the reviewer's earlier markup, modest-hours private flying takes a first-band flat extra rather than debits. Total debits read Standard."
+}

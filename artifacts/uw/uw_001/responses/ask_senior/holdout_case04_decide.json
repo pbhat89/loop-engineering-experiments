@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "Family history: two first-degree relatives with cancer before 60, both the same cancer",
+    "Elevated liver enzymes"
+  ],
+  "rationale": "Build, blood pressure, lipids, A1c, tobacco, occupation, driving and finance all score zero; cover sits well inside 25x income. Family history: two first-degree cancers before 60 gives 50 at the cap, plus 25 for the same cancer in both per the senior - 75. Elevated liver enzymes 25. Total 100, Table 4. Section 12 gives one charge whatever the degree; I used judgement to rate rather than postpone."
+}

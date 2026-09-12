@@ -1,0 +1,9 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "DUI conviction within the last 3 years (2024 conviction against a 2026 application)"
+  ],
+  "rationale": "Senior underwriter's guidance: a DUI conviction within the last 3 years is a postpone, not a rating. The 2024 conviction falls inside that window against a 2026 application, so the file is postponed rather than rated. If re-presented once the DUI is over 3 years old, the remaining factor would be diagnosed sleep apnea without CPAP (section 13), with build, BP, lipids, A1c, family history, occupation and financials all clear."
+}

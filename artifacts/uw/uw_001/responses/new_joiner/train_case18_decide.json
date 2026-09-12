@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "total cholesterol",
+    "total cholesterol to HDL ratio",
+    "diagnosed sleep apnea, untreated",
+    "tobacco quit within the last 5 years"
+  ],
+  "rationale": "Debits: total cholesterol 323 (75) and ratio 5.3 (25), both lipid tables in force; tobacco quit within 5 years (25); diagnosed sleep apnea, untreated (50). Build, BP, A1c, family history, occupation, driving, liver and financials clear at 0. Total 175, Table 6. Manual refers combined cardiac risk factors and lipid tables pointing to different bands to judgement; none available, so I used judgement and rated on the tables as written. Face within 15x income."
+}

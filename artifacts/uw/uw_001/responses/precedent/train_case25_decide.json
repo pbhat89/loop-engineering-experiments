@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "occupation class",
+    "build",
+    "moving violations"
+  ],
+  "rationale": "Debits: build (BMI 30.1, weight stable) 25; hazardous occupation class C, high-voltage lineman, 50; two moving violations in three years 25. Blood pressure, lipids, A1c, tobacco, family history, liver, sleep apnea and the financial multiple ($650k total against a $4.375M allowance) add nothing. Total 100 reads Table 4. No hazardous avocation, so no occupation-avocation referral and no exclusion needed. Precedent supports 25 for this build band and 50 for class C."
+}

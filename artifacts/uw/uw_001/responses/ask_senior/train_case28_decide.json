@@ -1,0 +1,13 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "Face amount far above the income multiple for age 68 - financial evidence required before the file can be rated",
+    "Total at risk (applied plus in force) over 20 times income on a face above $1,000,000",
+    "Tobacco quit within the last 5 years (only scoring factor on the medical side)",
+    "Sleep apnea with documented CPAP compliance carried at no debit on judgement",
+    "Family history at 58 dropped on judgement, applicant being past 60"
+  ],
+  "rationale": "Financial underwriting governs. Face $1,500,000 exceeds $1,000,000 and total at risk $1,600,000 against $60,000 income is roughly 27x, far past the age 61+ 10x multiple and past 20x; the desk postpones for financial evidence rather than rating. Medically the file is light: only tobacco quit within 5 years scores, with CPAP-compliant apnea and family history carried at zero on underwriting judgement."
+}

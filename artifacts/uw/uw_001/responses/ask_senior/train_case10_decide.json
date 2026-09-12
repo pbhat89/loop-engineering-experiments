@@ -1,0 +1,19 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 6",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "aviation",
+      "amount_per_1000": 2.5
+    }
+  ],
+  "drivers": [
+    "build (recent weight loss added back at half before reading the BMI band)",
+    "type 2 diabetes rated on A1c, with late-onset well-controlled credit",
+    "tobacco quit within the last 5 years",
+    "two moving violations in the last 3 years",
+    "private aviation under 100 hours per year (flat extra, no debits)"
+  ],
+  "rationale": "Build read at 208 lb with half the 16 lb loss added back, BMI 34.6, band 34.0-36.9. Type 2 diabetes with A1c 6.6, first diagnosed after 45 and under 7.0, credited. Tobacco quit within 5 years and two moving violations charged. Private aviation under 100 hrs/yr takes a $2.50 flat extra, no debits. BP, lipids, family history, occupation, liver and financial clear. Judgement used on the cardiac-risk combination: no load beyond the tables. Total sits in Table 6."
+}

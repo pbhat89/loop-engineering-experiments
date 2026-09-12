@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "Diagnosed sleep apnea, untreated (no CPAP)",
+    "Type 2 diabetes with A1c above the controlled threshold",
+    "Three moving violations in the last 3 years",
+    "Hypertension on treatment"
+  ],
+  "rationale": "Debits: treated hypertension 25, type 2 diabetes with A1c 6.8 50, three moving violations 50, untreated sleep apnea 50; total 175, Table 6. Build, lipids, tobacco, family history, occupation, avocation, liver and financial multiple carry nothing. Judgement used: the 17 lb weight loss is treated as intentional in a diet-controlled diabetic, no extra charge; diabetes rated on the A1c table since 6.8 exceeds the controlled threshold; no further loading for the combination of cardiac risk factors."
+}

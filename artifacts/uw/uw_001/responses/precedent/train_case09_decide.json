@@ -1,0 +1,16 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "DUI",
+    "moving violations",
+    "blood pressure reading",
+    "total cholesterol",
+    "lipid ratio",
+    "A1c",
+    "aviation avocation",
+    "cardiac risk interaction"
+  ],
+  "rationale": "DUI in 2024 is a recent motoring conviction; the manual refers it to judgement and house precedent postpones a DUI of that vintage, so I postpone rather than decide now. Rated on the tables the file would carry BP 25, TC 25, ratio 25, A1c 50, private aviation 50, violations 25, DUI 50: 250 plus a cardiac-cluster interaction, a decline. DUI seasoning and a workup of the undiagnosed 6.8 A1c may change that. Judgement used."
+}

@@ -1,0 +1,18 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "technical rock climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "hazardous occupation (class C high-voltage lineman)",
+    "build (BMI in the 28.0-30.9 band)",
+    "elevated liver enzymes",
+    "technical trad rock climbing alongside a class C occupation (exclusion rider in place of avocation debits)"
+  ],
+  "rationale": "Debits: build 25 (BMI 28.3), class C occupation 50, elevated liver enzymes 25; total 100, Table 4. Per senior guidance, the climbing avocation alongside a class C occupation takes an exclusion rider instead of debits. Judgement used: enzymes over 2x ULN are not borderline, so charged at the table 25 rather than postponed; BMI, HDL and A1c each sit inside their own bands, so no additional cardiac-combination charge. Financial limit satisfied; BP, lipids, tobacco, driving, family history clear."
+}

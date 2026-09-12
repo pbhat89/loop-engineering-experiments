@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "DUI conviction (2024)",
+    "Diagnosed sleep apnea, untreated (no CPAP in use)"
+  ],
+  "rationale": "Build, BP, lipids, A1c, tobacco, family history, occupation, avocation and financials all carry zero debits. Two factors drive the rating: a 2024 DUI conviction (50) and diagnosed sleep apnea without CPAP (50). Total 100 debits reads Table 4. The DUI is recent, which the manual refers to judgement; with no referral available I applied the table charge rather than postponing. Untreated apnea takes the full charge; the treated-apnea referral does not apply."
+}

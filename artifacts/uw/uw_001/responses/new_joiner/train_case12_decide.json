@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "elevated liver enzymes above twice the upper limit of normal, no alcohol history",
+    "diagnosed sleep apnea, CPAP-compliant"
+  ],
+  "rationale": "All base factors are clean: build, blood pressure, lipids, A1c, tobacco, family history, occupation, driving and financial multiple carry no debits. Debits arise from liver enzymes above twice the upper limit of normal with no alcohol history, and from diagnosed sleep apnea. Treated sleep-disordered breathing is a referral point with no referral available, so I used judgement and applied the diagnosed-apnea table despite documented CPAP compliance. Total falls in the Table 2 band; no modifiers."
+}

@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "occupation class C (structural steel erector)",
+    "build (BMI in the 28.0-30.9 band)"
+  ],
+  "rationale": "Debits: build 25 (BMI 30.4, stable) and class C occupation 50, total 75, Table 2. Family-history charge for father's stroke at 55 is dropped per senior: applicant is over 60. BP, lipids, A1c, tobacco, driving, liver, sleep apnea all clean; no avocation, so no occupation-avocation referral. Financial: $600,000 total against a $1,750,000 limit at 10x. On section 16, I used judgement: with BMI the only cardiac finding, no combination charge applies."
+}

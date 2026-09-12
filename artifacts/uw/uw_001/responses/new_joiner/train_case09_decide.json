@@ -1,0 +1,16 @@
+{
+  "decision": "decline",
+  "rating_class": "Decline",
+  "modifiers": [],
+  "drivers": [
+    "untreated elevated blood pressure",
+    "elevated total cholesterol",
+    "elevated cholesterol-to-HDL ratio",
+    "A1c in diabetic range without diagnosis",
+    "private aviation rated as hazardous avocation",
+    "two moving violations in three years",
+    "recent DUI conviction",
+    "combination of cardiac risk factors"
+  ],
+  "rationale": "BP 147 untreated, TC 268 with ratio 5.3, A1c 6.8 undiagnosed, private aviation rated as hazardous avocation absent referral, two violations and a 2024 DUI together reach the decline band. Judgement used on aviation, the recent DUI and the combination of cardiac risk factors; each was rated on its own table. Build, tobacco, family history, occupation, liver, sleep and financials are clean; face sits within the income multiple."
+}

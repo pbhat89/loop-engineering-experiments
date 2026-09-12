@@ -1,0 +1,7 @@
+{
+  "questions": [
+    "Total cover on this file (face $1,750,000 applied for plus $250,000 already in force = $2,000,000) exceeds the age-40 multiple of 25x income ($68,000 x 25 = $1,700,000) by $300,000. When total cover exceeds the income multiple, which decision does the desk take: accept as applied, accept with the face reduced to fit the multiple, postpone pending financial justification, or decline?",
+    "Is there a margin above the income multiple within which the desk still accepts the face as applied without treating it as 'large relative to income'? If so, what is that margin, and does an overage of roughly 18% ($2,000,000 against $1,700,000) fall inside it?",
+    "This applicant's cardiac factors each sit in a zero-debit band on their own tables: untreated BP 127/85, total cholesterol 219 with ratio 4.5, and tobacco quit within the last 5 years (25 debits). Does the desk treat that as a 'combination of cardiac risk factors' and add debits beyond the tobacco charge, or is each factor rated on its own table only?"
+  ]
+}

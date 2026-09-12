@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "DUI conviction",
+    "sleep apnea"
+  ],
+  "rationale": "Build, BP, lipids, A1c, tobacco, family history, occupation and financials are all clear. Debits come from the 2024 DUI conviction and diagnosed sleep apnea without CPAP; together they read to Table 4. The DUI is recent, which the manual refers to judgement: with a clean MVR, normal liver chemistry and no alcohol history, I used judgement to rate it on the table rather than postpone. Nearest precedents were clean files and do not apply."
+}

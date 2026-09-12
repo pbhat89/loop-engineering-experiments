@@ -1,0 +1,19 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 6",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "amateur motorsport competition (club saloon racing)",
+      "amount_per_1000": 5.0
+    }
+  ],
+  "drivers": [
+    "hazardous occupation, class C (high-voltage lineman)",
+    "diagnosed sleep apnea",
+    "moving violations in the last 3 years",
+    "elevated liver enzymes",
+    "amateur motorsport competition (flat extra)"
+  ],
+  "rationale": "Build, BP, lipids, A1c, tobacco, family history and financials all clean. Debits: class C occupation, diagnosed sleep apnea, two moving violations, elevated liver enzymes; total reads Table 6. Club racing carries the motorsport flat extra at $5.00 per $1,000. The manual refers hazardous occupation plus hazardous avocation, treated apnea and borderline liver chemistry to judgement; with none available I charged each on its own table and kept the flat extra alongside the occupation debit."
+}

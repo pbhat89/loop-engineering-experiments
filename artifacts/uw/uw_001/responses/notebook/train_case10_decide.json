@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "A1c",
+    "tobacco",
+    "aviation",
+    "moving violations"
+  ],
+  "rationale": "Debits total 200: BMI 33.3 (50), A1c 6.6 with diet-controlled type 2 diabetes (50), tobacco quit within 5 years (25), private aviation as hazardous avocation per manual fallback (50), two moving violations (25). Table 8. Judgement used: the 16 lb loss reads as intentional under dietary control, so rated on current BMI; late-onset diabetes charged on the A1c table; obesity, diabetes and recent tobacco compound cardiac risk but each is already charged, no extra loading."
+}

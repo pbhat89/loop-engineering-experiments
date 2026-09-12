@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "blood pressure treatment",
+    "A1c",
+    "moving violations",
+    "sleep apnea"
+  ],
+  "rationale": "Weight lost in the past year added back at half puts BMI at 28.4, a build debit. Treated hypertension not yet at target, A1c 6.8, three moving violations and untreated sleep apnea complete the debits; total sits at Table 8. Judgement used on the diabetes: diagnosed at 49 with A1c near 7, not late-onset enough for a credit. Treated BP with diabetes noted as a cardiac combination; lipids clean, so no further charge. Within financial limits."
+}

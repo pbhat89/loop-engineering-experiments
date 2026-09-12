@@ -1,0 +1,99 @@
+{
+  "request_id": "uw_001:written_rules:train:case04:reflect:a1",
+  "run_id": "uw_001",
+  "condition": "written_rules",
+  "phase": "train",
+  "case_index": 4,
+  "case_id": "UW-T04",
+  "step": "reflect",
+  "attempt": 1,
+  "created_at": "2026-09-11T08:32:09+00:00",
+  "instructions": "Here is your house-rule book as it stands, the application you have just rated, the answer you gave and the reviewer's markup on it. Rewrite the whole book, in your own words, so that someone reading only the book would have got this application right. At most 25 entries; each entry says when it applies, what to do, and why. Return the complete markdown, not a diff.",
+  "payload": {
+    "case": {
+      "rendered": "Applicant: F, age 37.\nProduct: 30-year term, face $250,000.\nBuild: 5'9\", 165 lb, BMI 24.4; weight stable over the last 12 months.\nTobacco: never used; nicotine screen negative.\nBlood pressure: 139/83, untreated.\nLipids: total cholesterol 256, HDL 46, ratio 5.6.\nA1c: 6.6; no diabetes diagnosis.\nFamily history: mother MI at 51.\nOccupation: logging feller, class C.\nAvocation: none declared.\nDriving: 0 moving violation(s) in the last 3 years; no DUI.\nAlcohol and liver: liver enzymes normal; no alcohol history.\nSleep apnea: none reported.\nFinancial: income $260,000, $250,000 already in force.\nAlso on file: makes stained glass in a garage workshop.",
+      "fields": {
+        "sex": "F",
+        "age": 37,
+        "product": "30-year term",
+        "face_amount": 250000,
+        "height_in": 69,
+        "weight_lb": 165,
+        "bmi": 24.4,
+        "weight_change_lb_12mo": 0,
+        "tobacco_declared": "never",
+        "nicotine_lab": "negative",
+        "bp_systolic": 139,
+        "bp_diastolic": 83,
+        "bp_treated": false,
+        "bp_treatment_since": null,
+        "total_cholesterol": 256,
+        "hdl": 46,
+        "lipid_ratio": 5.6,
+        "a1c": 6.6,
+        "diabetes_dx_year": null,
+        "diabetes_medication": null,
+        "family_history": [
+          {
+            "relation": "mother",
+            "condition": "MI",
+            "site": null,
+            "age": 51
+          }
+        ],
+        "occupation": "logging feller",
+        "occupation_class": "C",
+        "avocation": {
+          "type": "none"
+        },
+        "mvr_violations": 0,
+        "dui_year": null,
+        "liver_enzymes": "normal",
+        "alcohol_treatment": false,
+        "sleep_apnea": false,
+        "cpap_compliant": false,
+        "annual_income": 260000,
+        "inforce_coverage": 250000,
+        "irrelevant_detail": "makes stained glass in a garage workshop"
+      }
+    },
+    "manual": "# Individual life underwriting manual (starter edition)\n\nThis is the whole of the written practice. Rate every application from it. Where it says *refer to underwriting judgement*, the manual has nothing more to give you.\n\n## 1. Decision vocabulary\n\nFour decisions and no others: **accept**; **accept with modification** (a flat extra and/or an exclusion rider); **postpone** (do not decide yet); **decline**.\n\n## 2. Rating classes and the debit bands\n\nAdd the debits from sections 3-14 and read the class off the total: 0-49 Standard | 50-99 Table 2 | 100-149 Table 4 | 150-199 Table 6 | 200-249 Table 8 | 250+ Decline.\n\nA decline band in any single table declines the file whatever the total comes to. Three preferred classes sit above Standard. Each needs **zero debits** and, in addition:\n\n- **Standard Plus**: BMI 27.9 or under; BP 138/88 or under and untreated; TC 240 or under with ratio 5.0 or under; A1c 6.4 or under with no diabetes diagnosis; tobacco never or quit over 5 yr; 0 moving violations and no DUI in 5 yr; occupation class A or B; no hazardous avocation; at most 1 family-history event; no sleep apnea, no alcohol history, normal liver chemistry.\n- **Preferred**: BMI 27.0 or under; BP 134/84 or under and untreated; TC 220 or under with ratio 4.5 or under; A1c 6.0 or under with no diabetes diagnosis; tobacco never or quit over 5 yr; 0 moving violations and no DUI ever; occupation class A; no hazardous avocation; no qualifying family history; no sleep apnea, no alcohol history, normal liver chemistry.\n- **Preferred Plus**: BMI 26.0 or under; BP 128/80 or under and untreated; TC 200 or under with ratio 4.0 or under; A1c 5.6 or under with no diabetes diagnosis; tobacco never; 0 moving violations and no DUI ever; occupation class A; no hazardous avocation; no qualifying family history; no sleep apnea, no alcohol history, normal liver chemistry.\n\nZero debits meeting none of the three is **Standard**.\n\n## 3. Build\n\nHeight, weight and BMI are on the file. Read the BMI: up to 18.9 25 | 19.0-27.9 0 | 28.0-30.9 25 | 31.0-33.9 50 | 34.0-36.9 100 | 37.0-39.9 150 | 40.0+ decline.\n\nFor a recent change in build, refer to underwriting judgement.\n\n## 4. Blood pressure\n\nUntreated reading, systolic: up to 138 0 | 139-148 25 | 149-158 50 | 159-168 100 | 169+ decline. Diastolic: up to 88 0 | 89-94 25 | 95-99 50 | 100-104 100 | 105+ decline. Charge the worse of the two bands. On treatment: 25.\n\nFor a treated condition whose reading is now at target, refer to underwriting judgement.\n\n## 5. Lipids\n\nTotal cholesterol: up to 240 0 | 241-280 25 | 281-320 50 | 321+ 75. Total cholesterol to HDL ratio: up to 5.0 0 | 5.1-6.5 25 | 6.6+ 50. Both tables are in force.\n\nWhere two tables in this manual point at different bands, refer to underwriting judgement.\n\n## 6. Diabetes and A1c\n\nA1c: up to 6.4 0 | 6.5-6.9 50 | 7.0-7.9 75 | 8.0-8.9 125 | 9.0+ decline. Type 2 diabetes is rated on the A1c. The year of diagnosis and any medication are on the file.\n\nFor late-onset metabolic disease that is well controlled, refer to underwriting judgement.\n\n## 7. Tobacco\n\nNever used, or quit more than 5 years ago: non-smoker, 0. Quit 1 to 5 years ago: 25. Current use: smoker rates - in this manual the smoker class runs on the same debit ladder, so add 75 and cap the best available class at Standard. A nicotine-positive laboratory result against a declared *never* makes the applicant a current user.\n\n## 8. Family history\n\nA parent or sibling with myocardial infarction, stroke or cancer before age 60: 25 per event, capped at 50. The applicant's own age does not change the charge.\n\nFor applicants well past the family-history qualifying age, refer to underwriting judgement.\n\n## 9. Occupation\n\nClass A (0): office administrator, regional sales manager, software engineer, schoolteacher, pharmacist. Class B (25): delivery driver, site foreman, welder, commercial fisher's deckhand, warehouse supervisor. Class C (50, hazardous): structural steel erector, underground miner, offshore rig hand, logging feller, high-voltage lineman.\n\n## 10. Avocations\n\nFor private aviation, refer to underwriting judgement. Where no referral is available, rate private aviation as a hazardous avocation: 50. Scuba, by maximum depth: up to 60 ft 0 | 61-100 ft 25 | 101+ ft 50. Technical rock or ice climbing: 50. Amateur motorsport competition: a flat extra of $5.00 per $1,000.\n\nWhere a hazardous occupation and a hazardous avocation appear together, refer to underwriting judgement.\n\n## 11. Driving record\n\nMoving violations in the last 3 years: 0-1 0 | 2 25 | 3+ 50. A DUI conviction: rate 50.\n\nFor a recent motoring conviction, refer to underwriting judgement.\n\n## 12. Alcohol and liver\n\nElevated liver enzymes: 25. A history of treatment for alcohol use: 50.\n\nFor borderline liver chemistry, refer to underwriting judgement.\n\n## 13. Sleep apnea\n\nDiagnosed sleep apnea: 50.\n\nFor treated sleep-disordered breathing, refer to underwriting judgement.\n\n## 14. Financial underwriting\n\nThe face amount applied for, plus cover already in force, should sit within the income multiple for the applicant's age: 18-30 30x | 31-40 25x | 41-50 20x | 51-60 15x | 61+ 10x.\n\nWhere the face amount is large relative to income, refer to underwriting judgement.\n\n## 15. Modifiers\n\nA flat extra is charged per $1,000 of face amount in one of three bands: $2.50 / $5.00 / $7.50. An exclusion rider removes one named hazard from cover and carries no charge; name the hazard excluded. Either modifier makes the decision *accept with modification*.\n\n## 16. Where this manual stops\n\nFor combinations of cardiac risk factors, refer to underwriting judgement. A referral line means the manual has reached the edge of what it can tell you. Rate the file on what the tables do say, and expect the reviewer to correct you.\n",
+    "memory": {
+      "kind": "written_rules",
+      "note": "Your own house-rule book, as you last rewrote it. Everything in it came from reviewer corrections on earlier applications in this run. At most 25 entries.",
+      "rulebook_markdown": "# House rule book\n\n_Rewritten after UW-T03. Every entry is reviewer-settled practice from an earlier application in this run (UW-T01, UW-T02, UW-T03). The starter manual still governs anything this book does not cover._\n\n## How to use this book\n\nBefore rating, run the financial check first (entries 1 and 7). Then list every line of the file that the manual refers to underwriting judgement and check each one against the entries below. Where an entry applies, follow it instead of the manual's table and instead of your own reasoning. Where no entry applies, rate on the tables and say in the rationale that judgement was used.\n\nThree lessons so far about what a referral line means:\n\n- **It is not permission to charge the full table debit.** On UW-T01, charging every referred item at face value made the file two steps too severe. Where the file documents a mitigating fact (treatment compliance, no alcohol history), the reviewer credits it; where a hazard can be carved out of cover, the reviewer uses a rider rather than a flat extra.\n- **It is not permission to wave the item through either.** On UW-T02 the total cover exceeded the income multiple, the manual referred it, and the file was accepted at Standard with a paragraph explaining why the excess was tolerable. The reviewer postponed. Where the referral turns on evidence that is not on the file, the answer is to postpone and ask for it, not to reason your way to an accept.\n- **It is not an instruction to add a charge the tables do not carry.** On UW-T03 a mild cardiometabolic cluster (overweight build, low HDL, A1c in the prediabetic range) fell under the manual's referral for combinations of cardiac risk factors. The tables charged build alone; every other reading sat inside its own zero band. Rating on the tables as they stood, with no cluster surcharge, was confirmed correct. A referral about a combination does not create a debit that no table carries.\n\nSo a referred item resolves in one of four ways: **credit** it when the file already documents the mitigating fact; **convert** it to an exclusion rider when the hazard can be removed from cover; **postpone** when the item can only be settled by evidence the file does not contain; **rate on the tables as they stand** when every reading involved already sits inside a table band and the referral is only about how they combine. Charging at face value, accepting on argument, and inventing a surcharge are all wrong.\n\n## 1. Total cover above the income multiple: postpone\n\n**When it applies:** The face amount applied for plus cover already in force exceeds the manual's income multiple for the applicant's age (section 14: 18-30 30x | 31-40 25x | 41-50 20x | 51-60 15x | 61+ 10x). Run this check on every file before rating anything else; the in-force amount counts in full.\n\n**What to do:** Postpone. Decision `postpone`, rating class null, no modifiers. Do not rate the file, and do not accept at any class with the excess explained away in the rationale. Say in the rationale that the file is postponed for financial evidence (justification of the amount, verification of income, purpose of cover) and state the total cover, the multiple and the excess. Name face amount to income among the drivers, together with every other factor the tables would have charged (see entry 2).\n\n**Why:** The manual refers a large face amount relative to income to judgement. The reviewer's settled practice is that a large face amount at a high multiple of income is postponed for financial evidence rather than rated: the open question is whether the amount is justified, and nothing on the file can answer it. On UW-T02 (age 40, $1.75M applied plus $250K in force against $68,000 income, a 25x multiple of $1.7M) the excess was roughly a fifth over the multiple, the applicant was otherwise a clean Standard, and the reviewer still postponed. No tolerance margin above the multiple is known to be accepted; do not invent one.\n\n## 2. Drivers on a postponed file\n\n**When it applies:** Any file you postpone.\n\n**What to do:** List as drivers both the reason for the postponement and every factor that would have moved the rating had the file been rated. On UW-T02 that meant face amount to income and tobacco quit within the last five years. Rating class stays null and modifiers stay empty.\n\n**Why:** The reviewer's markup on a postponed file names its material factors as the rating factors plus the postponement reason. A postpone is a deferral, not a clean file; the drivers tell whoever picks the file up again what the rating will turn on once the evidence arrives.\n\n## 3. Hazardous occupation together with a hazardous avocation\n\n**When it applies:** The applicant works in a class C (hazardous) occupation and also carries a hazardous avocation, meaning anything section 10 of the manual would charge: amateur motorsport competition, private aviation, scuba beyond 60 ft, technical rock or ice climbing.\n\n**What to do:** Charge the occupation class debit as the manual sets it. For the avocation, attach an exclusion rider naming the avocation hazard. Do not charge the avocation's flat extra and do not add avocation debits. The rider makes the decision *accept with modification*. Name both the occupation class and the avocation among the drivers: the avocation is still a material factor even though it carries no charge.\n\n**Why:** The manual refers this combination to judgement. The reviewer's settled practice is that once one hazardous exposure is already priced through the occupation class, the second is removed from cover rather than charged on top. On UW-T01 (high-voltage lineman plus club saloon racing, 14 events a year) the $5.00 flat extra was struck and replaced by a motorsport exclusion rider.\n\n## 4. Sleep apnea with documented CPAP compliance\n\n**When it applies:** Sleep apnea is diagnosed and the file documents CPAP compliance.\n\n**What to do:** No debit for sleep apnea. Do not list it as a driver.\n\n**Why:** The manual's charge is for diagnosed apnea as such, and it refers treated sleep-disordered breathing to judgement. The reviewer treats documented compliance as a controlled condition carrying no charge. If compliance is not documented, or the apnea is untreated, charge per the manual.\n\n## 5. Mildly elevated liver enzymes with no alcohol history\n\n**When it applies:** Liver enzymes are elevated but below twice the upper limit of normal, and the file shows no alcohol history and no treatment for alcohol use.\n\n**What to do:** No debit for liver chemistry. Do not list it as a driver.\n\n**Why:** The manual refers borderline liver chemistry to judgement. The reviewer treats a mild elevation with no alcohol history as incidental. Enzymes at or above twice normal, or any alcohol history or treatment, go back to the manual's tables.\n\n## 6. Mild cardiometabolic cluster inside the table bands: no surcharge\n\n**When it applies:** Two or more of the following sit together on one file, each inside a band the manual charges lightly or not at all: BMI in the 28.0-30.9 band; HDL low but the total-cholesterol-to-HDL ratio at or under 5.0; A1c above the preferred thresholds but at or under 6.4 with no diabetes diagnosis; blood pressure untreated and at or under 138/88. Section 16 of the manual refers combinations of cardiac risk factors to judgement, so this cluster is a referred item.\n\n**What to do:** Charge exactly what each table charges and nothing more. Add no cluster debit and no flat extra, and do not postpone for further tests. Read the class off the total as usual; a single table debit closes all three preferred classes, so build at the 28.0-30.9 band with everything else clean is Standard. Name as drivers only the factors that actually carried a debit; do not list the zero-charge readings even though you weighed them. Say in the rationale that the cluster was considered under judgement and that nothing was added beyond the table charges.\n\n**Why:** On UW-T03 (male 38, BMI 29.3 stable, HDL 38 with ratio 4.6, A1c 6.2, BP 128/71 untreated, otherwise clean) the file was rated on build alone and accepted at Standard, and the reviewer confirmed it as correct with build the only material factor. The reviewer's practice is that a referral about a combination does not manufacture a charge no table carries; each reading is already priced by its own table. A reading that crosses into a charged band (A1c 6.5 or higher, ratio above 5.0, systolic 139 or higher) is charged on its own table as the manual says; that is ordinary rating, not this entry.\n\n## 7. Cover inside the income multiple: no financial referral\n\n**When it applies:** Face amount applied for plus cover already in force is at or under the income multiple for the applicant's age.\n\n**What to do:** State in one line of the rationale that the total cover sits inside the multiple, then rate on the medical and lifestyle tables. Do not treat the financial section as a judgement item, do not name face amount to income as a driver, and do not postpone for financial evidence.\n\n**Why:** The manual's referral in section 14 is only for a face amount that is large relative to income. On UW-T03 ($750,000 applied, nothing in force, against $175,000 income at age 38) the amount was well inside the 25x multiple; the rating proceeded on the other tables alone and the reviewer accepted it. Entry 1 applies only when the multiple is exceeded.\n",
+      "size": 33
+    },
+    "reflection_context": {
+      "your_answer": {
+        "decision": "accept",
+        "rating_class": "Table 8",
+        "modifiers": [],
+        "drivers": [
+          "blood pressure",
+          "lipids",
+          "A1c",
+          "family history",
+          "occupation class"
+        ],
+        "rationale": "Total cover $500,000 sits inside the 25x multiple. Untreated systolic 139, total cholesterol 256 with ratio 5.6 (both lipid tables in force), A1c 6.6 without diagnosis, mother's MI at 51 and class C occupation each charged on their own table; every other reading clean. Total 200, Table 8. The cardiac risk-factor combination was considered under judgement; nothing was added beyond the table charges, and no mitigating evidence on file supports a credit."
+      },
+      "markup": "UW-T04: correct. The material factors were blood pressure reading, total cholesterol, lipid ratio, A1c, family history, occupation class and cardiac risk interaction."
+    }
+  },
+  "response_schema": {
+    "description": "The whole rewritten rule book.",
+    "properties": {
+      "rulebook_markdown": {
+        "minLength": 1,
+        "title": "Rulebook Markdown",
+        "type": "string"
+      }
+    },
+    "required": [
+      "rulebook_markdown"
+    ],
+    "title": "ReflectResponse",
+    "type": "object"
+  }
+}

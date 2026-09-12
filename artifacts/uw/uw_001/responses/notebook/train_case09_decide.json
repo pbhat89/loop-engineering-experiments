@@ -1,0 +1,16 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "recent DUI conviction",
+    "moving violations",
+    "blood pressure reading",
+    "total cholesterol",
+    "lipid ratio",
+    "A1c",
+    "private aviation avocation",
+    "cardiac risk interaction"
+  ],
+  "rationale": "DUI conviction in 2024 is a recent motoring conviction. The manual refers it to judgement; using judgement and prior reviewer guidance, a recent DUI is postponed, not rated. Decision deferred pending a clean interval on the driving record. If rated, the file would also carry debits for untreated blood pressure, total cholesterol and ratio, A1c 6.8, private aviation and two moving violations. Face plus in-force sits within the 20x income multiple."
+}

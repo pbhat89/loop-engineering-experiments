@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "tobacco (quit within 5 years)",
+    "sleep apnea (diagnosed, no CPAP in use)"
+  ],
+  "rationale": "Build, blood pressure, lipids, A1c, family history, occupation, driving and financial multiple are all clean. Tobacco quit within five years takes a debit; diagnosed sleep apnea with no CPAP in use takes the full debit. Liver enzymes are mildly elevated (under twice normal) with no alcohol history: applying judgement on the borderline-chemistry referral, consistent with prior review, no debit. Total lands in Table 2. Accept without modifiers."
+}

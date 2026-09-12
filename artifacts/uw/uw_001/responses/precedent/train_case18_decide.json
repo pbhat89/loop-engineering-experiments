@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "lipids",
+    "sleep apnea",
+    "tobacco"
+  ],
+  "rationale": "No debits for build, BP, A1c, family history, occupation, driving, liver or financials. Cholesterol 323 (75) and ratio 5.3 (25) point at different bands, so I used judgement: adding both gives 175, charging the worse alone 150; either is Table 6. Tobacco quit within 5 years adds 25; diagnosed, untreated sleep apnea adds 50. No modifiers. Nearest precedent with clean lipids rated Table 2 on tobacco and apnea, consistent with this."
+}

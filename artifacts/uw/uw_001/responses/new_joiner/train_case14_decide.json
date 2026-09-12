@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "build: BMI in the 31.0-33.9 band",
+    "diagnosed sleep apnea, untreated (no CPAP)"
+  ],
+  "rationale": "Build (BMI 32.4) and diagnosed sleep apnea without CPAP each carry a debit; BP, lipids, A1c, tobacco, family history, occupation, driving, liver and financial (well within 20x income) are all clean. Total 100 debits reads as Table 4. Judgement used on the 28 lb loss in 12 months and on the obesity, low HDL, borderline A1c and apnea cluster: rated on the recorded BMI with no further loading. Beekeeping is not a rated avocation."
+}

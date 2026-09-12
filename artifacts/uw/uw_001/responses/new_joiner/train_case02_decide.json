@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "tobacco use quit within the last 5 years",
+    "total cover above the income multiple for age"
+  ],
+  "rationale": "Debits: tobacco quit 1-5 years 25; all other tables 0 (BMI 21.5, BP 127/85 untreated, TC 219 ratio 4.5, A1c 5.3, no family history, class A, clean MVR, normal liver, no apnea). Total 25 = Standard; recent tobacco bars all preferred classes. Financial: $1.75M plus $250K in force = $2.0M against a 25x cap of $1.7M. Manual refers to judgement; I used it and accepted the modest excess given a clean, stable risk profile."
+}

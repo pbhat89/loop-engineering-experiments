@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Preferred",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure reading",
+    "total cholesterol",
+    "tobacco"
+  ],
+  "rationale": "Total cover $1.25M sits inside the 30x multiple ($7.8M) for age 29; no financial referral. Every table reads zero: BMI 24.9, BP 133/72 untreated, TC 217 ratio 3.8, A1c 5.2, class A occupation, clean MVR, no family history, normal liver, no apnea. Zero debits; meets every Preferred criterion. Preferred Plus is closed by systolic 133 (over 128), TC 217 (over 200) and tobacco quit rather than never. No judgement items arose."
+}

@@ -1,0 +1,12 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "face amount to income",
+    "sleep apnea",
+    "family history",
+    "tobacco"
+  ],
+  "rationale": "Debits: tobacco quit within 5 years 25, two parental events under 60 capped 50, diagnosed sleep apnea 50; total 125, Table 4 on the tables. Judgement used on treated apnea and family history at age 68, charged as tabled. But $1.6M total cover against $60,000 income is well beyond the 10x multiple for age 61+; manual refers to judgement and nearest precedent settled on postpone. Postpone pending financial justification."
+}

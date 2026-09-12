@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "treated hypertension with reading not at target",
+    "elevated total cholesterol",
+    "A1c in the 6.5-6.9 band without a diabetes diagnosis",
+    "tobacco quit within the last 5 years",
+    "sibling myocardial infarction before age 60",
+    "liver enzymes elevated over twice the upper limit of normal"
+  ],
+  "rationale": "Debits for treated hypertension not at target, total cholesterol 305, A1c 6.7 undiagnosed, tobacco quit within 5 years, brother MI at 47, and liver enzymes over 2x ULN; build, occupation, driving, avocation and financials are clean. Total lands in the Table 8 band. Judgement used: TC and ratio tables disagree, charged the TC band since both are in force; combination of cardiac risk factors noted without extra debit beyond the tables. No modifiers apply."
+}

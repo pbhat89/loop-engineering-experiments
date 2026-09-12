@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "treated hypertension"
+  ],
+  "rationale": "Treated hypertension since 2019 with a current reading of 141/83: per the senior's guidance, a treated reading at or below 145/90 takes the 25 treatment debit only, with no reading band added. Every other table is 0: build, lipids, A1c, tobacco, family history, occupation, avocation, driving, liver, sleep apnea; face amount well within the 25x income multiple. Total 25 debits reads Standard; treated BP rules out the preferred classes. Judgement used on the cardiac-combination referral: no further charge."
+}

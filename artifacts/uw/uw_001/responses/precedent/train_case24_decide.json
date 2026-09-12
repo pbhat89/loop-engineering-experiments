@@ -1,0 +1,19 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 6",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "occupation class",
+    "climbing",
+    "moving violations",
+    "DUI",
+    "liver enzymes"
+  ],
+  "rationale": "Occupation class C, three moving violations, a DUI and liver enzymes above twice normal total Table 6. Judgement used: climbing carried as an exclusion rider rather than a debit, following precedent for hazardous occupation with hazardous avocation; total cholesterol debit waived because the ratio and HDL are favourable; the recent DUI rated at the table charge. Build, blood pressure, A1c, family history and financial multiple are clear."
+}

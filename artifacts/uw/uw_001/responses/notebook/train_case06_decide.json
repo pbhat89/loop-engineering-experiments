@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "DUI conviction",
+    "untreated sleep apnea"
+  ],
+  "rationale": "Build, blood pressure, lipids, A1c, tobacco, family history, occupation, avocation and financial multiple all clear at zero debits. DUI conviction in 2024 rates 50; the manual refers recent motoring convictions to judgement, and with no alcohol history and normal liver chemistry I applied the table charge. Diagnosed sleep apnea with no CPAP in use rates 50. Total 100 debits reads Table 4. No modifiers."
+}

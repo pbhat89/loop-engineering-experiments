@@ -1,0 +1,10 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "DUI conviction within the last 3 years (2025)",
+    "Elevated liver enzymes over twice the upper limit of normal alongside a recent DUI"
+  ],
+  "rationale": "Postponed on senior guidance: a DUI conviction within the last 3 years is a postpone, not a rating, and this DUI is from 2025. The elevated liver enzymes (over twice normal) alongside that conviction drew the same answer. No class or modifiers on a postpone. For the record, the other factors were ratable: class C occupation 50, climbing by exclusion rider, ratio-governed lipids 0, three violations 50, enzymes 25; financial limits satisfied."
+}

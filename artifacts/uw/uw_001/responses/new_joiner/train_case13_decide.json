@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "hazardous occupation (class C, structural steel erector)",
+    "build (BMI in the 28.0-30.9 band)",
+    "family history (parent stroke before age 60)"
+  ],
+  "rationale": "Debits for build (BMI 28.0-30.9 band), hazardous class C occupation and father's stroke before 60 total to the Table 4 band. BP, lipids, A1c, tobacco, driving, liver and sleep apnea are clear. Face plus in-force is within the 10x income multiple at 65. Judgement used on family history: applicant is well past the qualifying age, but the manual says her age does not change the charge, so it stands. No hazardous avocation; no modifiers."
+}

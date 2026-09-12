@@ -1,0 +1,19 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 6",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "amateur motorsport competition (club saloon racing)",
+      "amount_per_1000": 5.0
+    }
+  ],
+  "drivers": [
+    "hazardous occupation, class C (high-voltage lineman)",
+    "diagnosed sleep apnea",
+    "elevated liver enzymes",
+    "moving violations in the last 3 years",
+    "amateur motorsport competition (flat extra)"
+  ],
+  "rationale": "Class C occupation, diagnosed sleep apnea, elevated liver enzymes and two moving violations total 150 debits: Table 6. Amateur motorsport competition adds a $5.00 per $1,000 flat extra, so accept with modification. Build, BP, lipids, A1c, tobacco, family history and financial multiple are all clean. The manual refers CPAP-treated apnea, borderline liver chemistry and the occupation-plus-avocation combination to judgement; with no referral available I used judgement and charged each per the tables."
+}

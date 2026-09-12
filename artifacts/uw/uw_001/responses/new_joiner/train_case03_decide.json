@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "build"
+  ],
+  "rationale": "Build at BMI 29.3 falls in the 28.0-30.9 band: 25 debits. Every other table charges zero: untreated BP 128/71, TC 175 with ratio 4.6, A1c 6.2 without diagnosis, never-smoker, clean MVR, class A occupation, no avocation, no family history, normal liver, no apnea. Face sits well within the 25x income multiple. Total 25 is Standard; preferred classes need zero debits. Used judgement on the overweight, low-HDL, borderline-A1c cluster (section 16) and added nothing beyond the tables."
+}

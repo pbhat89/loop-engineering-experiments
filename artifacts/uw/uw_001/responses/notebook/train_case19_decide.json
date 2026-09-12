@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "occupation class",
+    "moving violations"
+  ],
+  "rationale": "Build, blood pressure, lipids, A1c, tobacco (quit over 5 years, nicotine negative), family history, liver chemistry and sleep apnea all carry no debit. Class B occupation (site foreman) and three moving violations in three years are the only charges, and together they place the total in the Table 2 band. No DUI, no avocation, and total cover of $1,000,000 sits within the 20x income multiple for age 49. Preferred classes are unavailable because debits are non-zero."
+}

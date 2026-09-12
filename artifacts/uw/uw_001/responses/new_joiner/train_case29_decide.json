@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "build (BMI in the 28.0-30.9 band)",
+    "untreated blood pressure, systolic band",
+    "total cholesterol",
+    "total cholesterol to HDL ratio",
+    "elevated A1c without a diabetes diagnosis",
+    "combination of cardiac risk factors"
+  ],
+  "rationale": "Debits: build 25 (BMI 29.9), untreated systolic BP 25, total cholesterol 25 plus TC/HDL ratio 25 (both lipid tables in force, same band), A1c 6.8 with no diagnosis 50. All other sections zero; cover sits within 15x income. Total 150 reads Table 6. Four cardiac risk factors coincide, which the manual refers to judgement; no referral was available, so I used judgement and rated additively on the tables without further loading."
+}

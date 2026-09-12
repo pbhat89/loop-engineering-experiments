@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "diagnosed sleep apnea, untreated (no CPAP in use)",
+    "driving record: three moving violations in the last 3 years",
+    "build after adding back half of the 17 lb lost in the last 12 months",
+    "hypertension on treatment, reading at or below 145/90",
+    "type 2 diabetes with A1c 6.8, partly offset by the late-onset diet-controlled credit"
+  ],
+  "rationale": "Debits: build 25 (half of 17 lb loss added back, BMI about 28.4), treated BP 25 only (140/85 within 145/90 per senior), A1c 6.8 50 less 25 late-onset diet-controlled credit, three moving violations 50, untreated sleep apnea 50; lipids, tobacco, family history, occupation, financial 0. Total 175, Table 6. Judgement used on the cardiac-risk combination: no extra added beyond the table debits."
+}

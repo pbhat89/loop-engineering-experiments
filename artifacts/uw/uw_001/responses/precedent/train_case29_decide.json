@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "a1c",
+    "lipids",
+    "blood pressure",
+    "build"
+  ],
+  "rationale": "Debits: build BMI 29.9 (25); untreated BP 144/85 systolic band (25); TC 256 (25) plus ratio 6.1 (25); A1c 6.8 without diagnosis (50). Total 150, Table 6. Four cardiac risk factors cluster here; the manual refers such combinations to judgement, so I rated on the tables as written and did not add further. Financial within 15x. Precedents are distant and none carries this cluster. Tobacco, driving, occupation, family history clean."
+}

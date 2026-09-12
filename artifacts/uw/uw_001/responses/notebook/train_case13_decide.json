@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "family history",
+    "occupation class"
+  ],
+  "rationale": "Debits: build (BMI 30.4) 25, family history (father stroke at 55) 25, occupation class C 50; total 100, Table 4. BP, lipids, A1c, tobacco, driving, liver and sleep all clear; $600,000 total cover sits within the 10x income limit. Applicant is well past the family-history qualifying age, which the manual refers to judgement; no referral available, so I used judgement and kept the table charge, as the manual says the applicant's own age does not alter it."
+}

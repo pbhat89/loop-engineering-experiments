@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "build"
+  ],
+  "rationale": "BMI 29.3 takes 25 build debits; every other table charges 0 (BP 128/71, TC 175/ratio 4.6, A1c 6.2, never tobacco, clean MVR, class A, no family history, face within 25x income). Total 25 = Standard; preferred classes need zero debits. Section 16 refers the cluster of overweight build, A1c 6.2 and HDL 38 to judgement; the senior gave no house rule, so I used judgement and held to the tables, adding no combination debit."
+}

@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "blood pressure reading",
+    "total cholesterol",
+    "lipid ratio",
+    "A1c",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Debits: build at BMI 29.9, untreated systolic 144, total cholesterol 256 and ratio 6.1 (both bands agree, so both charged), A1c 6.8 with no diagnosis and therefore no late-onset credit. Tables total 150. The manual refers combined cardiac risk factors to judgement; none is available, so I used judgement and added a modest interaction charge for concurrent hypertension, dyslipidaemia, elevated A1c and overweight, which stays within Table 6. Tobacco, occupation, driving, liver and financial factors are clean."
+}

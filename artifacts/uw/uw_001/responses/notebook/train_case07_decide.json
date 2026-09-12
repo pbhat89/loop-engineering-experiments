@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard Plus",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure reading"
+  ],
+  "rationale": "Zero debits: BMI 24.0, BP 124/86 untreated, TC 215 with ratio 3.6, A1c 6.0 without diagnosis, never-tobacco with negative screen, clean MVR, class A occupation, no avocation, no family history, normal liver, no apnea. Face plus in-force ($1.4M) sits well inside the 15x income limit ($3.9M). Diastolic 86 exceeds the Preferred ceiling of 84, so the file lands at Standard Plus rather than Preferred. No referral line applies."
+}

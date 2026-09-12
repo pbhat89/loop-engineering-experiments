@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "build"
+  ],
+  "rationale": "Build is the only debit: BMI 29.3 sits in the 28.0-30.9 band (25); total 25, Standard, and any debit excludes the preferred classes. BP, lipids, A1c, tobacco, family history, occupation, driving, liver and sleep are all zero bands. BMI 29, A1c 6.2 and HDL 38 form a mild metabolic cluster; the manual refers combined cardiac risk factors to judgement, and I used judgement to hold at Standard. Face is well within the 25x income multiple."
+}

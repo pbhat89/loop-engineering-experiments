@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure treatment",
+    "A1c",
+    "tobacco",
+    "family history",
+    "liver enzymes"
+  ],
+  "rationale": "$500,000 total against a 25x ceiling of $4,375,000; no DUI. Treated BP referred: treatment charge alone, 25. Lipid bands disagree (TC 305, ratio 4.2): judgement used, ratio governs, nothing charged. A1c 6.7 no diagnosis, tobacco quit within five years, brother's MI at 47, enzymes over twice normal all charge. Build, occupation, driving zero; rugby ticket not an avocation. Three cardiac tables, no interaction added. Total 150: Table 6, accept."
+}

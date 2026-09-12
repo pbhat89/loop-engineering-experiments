@@ -36,6 +36,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.colors as mcolors  # noqa: E402
+import matplotlib.patheffects as patheffects  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle  # noqa: E402
 
@@ -84,10 +85,13 @@ def _stub_watermark(fig, run_id: str) -> None:
               color="#b3400a", alpha=0.28, ha="center", va="center", rotation=28, zorder=50)
 
 
-def _spread_labels(values: dict[str, float], min_gap: float) -> dict[str, float]:
+def _spread_labels(values: dict[str, float], min_gap: float, anchor_first: tuple[str, ...] = ()) -> dict[str, float]:
     """Nudge label y-positions apart just enough to keep them from overlapping,
-    preserving their relative order."""
-    order = sorted(values, key=lambda k: values[k])
+    preserving their relative order. When two or more series end in an exact tie,
+    ``anchor_first`` says which of them keeps its label at the true value -- it is
+    processed first within its tie group, so it is never the one pushed off zero (or
+    off any other shared value); the rest of the tie absorbs the nudging instead."""
+    order = sorted(values, key=lambda k: (values[k], 0 if k in anchor_first else 1))
     adjusted: dict[str, float] = {}
     prev = None
     for key in order:
@@ -111,29 +115,42 @@ def fig_learning_curve(summary: dict, run_id: str, out_dir: Path) -> None:
 
     fig, ax = plt.subplots(figsize=(12, 7.2))
 
-    # tiny fixed horizontal jitter per arm so overlapping raw dots stay distinguishable --
-    # deterministic (not random) so the figure is reproducible byte-for-byte.
-    jitter = {arm: (i - (len(ARM_ORDER) - 1) / 2) * 0.11 for i, arm in enumerate(ARM_ORDER)}
-
     max_y = 0.5
     last_values: dict[str, float] = {}
+    trail_by_arm: dict[str, list[float]] = {}
     for arm in ARM_ORDER:
         if arm not in arms:
             continue
         s = arms[arm]
         raw = s["per_case_distance"]
         trail = s["trailing_mean"]
-        xs = list(range(1, len(raw) + 1))
-        ax.scatter([x + jitter[arm] for x in xs], raw, s=13, color=ARM_COLOR[arm], alpha=0.25,
-                   linewidths=0, zorder=2)
-        ax.plot(xs, trail, color=ARM_COLOR[arm], lw=2.0, zorder=3, solid_capstyle="round")
+        trail_by_arm[arm] = trail
         if raw:
             max_y = max(max_y, max(raw))
         if trail:
             last_values[arm] = trail[-1]
 
+    y_top = max_y * 1.15
+    ax.set_ylim(-0.08, y_top)
+
+    # the shared opening: cases 1-7 are a designed dead heat -- the four non-asking
+    # designs hold identical information there, since every rule that fires in that
+    # window fires for the first time. A faint band marks it; the annotation sits in
+    # axes-fraction y so it always clears the highest line regardless of data scale.
+    ax.axvspan(1, 7, color=INK2, alpha=0.06, lw=0, zorder=0)
+    ax.text(4, 0.94, "identical information: nobody has been corrected yet",
+            transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=9.2,
+            style="italic", color=INK2, zorder=5)
+
+    for arm in ARM_ORDER:
+        if arm not in trail_by_arm:
+            continue
+        trail = trail_by_arm[arm]
+        xs = list(range(1, len(trail) + 1))
+        ax.plot(xs, trail, color=ARM_COLOR[arm], lw=2.5, zorder=3, solid_capstyle="round",
+                 path_effects=[patheffects.Stroke(linewidth=4.5, foreground=PAPER), patheffects.Normal()])
+
     ax.set_xlim(0.3, 35.5)
-    ax.set_ylim(0, max_y * 1.15)
     ax.set_xticks([1, 5, 10, 15, 20, 25, 30])
     ax.set_xlabel("case number")
     ax.set_ylabel("rating error, ladder steps")
@@ -142,7 +159,7 @@ def fig_learning_curve(summary: dict, run_id: str, out_dir: Path) -> None:
     ax.axvline(n_cases + 0.5, color=LINE, lw=0.8, zorder=1)
 
     # direct labels at the right end of each line, nudged apart so none overlap
-    adjusted = _spread_labels(last_values, min_gap=max_y * 1.15 * 0.055)
+    adjusted = _spread_labels(last_values, min_gap=(y_top + 0.08) * 0.055, anchor_first=("ask_senior",))
     label_x = n_cases + 0.7
     for arm, y_label in adjusted.items():
         y_actual = last_values[arm]
@@ -155,13 +172,17 @@ def fig_learning_curve(summary: dict, run_id: str, out_dir: Path) -> None:
     fig.text(0.012, 0.945,
              "Trailing five-case mean of rating error on the 30 training cases, one design per line",
              fontsize=10.3, color=INK2, va="top")
-    fig.text(0.012, 0.028,
-             "Each point is one case, rated once. Lines are the trailing five-case mean. "
-             "Lower is better; zero is a perfect match with the reviewer.",
+    fig.text(0.012, 0.052,
+             "Lines are the trailing five-case mean of rating error. Lower is better; zero is a perfect "
+             "match with the reviewer.",
              fontsize=9.8, color=INK2, va="bottom", style="italic")
+    fig.text(0.012, 0.014,
+             "Operators were Claude Fable 5.1 for the first 27 of 30 cases; the Fable quota ran out and "
+             "the last cases ran on Claude Opus 5 (see D-28).",
+             fontsize=8.3, color=INK2, va="bottom")
 
     _stub_watermark(fig, run_id)
-    fig.tight_layout(rect=(0, 0.05, 1, 0.905))
+    fig.tight_layout(rect=(0, 0.09, 1, 0.905))
     fig.savefig(out_dir / "learning_curve.png", dpi=170)
     plt.close(fig)
 
@@ -219,9 +240,14 @@ def fig_holdout(summary: dict, run_id: str, root: Path, out_dir: Path) -> None:
              "Solid bar = mean rating error over the 8 held-out cases. Thin bar = the 2 of those 8 whose golden "
              "fires only rule HR-13 or HR-14, a rule never seen in training.",
              fontsize=9.8, color=INK2, va="top")
+    footnote = textwrap.fill(
+        "New joiner, running notebook and precedent file took this test on Claude Fable 5.1; written rules "
+        "and ask a senior took it on Claude Opus 5 after the Fable quota ran out, so their held-out numbers "
+        "are not like-for-like.", width=118)
+    fig.text(0.012, 0.895, footnote, fontsize=8.3, color=INK2, va="top", linespacing=1.5)
 
     _stub_watermark(fig, run_id)
-    fig.tight_layout(rect=(0, 0.01, 1, 0.865))
+    fig.tight_layout(rect=(0, 0.01, 1, 0.79))
     fig.savefig(out_dir / "holdout.png", dpi=170)
     plt.close(fig)
 

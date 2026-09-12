@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "family history",
+    "liver enzymes"
+  ],
+  "rationale": "Two first-degree breast cancers before 60 (mother 52, sister 57) take 25 each, capped at 50; the applicant is 39, so no age-out credit. Liver enzymes above twice the upper limit are charged 25: the no-debit allowance covers mild elevation only, and over-2x is neither mild nor borderline, judgement applied. Build, BP, lipids, A1c, tobacco, driving, occupation and face-to-income are all clean. Total 75 debits: Table 2."
+}

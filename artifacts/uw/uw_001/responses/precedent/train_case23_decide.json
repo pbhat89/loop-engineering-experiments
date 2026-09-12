@@ -1,0 +1,18 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "occupation class",
+    "climbing",
+    "build",
+    "elevated liver enzymes"
+  ],
+  "rationale": "Debits: build BMI 28.3 (25), class C occupation (50), liver enzymes above twice normal (25) = 100, Table 4. Manual refers hazardous occupation plus hazardous avocation to judgement; following house precedent, I rated the occupation and removed technical climbing by exclusion rider rather than stacking a further 50. BP, lipids, A1c, tobacco, driving, family history, financials all clear; face within 15x income. Judgement used on the occupation/avocation combination."
+}

@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "hazardous occupation (class C, high-voltage lineman)",
+    "build (BMI in the 28.0-30.9 band)",
+    "driving record (two moving violations in the last three years)"
+  ],
+  "rationale": "Debits: build 25 (BMI 28.0-30.9 band), class C hazardous occupation 50, two moving violations 25; total 100, Table 4. BP, lipids, A1c, tobacco, family history, liver, sleep apnea and financial multiple all clean at zero. Weight stable, so no build referral. Judgement used on two open referrals: the BMI/BP pairing is not treated as a cardiac risk combination since BP sits within its zero band, and violation dates are unknown so the standing 25 is charged."
+}

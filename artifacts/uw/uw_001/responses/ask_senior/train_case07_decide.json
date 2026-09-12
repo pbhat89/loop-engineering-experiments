@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard Plus",
+  "modifiers": [],
+  "drivers": [
+    "Zero debits on every table; all Standard Plus criteria met",
+    "Untreated diastolic blood pressure exceeds the Preferred ceiling",
+    "Total cholesterol and A1c exceed the Preferred Plus ceilings",
+    "Total cover within the age-based income multiple"
+  ],
+  "rationale": "Zero debits on every table: build, lipids, A1c, tobacco, family history, occupation, driving, liver and sleep apnea all clear; $1.4M total cover sits within 15x income at age 53. Untreated diastolic 86 exceeds the Preferred ceiling of 84, and TC and A1c exceed Preferred Plus limits, so the best class is Standard Plus. The senior confirmed the BP tables apply as written. I considered section 16 cardiac combinations and, using judgement, added nothing beyond the tables."
+}

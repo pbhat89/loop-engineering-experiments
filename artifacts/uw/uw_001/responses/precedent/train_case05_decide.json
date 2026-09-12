@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Preferred",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure reading",
+    "total cholesterol",
+    "tobacco"
+  ],
+  "rationale": "Zero debits across every table: BMI 24.9 stable, BP 133/72 untreated, TC 217 ratio 3.8, A1c 5.2, class A, clean MVR, normal liver, no apnea or family history. Total cover $1.25M sits well inside the 30x income limit. Meets every Preferred criterion; misses Preferred Plus on systolic 133 (over 128), TC 217 (over 200) and tobacco quit rather than never. Precedents do not alter this."
+}

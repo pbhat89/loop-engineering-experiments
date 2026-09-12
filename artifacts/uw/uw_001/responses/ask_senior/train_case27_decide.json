@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Preferred",
+  "modifiers": [],
+  "drivers": [
+    "Zero debits across all rated sections",
+    "Total cholesterol above the Preferred Plus threshold, within the Preferred threshold",
+    "A1c below the Preferred cutoff with no diabetes diagnosis",
+    "Build, untreated blood pressure, never-smoker status, class A occupation, clean driving and no family history all inside preferred limits",
+    "Face plus in-force cover well within the income multiple for age"
+  ],
+  "rationale": "Zero debits across sections 3-14; face plus in-force cover well inside the 20x multiple for age 48. Total cholesterol 211 and A1c 5.9 both fall in zero-debit bands, so no charge arises, but TC above 200 bars Preferred Plus; every Preferred threshold is met. I used judgement on section 16: two in-range markers are not a rated cardiac combination."
+}

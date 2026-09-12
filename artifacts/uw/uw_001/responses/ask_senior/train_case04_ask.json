@@ -1,0 +1,7 @@
+{
+  "questions": [
+    "Section 16 refers combinations of cardiac risk factors to underwriting judgement, and this file stacks several: untreated BP 139/83, total cholesterol 256 with a ratio of 5.6, A1c 6.6 with no diabetes diagnosis, and a mother with an MI at 51. Beyond the separate debit each table already gives, what does the house do when cardiac risk factors appear together on one file?",
+    "For that combination practice, which of this applicant's findings count as cardiac risk factors: does the A1c of 6.6 count, and does the mother's MI at 51 count, alongside the blood pressure and the lipid readings?",
+    "The A1c of 6.6 falls in the 6.5-6.9 band but there is no diabetes diagnosis and no medication on file. Does the house rate an undiagnosed A1c in that band straight off the A1c table, or does it postpone for confirmatory testing or an attending physician's statement before deciding?"
+  ]
+}

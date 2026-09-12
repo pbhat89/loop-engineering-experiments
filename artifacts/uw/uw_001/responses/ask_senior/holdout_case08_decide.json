@@ -1,0 +1,17 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Standard",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "recreational scuba diving beyond 100 feet",
+      "amount_per_1000": 5.0
+    }
+  ],
+  "drivers": [
+    "tobacco quit within the last 5 years",
+    "recreational scuba to a maximum depth beyond 100 feet",
+    "cluster of individually non-ratable cardiac risk factors"
+  ],
+  "rationale": "Debits: tobacco quit within 5 years 25; build, blood pressure, lipids, A1c, family history, occupation, driving, liver and financials all zero. Total 25 reads Standard; the 25 debits bar every preferred class. Per house practice the 112-ft scuba dive takes a $5.00 flat extra and no depth debit. Section 16 sends the cardiac-factor cluster to judgement; each factor sits inside its normal band, so I used judgement and added nothing."
+}

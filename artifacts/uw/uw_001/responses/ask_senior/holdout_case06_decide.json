@@ -1,0 +1,18 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 4",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "technical trad rock climbing",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "build read after adding back half the recent weight loss",
+    "hazardous occupation, class C high-voltage lineman",
+    "technical rock climbing removed by exclusion rider rather than charged",
+    "sleep apnea with documented CPAP compliance carries no debit"
+  ],
+  "rationale": "Half the 23 lb lost in 12 months is added back before reading build: BMI ~31.5, 50 debits. Class C lineman 50. Total 100 = Table 4. Class C occupation with technical climbing takes an exclusion rider on the climbing, not avocation debits. Documented CPAP compliance carries no apnea debit. BP, lipids, A1c, driving, family history and finances clear. Judgement used on build, apnea and the occupation/avocation combination."
+}

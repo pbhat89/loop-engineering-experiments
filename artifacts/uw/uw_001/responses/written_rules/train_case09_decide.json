@@ -1,0 +1,16 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "DUI",
+    "blood pressure reading",
+    "total cholesterol",
+    "lipid ratio",
+    "A1c",
+    "moving violations",
+    "aviation",
+    "cardiac risk interaction"
+  ],
+  "rationale": "DUI convicted 2024 against a 2026 application is recent: postponed for the conviction to age and for court disposition, licence status and any alcohol assessment. Normal liver chemistry and no declared alcohol history do not settle it. Cover $1.1M sits inside the 20x ceiling of $1.7M. Had it rated, blood pressure, total cholesterol, lipid ratio, A1c, two moving violations and private aviation would all have charged; aviation and the cardiac combination considered under judgement, nothing added."
+}

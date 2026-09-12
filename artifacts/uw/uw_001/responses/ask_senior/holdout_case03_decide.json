@@ -1,0 +1,18 @@
+{
+  "decision": "accept",
+  "rating_class": "Preferred",
+  "modifiers": [],
+  "drivers": [
+    "Build in the zero-debit BMI band with stable weight",
+    "Untreated blood pressure inside the Preferred limit but above the Preferred Plus limit",
+    "Total cholesterol and ratio inside the Preferred limits but cholesterol above the Preferred Plus limit",
+    "Tobacco quit more than five years ago with a negative nicotine screen, which bars Preferred Plus but not Preferred",
+    "A1c in the zero band with no diabetes diagnosis",
+    "No qualifying family history",
+    "Class A occupation and no declared avocation; the rugby season ticket is spectator attendance, not an avocation",
+    "Clean driving record with no DUI",
+    "Normal liver chemistry, no alcohol history, no sleep apnea",
+    "Face plus in-force cover well within the age-55 income multiple"
+  ],
+  "rationale": "All tables score zero: build, blood pressure, lipids, A1c, tobacco, family history, occupation, avocation, driving, liver and sleep sit in their zero bands, and cover plus in-force is well inside the age-55 income multiple. With zero debits the file clears every Preferred requirement but misses Preferred Plus on blood pressure, cholesterol and tobacco history. Section 16's cardiac-combination referral is unavailable; I used judgement and charged nothing, as each reading sits inside its own zero band."
+}

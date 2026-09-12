@@ -1,0 +1,17 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Table 2",
+  "modifiers": [
+    {
+      "type": "exclusion",
+      "detail": "amateur motorsport competition (club saloon racing)",
+      "amount_per_1000": null
+    }
+  ],
+  "drivers": [
+    "hazardous occupation: class C high-voltage lineman",
+    "driving record: two moving violations in the last three years",
+    "hazardous avocation (club saloon racing) combined with hazardous occupation, taken as an exclusion rider"
+  ],
+  "rationale": "Class C occupation (high-voltage lineman) 50 and two moving violations in three years 25 total 75, Table 2. Build, blood pressure, lipids, A1c, tobacco, family history and financials carry nothing. Per senior guidance, CPAP-compliant sleep apnea and liver enzymes under twice normal with no alcohol history carry no debit, and hazardous occupation with hazardous avocation takes an exclusion rider for club saloon racing instead of the motorsport flat extra. Judgement applied on those referral points."
+}

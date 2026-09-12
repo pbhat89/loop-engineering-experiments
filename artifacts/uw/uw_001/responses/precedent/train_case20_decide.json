@@ -1,0 +1,16 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "blood pressure reading",
+    "lipid ratio",
+    "A1c",
+    "tobacco",
+    "family history",
+    "occupation class",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Build 25, systolic 25, lipids 25 (TC and ratio tables disagree; judgement per precedent charges the ratio band), A1c 50, tobacco quit under 5 years 25, family history two events 50, class B 25: total 225, Table 8. Judgement used on family history at 63 (charged as the table directs) and on the combined cardiac risk cluster, held within Table 8 rather than declined. Financial within 10x."
+}

@@ -1,0 +1,8 @@
+{
+  "questions": [
+    "Build: the applicant is 5'7\", 207 lb (BMI 32.4) after losing 28 lb in the last 12 months, so a year ago she was about 235 lb (BMI about 36.8). Section 3 refers a recent change in build to judgement. Which weight is the build table read on - the current 207 lb, the pre-loss 235 lb, or a midpoint between the two?",
+    "The file gives no reason for the 28 lb loss. When a 12-month loss of this size has no stated cause, is it treated as deliberate weight loss and credited, or is it treated as unexplained and the file postponed for investigation?",
+    "Sleep apnea: the diagnosis is on file and no CPAP is in use. Section 13 rates diagnosed apnea 50 and refers only treated apnea to judgement. Does a diagnosed applicant who is not using CPAP take the plain 50, or does untreated or non-compliant apnea carry a higher charge or a postpone?",
+    "Section 16 refers combinations of cardiac risk factors to judgement. This file has BMI 32.4, diagnosed sleep apnea, A1c 6.0 with no diabetes diagnosis, and HDL 38 (ratio 4.5) with BP 133/80 untreated. Does that set count as a combination of cardiac risk factors, and if so what is done - an additional debit, a cap on the class, or nothing beyond the individual tables?"
+  ]
+}

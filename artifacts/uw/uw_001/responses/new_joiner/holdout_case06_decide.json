@@ -1,0 +1,12 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 6",
+  "modifiers": [],
+  "drivers": [
+    "hazardous occupation (class C, high-voltage lineman)",
+    "hazardous avocation (technical rock climbing)",
+    "diagnosed sleep apnea",
+    "build (BMI in the 28.0-30.9 band)"
+  ],
+  "rationale": "Debits: build 25 (BMI 29.9), class C occupation 50, technical rock climbing 50, diagnosed sleep apnea 50; total 175, Table 6. BP, lipids, A1c, tobacco, driving, liver, family history and finances (500k against a 6.5M limit) carry nothing. Judgement used on three referral points: recent weight loss (labs clean, no extra charge), hazardous occupation plus avocation (stacked, no exclusion rider), and CPAP-compliant apnea (held the table charge)."
+}

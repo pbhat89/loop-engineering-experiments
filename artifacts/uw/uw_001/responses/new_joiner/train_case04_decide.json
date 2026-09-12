@@ -1,0 +1,15 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "elevated untreated systolic blood pressure",
+    "elevated total cholesterol",
+    "elevated total cholesterol to HDL ratio",
+    "elevated A1c without a diabetes diagnosis",
+    "parental myocardial infarction before age 60",
+    "hazardous occupation (class C, logging feller)",
+    "combination of cardiac risk factors referred to underwriting judgement"
+  ],
+  "rationale": "Debits: untreated systolic 139 (band 139-148), total cholesterol 256 and ratio 5.6 (both lipid tables in force), A1c 6.6 without diagnosis, mother's MI at 51, class C occupation. Build, tobacco, driving, liver, sleep apnea and financials clean. Total 200 lands at Table 8. The manual refers combinations of cardiac risk factors to underwriting judgement; none available, so I rated on the tables as written and applied no further loading. No modifiers."
+}

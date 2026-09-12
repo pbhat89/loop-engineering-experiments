@@ -1,0 +1,10 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 2",
+  "modifiers": [],
+  "drivers": [
+    "family history",
+    "liver enzymes"
+  ],
+  "rationale": "Build, blood pressure, lipids, A1c, tobacco, occupation, driving and financials all carry zero debits. Two first-degree breast cancers before 60 (mother 52, sister 57) charge 25 each, capped at 50. Liver enzymes above twice normal with no alcohol history charge 25; not borderline, so no judgement referral. Total 75 debits reads Table 2. Precedents carry neither factor and do not alter the result."
+}

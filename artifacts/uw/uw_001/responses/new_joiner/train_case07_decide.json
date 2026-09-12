@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard Plus",
+  "modifiers": [],
+  "drivers": [
+    "diastolic blood pressure above the Preferred ceiling",
+    "A1c and total cholesterol above the Preferred Plus ceilings",
+    "otherwise clean profile: build, lipid ratio, tobacco, family history, occupation, driving, liver, sleep, financials all within preferred criteria"
+  ],
+  "rationale": "Zero debits across all tables. Financials well within the 15x multiple for age 53 ($1.4M total against $3.9M capacity). Preferred Plus fails on diastolic 86, A1c 6.0 and TC 215; Preferred fails on diastolic 86 against the 84 ceiling. Every Standard Plus criterion is met, including BP 124/86 within 138/88 untreated. Accept at Standard Plus with no modifiers."
+}

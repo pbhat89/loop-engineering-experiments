@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "blood pressure"
+  ],
+  "rationale": "Treated hypertension (medicated since 2019, reading 141/83) takes the manual's on-treatment debit of 25; the reading tables apply to untreated readings only. Total 25 debits: Standard. Treatment rules out every preferred class. Build, lipids, A1c, family history, occupation, avocation, driving, liver and sleep apnea carry no debits; face sits within the income multiple. Reading is above target, so the treated-at-target referral does not arise; judgement used only in not stacking the reading band on the treatment debit."
+}

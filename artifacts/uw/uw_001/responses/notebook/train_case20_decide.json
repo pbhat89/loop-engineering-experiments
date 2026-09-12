@@ -1,0 +1,15 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "blood pressure reading",
+    "lipid ratio",
+    "A1c",
+    "tobacco",
+    "occupation class",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Build 25, untreated systolic 25, lipid ratio 25 (cholesterol band not charged where it disagrees with the ratio), A1c 6.8 undiagnosed 50, tobacco quit within 5 years 25, class B occupation 25. Family-history debits dropped: applicant is past the qualifying age. Untreated hypertension, severe hyperlipidaemia, diabetic-range A1c and obesity together form a combination of cardiac risk factors; the manual refers this to judgement, so I added one interaction debit. Total 200, Table 8. Financials within limit."
+}

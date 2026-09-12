@@ -1,0 +1,16 @@
+{
+  "decision": "accept_with_modification",
+  "rating_class": "Standard",
+  "modifiers": [
+    {
+      "type": "flat_extra",
+      "detail": "aviation",
+      "amount_per_1000": 2.5
+    }
+  ],
+  "drivers": [
+    "tobacco quit within the last 5 years",
+    "private aviation under 100 hours per year"
+  ],
+  "rationale": "Tobacco quit within five years carries the only debit (25), total 25, Standard band; it also bars every preferred class. Build, blood pressure, lipids, A1c, family history, occupation, driving, liver and sleep are all clean. Private aviation at 77 hours a year takes the house flat extra of $2.50 per $1,000 with no debits, per the senior underwriter, making this accept with modification. Face amount sits well within the 15x income multiple."
+}

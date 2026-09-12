@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Preferred",
+  "modifiers": [],
+  "drivers": [
+    "zero debits on every table",
+    "systolic blood pressure above the Preferred Plus ceiling",
+    "total cholesterol above the Preferred Plus ceiling",
+    "former tobacco use (quit over 5 years) bars Preferred Plus",
+    "total cover well within the age-band income multiple"
+  ],
+  "rationale": "Zero debits on every table: BMI 24.9, BP 133/72 untreated, TC 217 with ratio 3.8, A1c 5.2, class A occupation, clean MVR, no family history, normal liver, no apnea. Total cover $1.25M sits well inside the 30x income limit at age 29. Meets every Preferred criterion. Misses Preferred Plus on systolic BP (133 vs 128 ceiling), total cholesterol (217 vs 200) and former tobacco use rather than never. No judgement referral needed."
+}

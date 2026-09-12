@@ -1,0 +1,12 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "face amount plus in-force cover far exceeds the age-61+ income multiple with no financial justification on file",
+    "tobacco quit within the last 5 years",
+    "two parental events before age 60 (father stroke, mother lung cancer)",
+    "diagnosed sleep apnea"
+  ],
+  "rationale": "Total cover $1.6M is 26.7x income against the 10x multiple for age 61+; no financial justification on file, so I used judgement and postponed pending it. On the medical tables the file rates Table 4: tobacco quit within 5 years, two parental events before 60 (charged despite the applicant's age, judgement), and diagnosed sleep apnea charged at table despite CPAP compliance (judgement). Build, BP, lipids, A1c, occupation, driving and liver clear."
+}

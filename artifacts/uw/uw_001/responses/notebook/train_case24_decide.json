@@ -1,0 +1,13 @@
+{
+  "decision": "postpone",
+  "rating_class": null,
+  "modifiers": [],
+  "drivers": [
+    "DUI (recent conviction)",
+    "moving violations",
+    "occupation class",
+    "climbing",
+    "liver enzymes"
+  ],
+  "rationale": "Postponed on the 2025 DUI: the manual refers a recent motoring conviction to judgement, and desk practice postpones a recent DUI rather than rating it. If rated later: occupation class C, three violations and liver enzymes above twice normal (not mild) would carry debits; climbing alongside the hazardous occupation would take an exclusion rider; the cholesterol band yields to the ratio, uncharged. Build, BP, A1c, tobacco, family history and financials are clean. Judgement used on referral lines."
+}

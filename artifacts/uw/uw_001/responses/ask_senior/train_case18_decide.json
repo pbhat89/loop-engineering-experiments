@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "diagnosed sleep apnea, untreated (no CPAP)",
+    "tobacco quit within the last 5 years",
+    "elevated total cholesterol to HDL ratio"
+  ],
+  "rationale": "Debits: diagnosed sleep apnea without CPAP 50; tobacco quit within 5 years 25; lipids charged on the ratio band only per senior guidance (ratio 5.3, 25), not the TC 321+ band. Build, BP, A1c, family history, occupation, driving, liver and financial multiple all clear. Total 100, Table 4. Section 16 cardiac-combination referral: used judgement and added nothing beyond the tables, as the senior pointed back to the debit-band table."
+}

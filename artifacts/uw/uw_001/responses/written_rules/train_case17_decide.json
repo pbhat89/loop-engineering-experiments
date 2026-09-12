@@ -1,0 +1,14 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "build",
+    "blood pressure reading",
+    "A1c",
+    "moving violations",
+    "sleep apnea",
+    "cardiac risk interaction"
+  ],
+  "rationale": "Cover $650,000 inside 15x ceiling $3.9M; no DUI. Weight down 17 lb: half added back under judgement, 160.5 lb, BMI 28.4, build charged 25. Treated BP 140/85 not at target; 25 as written. A1c 6.8 charged 50; diagnosed 2015 at about 49, not late-onset under judgement, no credit. Three violations 50; apnea without CPAP 50. Three cardiac tables charge; combination considered under judgement, nothing added. Total 200 reads Table 8; accept, no modifier."
+}

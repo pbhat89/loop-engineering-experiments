@@ -1,0 +1,11 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 4",
+  "modifiers": [],
+  "drivers": [
+    "build (BMI in the 28.0-30.9 band)",
+    "hazardous occupation (class C, high-voltage lineman)",
+    "driving record (2 moving violations in the last 3 years)"
+  ],
+  "rationale": "Debits: build 25 (BMI 30.1, weight stable), occupation class C 50, two moving violations 25; total 100, Table 4. Blood pressure, lipids, A1c, tobacco, family history, liver and sleep apnea all carry zero. No hazardous avocation, so no occupation-avocation referral. Financial: $650,000 total against a $4.375M allowance at 25x income, well within. No modifier applies; standard tables were sufficient and no judgement referral was needed."
+}

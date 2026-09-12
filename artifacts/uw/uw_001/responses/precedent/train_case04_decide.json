@@ -1,0 +1,13 @@
+{
+  "decision": "accept",
+  "rating_class": "Table 8",
+  "modifiers": [],
+  "drivers": [
+    "occupation class",
+    "A1c",
+    "lipids",
+    "blood pressure",
+    "family history"
+  ],
+  "rationale": "Debits: untreated systolic 139 (25), total cholesterol 256 and ratio 5.6 (25 each, both tables in force), A1c 6.6 without diagnosis (50), mother's MI at 51 (25), logging feller class C (50). Total 200, Table 8. Build, tobacco, driving, liver, apnea and financials clear. The manual refers combined cardiac risk factors to judgement; none available, so I rated on the tables and used judgement to accept at Table 8. Precedents were distant and did not fit."
+}

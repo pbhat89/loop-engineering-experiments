@@ -1,0 +1,9 @@
+{
+  "decision": "accept",
+  "rating_class": "Standard",
+  "modifiers": [],
+  "drivers": [
+    "tobacco quit within 5 years"
+  ],
+  "rationale": "Only debit: 25 for tobacco quit within 5 years; every other table reads zero. Total 25 is Standard; preferred classes require zero debits. Total cover $2.0M exceeds the 25x income guide ($1.7M) by about 18%. The manual refers that to judgement and none is available, so I used judgement: the excess is modest on an otherwise clean term file and I accepted as applied. The precedent is too distant to bear on this file."
+}
