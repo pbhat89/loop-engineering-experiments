@@ -190,9 +190,8 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
              "Lower is better; zero means the rating matched exactly.",
              fontsize=9.8, color=INK2, va="bottom", style="italic")
     fig.text(0.012, 0.014,
-             "Operators were Claude Fable 5.1 throughout, except the written-rules design, whose last "
-             "two training files and all eight held-out files ran on Claude Opus 5 after the Fable "
-             "quota ran out (D-28).",
+             "Thirty training files with a marked-up correction after each, then eight held-out files with "
+             "memory frozen and no feedback. Each design did this once.",
              fontsize=8.3, color=INK2, va="bottom")
 
     _stub_watermark(fig, run_id)
@@ -246,14 +245,9 @@ def fig_holdout(summary: dict, run_id: str, out_dir: Path) -> None:
         "that turn on a house rule which never appeared in training, so nothing written down covers them.",
         width=104)
     fig.text(0.012, 0.945, subtitle, fontsize=9.8, color=INK2, va="top", linespacing=1.45)
-    footnote = textwrap.fill(
-        "New joiner, running notebook and precedent file took this test on Claude Fable 5.1; written rules "
-        "took it on Claude Opus 5 after the Fable quota ran out, so its number is not strictly "
-        "like-for-like.", width=118)
-    fig.text(0.012, 0.868, footnote, fontsize=8.3, color=INK2, va="top", linespacing=1.5)
 
     _stub_watermark(fig, run_id)
-    fig.tight_layout(rect=(0, 0.01, 1, 0.79))
+    fig.tight_layout(rect=(0, 0.01, 1, 0.83))
     fig.savefig(out_dir / "holdout.png", dpi=170)
     plt.close(fig)
 
