@@ -27,3 +27,10 @@ Thumbs.db
 # LangGraph checkpoint databases (rebuilt by the runner)
 logs/checkpoints/
 artifacts/uw/*/checkpoints/
+
+# Archived LangGraph checkpoint databases (rebuildable; excluded to keep the clone small)
+archive/**/checkpoints/
+*.sqlite
+
+# Tooling caches
+.ruff_cache/

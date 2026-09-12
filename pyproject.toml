@@ -1,8 +1,9 @@
 [project]
 name = "claims-skill-loop"
 version = "0.1.0"
-description = "Educational LangGraph experiment: a claims-analysis agent that learns versioned Markdown skills from evaluator feedback (synthetic data only)"
+description = "Loop engineering experiments: seven LangGraph studies of what an agent keeps between tasks, scored against frozen answers on synthetic data"
 readme = "README.md"
+urls = { Repository = "https://github.com/pbhat89/loop-engineering-experiments" }
 requires-python = ">=3.12,<3.14"
 license = { text = "MIT" }
 dependencies = [
