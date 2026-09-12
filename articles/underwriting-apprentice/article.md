@@ -1,6 +1,6 @@
 <!--
-Title: The underwriting apprentice: four ways to make an agent learn on the job
-Subtitle: A LangGraph experiment in loop engineering. One life insurance application rated thirty-eight times, and what each design actually kept.
+Title: Loop engineering: the underwriting apprentice, four ways to make an agent learn on the job
+Subtitle: A LangGraph experiment. One life insurance application rated thirty-eight times, and what each design actually kept.
 Tags: Loop Engineering, Agentic AI, LangGraph, Memory, Underwriting, Insurance
 Photo credits:
   - assets/what_each_gets.png, "Image by Author" (matplotlib)
@@ -9,9 +9,9 @@ Photo credits:
   - A stock hero photo (Unsplash: a desk of paper files, or a stack of forms) can be dropped in above the title.
 -->
 
-# The underwriting apprentice: four ways to make an agent learn on the job
+# Loop engineering: the underwriting apprentice, four ways to make an agent learn on the job
 
-*A LangGraph experiment in loop engineering. One life insurance application rated thirty-eight times, and what each design actually kept.*
+*A LangGraph experiment. One life insurance application rated thirty-eight times, and what each design actually kept.*
 
 Every agent framework now advertises that its agents "learn from experience". Push on that claim and it usually turns out to be one of two things: a prompt somebody kept editing by hand, or a vector store of old conversations that nobody has ever measured. Neither is learning in the sense a manager means it. A manager means the new person makes a mistake in week one, and by week six they don't make it any more.
 
@@ -21,11 +21,31 @@ The remarks below are my personal take basis building and testing this over a co
 
 ## Why an underwriting desk?
 
-My first attempt at this used a claims analytics dataset and six different analysis tasks. It failed, and the way it failed is the most useful thing I learned. Six different jobs, each exercising a different handful of conventions, gives you six one-shot trials wearing a trench coat. There is no learning curve to see, because nothing repeats.
+The hard part of testing this is choosing the work. A learning curve needs **the same job, done again and again, by someone who is getting corrected.** Six different tasks would give you six one-shot trials rather than a curve, however interesting each one is on its own.
 
-A learning curve needs **the same job, done again and again, by someone who is getting corrected**. That is an apprenticeship. And individual life underwriting is close to a perfect laboratory version of one. A new underwriter is hired and given only a manual to decide from. There is no prior experience. Files arrive one at a time, and a senior marks up each one.
+That is an apprenticeship, and individual life underwriting is close to a perfect laboratory version of one. A new underwriter is hired and given only a manual to decide from. There is no prior experience. Files arrive one at a time, and a senior marks up each one.
 
 The manual is not the job. The job is the manual, plus the house practice that nobody ever wrote down.
+
+## How each design is scored
+
+One number, for everybody, on every file: **the average deviation from the actual rating.** It is worth thirty seconds because everything later in this article is measured in it.
+
+Rating classes sit in a fixed order, best to worst:
+
+```text
+Preferred Plus · Preferred · Standard Plus · Standard · Table 2 · Table 4 · Table 6 · Table 8 · Decline
+```
+
+The deviation on a file is simply how many positions apart the agent's answer and the correct answer are.
+
+Take the very first file. The correct answer was **Table 2**. The new joiner rated it **Table 6**, which sits two positions further along, so the deviation on that file is **2**. Had it said Table 4, the deviation would have been 1. Had it said Table 2, it would have been 0, an exact match.
+
+A postpone is not a rating at all, so it sits off the list. If one side postpones and the other rates, that counts as 2.
+
+Average that over the files and you have the score. **Lower is better, and zero means the rating matched exactly.** The number going down over time is the thing this whole experiment is looking for.
+
+I score the class rather than the arithmetic that produced it, on purpose. The class is what the applicant actually pays. Two underwriters can reach the same class by slightly different routes and both be right, and an agent that gets the charges tidy but lands the applicant one class too expensive has still done the job badly.
 
 ## What the underwriter is actually given
 
@@ -34,18 +54,18 @@ Two things, and it is worth seeing both before the results.
 **The file.** About fifteen structured fields, roughly a page. Here is one of the thirty-eight, shortened a little:
 
 ```text
-Applicant:     M, age 37
-Product:       30-year term, face $750,000
-Build:         6'2", 206 lb, BMI 26.4; weight stable
-Tobacco:       quit more than 5 years ago; nicotine screen negative
-Blood pressure:121/76, untreated
-Lipids:        total cholesterol 204, HDL 47, ratio 4.3
-A1c:           5.7; no diabetes diagnosis
-Occupation:    office administrator, class A
-Driving:       0 moving violations in 3 years; DUI conviction 2024
-Sleep apnea:   diagnosed, no CPAP in use
-Financial:     income $175,000, $400,000 already in force
-Also on file:  collects first-edition crime novels
+Applicant:      M, age 37
+Product:        30-year term, face $750,000
+Build:          6'2", 206 lb, BMI 26.4; weight stable
+Tobacco:        quit more than 5 years ago; nicotine screen negative
+Blood pressure: 121/76, untreated
+Lipids:         total cholesterol 204, HDL 47, ratio 4.3
+A1c:            5.7; no diabetes diagnosis
+Occupation:     office administrator, class A
+Driving:        0 moving violations in 3 years; DUI conviction 2024
+Sleep apnea:    diagnosed, no CPAP in use
+Financial:      income $175,000, $400,000 already in force
+Also on file:   collects first-edition crime novels
 ```
 
 Every file carries one detail that does not matter, because knowing what to ignore is part of the job.
@@ -60,7 +80,7 @@ Every file carries one detail that does not matter, because knowing what to igno
 >
 > **Classes.** Add the charges and read the class off the total: 0 to 49 Standard, 50 to 99 Table 2, 100 to 149 Table 4, 150 to 199 Table 6.
 
-Work the file above with only that, and you get a clean answer: fifty for the DUI, fifty for the untreated apnea, one hundred in total, Table 4, accept. It is a defensible reading and it is wrong, which is the whole point of the exercise. What it is missing is coming up next.
+Work the file above with only that, and you get a clean answer: fifty for the DUI, fifty for the untreated apnea, one hundred in total, Table 4, accept. It is a defensible reading, and it is wrong.
 
 ## The twelve rules nobody is told
 
@@ -71,8 +91,6 @@ And the one that decides the file above: **a recent DUI is postponed, not rated.
 Each rule is discrete, so it is learnable from a single correction. Each one fires in at least three training files and in at least two different shapes, so nobody can learn it too narrowly and still pass.
 
 The manual is honest about where it stops, the way real manuals are. Underneath the driving table it says *"For a recent motoring conviction, refer to underwriting judgement."* That tells you a gap exists. It does not tell you what fills it.
-
-**Keeping score.** Rating classes sit in a fixed order: Preferred Plus, Preferred, Standard Plus, Standard, Table 2, Table 4, Table 6, Table 8, Decline. The score for a file is how many classes away from the senior's answer you landed. Zero is a perfect match. A postpone that should have been a rating, or the reverse, costs a flat two.
 
 Thirty training files with a markup after each, then eight held-out files with memory frozen and no markup at all. Constant difficulty from file one. No gentle opening, because a gentle opening would make every line rise as the mix normalised, which is the opposite of the shape we are looking for.
 
@@ -100,16 +118,16 @@ The **precedent file** is the third instinct, which is to not generalise at all 
 
 ## What happened over thirty-eight files
 
-![Error falls as the files add up](assets/learning_curve.png)
+![Deviation falls as the files add up](assets/learning_curve.png)
 *Image by Author*
 
-This is the whole experiment in one picture. Each line is the running average of how far off the rating was, over every file done so far. It answers the question a manager actually asks: across everything this person has touched, how good have they been?
+This is the whole experiment in one picture. Each line is the running average deviation from the actual rating, over every file done so far. It answers the question a manager actually asks: across everything this person has touched, how good have they been?
 
 For the first seven files all four lines sit exactly on top of one another, which is why you only see one. That was designed, and registered in advance as a condition for the experiment to count. Every house rule that fires in those files fires there for the first time, so nobody has been corrected on anything yet and all four hold identical information. Had they separated there, something had leaked and the results would have been void. A second check was registered the same way: performance on straightforward files, which the manual fully covers, must not change with experience. It stayed flat at zero for all four, start to finish.
 
 From file eight they fan out, and they never come back together.
 
-| Design | Classes off, over 30 training files | Files rated exactly right | Decision correct |
+| Design | Average deviation, 30 training files | Files rated exactly right | Decision correct |
 |---|---|---|---|
 | New joiner | 0.67 | 15 of 30 | 71% |
 | Running notebook | 0.40 | 21 of 30 | 89% |
@@ -120,7 +138,7 @@ From file eight they fan out, and they never come back together.
 
 The new joiner's line is the control and it behaves like one. It drifts down a little, because a capable model does pick up some house practice from general knowledge and because a running average of a jagged series flattens by arithmetic alone. But it is wrong on the same kinds of file at file 28 as it was at file 8. Nothing is retained, because there is nowhere to retain it.
 
-The three memory designs pull away and then **flatten out around file 25**. That flattening is not a stall, and it is worth being clear about why. Error cannot go below zero, the straightforward files were never going to be wrong, and by file 25 each design has been corrected on most of the twelve rules at least once. There is simply less left to learn. Where a line settles is the interesting number, not whether it is still falling.
+The three memory designs pull away and then **flatten out around file 25**. That flattening is not a stall, and it is worth being clear about why. Deviation cannot go below zero, the straightforward files were never going to be wrong, and by file 25 each design has been corrected on most of the twelve rules at least once. There is simply less left to learn. Where a line settles is the interesting number, not whether it is still falling.
 
 ## The held-out test
 
@@ -128,31 +146,37 @@ The shaded region on the right is where it gets interesting. Eight fresh files, 
 
 Watch what the running average does when the feedback stops. The new joiner's line **turns upward**, from 0.67 to 0.71. The other three keep falling. That is the finding in one gesture: the designs that kept something walk into unseen work and do better than their own track record, and the one that kept nothing does worse.
 
-![Held-out cases](assets/holdout.png)
+![Held-out files](assets/holdout.png)
 *Image by Author*
 
-| Design | Classes off, on the 8 held-out files | Rated exactly right |
+| Design | Average deviation, 8 held-out files | Rated exactly right |
 |---|---|---|
 | New joiner | 0.88 | 2 of 8 |
 | Running notebook | 0.25 | 6 of 8 |
 | Written rules | 0.25 | 6 of 8 |
 | Precedent file | 0.38 | 5 of 8 |
 
-Two things worth sitting with.
+The new joiner's 0.88 is almost exactly the 0.88 that a careful, literal reader of the manual alone scores on the same eight files. Thirty files of experience existed in that office and she had access to none of it. That is the honest price of house practice nobody writes down: roughly two thirds of a class per file, forever.
 
-The new joiner's 0.88 is almost exactly the 0.88 that a careful, literal reader of the manual alone scores on the same eight files. Thirty files of experience existed in that office and she had access to none of it. That is the honest price of house practice nobody writes down: about two thirds of a class per file, forever.
+## The two files nobody could get right
 
-And **every design missed the two files that turn on a house rule which never appeared in training.** All four, equally, by a full class each. Memory transfers what it has been corrected on and not one inch further. If you take one line from this article, take that one. It is the ceiling on every "our agent learns from your data" claim you will read this year.
+Look at the thin bars on that chart. Every one of them sits at a full position, for all four designs, including the two that spent thirty files taking careful notes.
+
+Two of the eight held-out files were built to be unlearnable. Each turns on a house rule that **never appears in any of the thirty training files**. No correction was ever given on it, nothing in the manual covers it, and no amount of rereading a notebook or rewriting a rule book can produce it. There is simply no path from anything the agent has ever been shown to the right answer.
+
+All four missed both. That is not a failure of the memory designs. It is the ceiling, and it is the most portable lesson here.
+
+A learning loop can only ever capture what its feedback has actually covered. If the work your agent sees during training does not contain a situation, then no memory design, no retrieval strategy and no amount of reflection will produce the right answer when that situation finally turns up in production. **The coverage of your examples is the binding constraint, not the cleverness of your memory.** Teams reach for a better retrieval layer when what they actually need is a more comprehensive and representative set of cases with corrections attached. If you take one line from this article, take that one. It is the ceiling on every "our agent learns from your data" claim you will read this year.
 
 ## What actually got written down
 
 The abstract claim is that memory carries house practice. Here is what that looks like in the files themselves.
 
-**A page from the running notebook.** This is the senior's comment on the DUI file from the top of this article, pasted in exactly as written, and it is the whole of what the notebook keeps:
+**A page from the running notebook.** This is the senior's comment on the DUI file from earlier, pasted in exactly as written, and it is the whole of what the notebook keeps:
 
 > UW-T06: This one needed postponing rather than rating. On review the file should have been postponed. The material factors are DUI and sleep apnea. A recent DUI is postponed, not rated.
 
-Nothing is added and nothing is interpreted. Note what is absent: no threshold, no number, no "within N years". The senior states practice, never a parameter. Whoever reads this later has to work out how recent is recent.
+Nothing is added and nothing is interpreted. Note what is absent: no threshold, no number, no "within N years". The senior states practice, never a parameter. Whoever reads this later has to work out for themselves how recent counts as recent.
 
 **An entry from the written rules book.** The other design took the same correction and turned it into its own rule, which after thirty files reads:
 
@@ -170,7 +194,7 @@ That is exactly what you would want a junior to write. The real house rule is th
 
 > **In this setup, nothing lives in the person.** That is worth saying plainly, because it bounds what the experiment can claim. Every file is decided by a fresh model instance with no memory of anything, so all of the experience has to live in a document. What is being compared is therefore which document carries experience best, not whether an experienced person beats a newcomer holding their notes. For anyone building agent systems that is the more useful comparison anyway, since your agents are stateless too.
 
-> **Cheap memory did almost as well as clever memory.** The notebook does nothing smarter than paste every past comment in reverse order. The rule book needed a second model call after every single file, 68 calls against the notebook's 38. On a longer stretch the notebook's context will eventually burst and the rule book's will not, so a crossover exists. At thirty files it has not arrived. Before you build a summarisation and retrieval layer, check whether pasting the raw log gets you most of the way.
+> **Cheap memory did almost as well as clever memory.** The notebook does nothing smarter than paste every past comment in reverse order. The rule book needed a second model call after every single file, 68 calls against the notebook's 38. Over a longer stretch the notebook's context will eventually burst and the rule book's will not, so a crossover exists. At thirty files it has not arrived. Before you build a summarisation and retrieval layer, check whether pasting the raw log gets you most of the way.
 
 > **Precedent was the weakest of the three memories.** It carries answers, not rules. A near-identical past file helps enormously, and a merely similar one quietly misleads, which is why it finished behind both note-takers despite holding the richest thing of the three.
 
@@ -178,7 +202,7 @@ That is exactly what you would want a junior to write. The real house rule is th
 
 ## Learnings and future enhancement areas
 
-- **One job repeated is the whole design.** The claims version of this experiment failed because six different tasks cannot produce a curve. If you are evaluating whether an agent improves, the first question is not which memory you use, it is whether your test set repeats.
+- **One job repeated is the whole design.** Six different tasks cannot produce a learning curve, however interesting each one is. If you are evaluating whether an agent improves, the first question is not which memory you use, it is whether your test set repeats.
 - **Write down in advance what would void the results.** The dead heat over the first seven files, and flat performance on straightforward files, were both recorded before any code was written. Had either failed, the honest finding would have been "something leaked", and this article would have said so.
 - **A fifth design did not make the cut, and the reason is instructive.** I also built an *ask a senior* design, which keeps no memory but may ask up to four questions before deciding. It scored a perfect zero on all thirty-eight files, which tells you about my senior rather than about the design. I had implemented the senior as a lookup that always knew the right answer, so it was an oracle, not a colleague. A real senior is an experienced average: the manual, somewhat more practice, and their own blind spots. Modelling that properly is a better experiment than the one I did, and it is the first thing I would add.
 - **Each design did this once, so this is not a benchmark.** No error bars. The ordering is the finding, the exact decimals are not. Repeating each design five times is the obvious next step.

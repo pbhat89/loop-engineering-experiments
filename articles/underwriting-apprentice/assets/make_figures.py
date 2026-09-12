@@ -166,7 +166,7 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
     ax.set_xlim(0.3, n_cases + 7.5)
     ax.set_xticks([1, 5, 10, 15, 20, 25, 30, 34, 38])
     ax.set_xlabel("file number")
-    ax.set_ylabel("rating classes off the correct answer")
+    ax.set_ylabel("average deviation from the actual rating")
     ax.grid(axis="y", color=LINE, lw=0.6, zorder=0)
     ax.set_axisbelow(True)
 
@@ -180,14 +180,14 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
         ax.text(label_x, y_label, DISPLAY[arm], color=ARM_COLOR[arm], fontsize=11.3, fontweight="bold",
                 va="center", ha="left", zorder=4)
 
-    fig.text(0.012, 0.99, "Error falls as the files add up, for the designs that keep something",
+    fig.text(0.012, 0.99, "Deviation falls as the files add up, for the designs that keep something",
               fontsize=15.5, fontweight="bold", va="top")
     fig.text(0.012, 0.945,
-             "Running average of how far off the rating was, across all 38 files, one design per line",
+             "Average deviation from the actual rating, running across all 38 files, one design per line",
              fontsize=10.3, color=INK2, va="top")
     fig.text(0.012, 0.052,
-             "Each line is the average rating error over every file done so far. Lower is better; zero "
-             "is a perfect match with the senior's markup.",
+             "Each line is the average deviation from the actual rating over every file done so far. "
+             "Lower is better; zero means the rating matched exactly.",
              fontsize=9.8, color=INK2, va="bottom", style="italic")
     fig.text(0.012, 0.014,
              "Operators were Claude Fable 5.1 throughout, except the written-rules design, whose last "
@@ -236,20 +236,21 @@ def fig_holdout(summary: dict, run_id: str, out_dir: Path) -> None:
     ax.invert_yaxis()
     ax.set_xlim(0, max_val * 1.4)
     ax.set_ylim(n - 0.35, -0.75)
-    ax.set_xlabel("rating classes off the correct answer")
+    ax.set_xlabel("average deviation from the actual rating")
     ax.grid(axis="x", color=LINE, lw=0.6, zorder=0)
     ax.set_axisbelow(True)
 
-    fig.text(0.012, 0.99, "Held-out cases: everyone slips on the rule nobody trained on", fontsize=15, fontweight="bold", va="top")
-    fig.text(0.012, 0.935,
-             "Solid bar = average rating error over the 8 held-out files. Thin bar = the 2 of those 8 that turn "
-             "on a house rule which never appeared in training.",
-             fontsize=9.8, color=INK2, va="top")
+    fig.text(0.012, 0.99, "Two of the eight held-out files could not be learned by anyone", fontsize=15, fontweight="bold", va="top")
+    subtitle = textwrap.fill(
+        "Solid bar: average deviation from the actual rating over the 8 held-out files. Thin bar: the 2 of those 8 "
+        "that turn on a house rule which never appeared in training, so nothing written down covers them.",
+        width=104)
+    fig.text(0.012, 0.945, subtitle, fontsize=9.8, color=INK2, va="top", linespacing=1.45)
     footnote = textwrap.fill(
         "New joiner, running notebook and precedent file took this test on Claude Fable 5.1; written rules "
         "took it on Claude Opus 5 after the Fable quota ran out, so its number is not strictly "
         "like-for-like.", width=118)
-    fig.text(0.012, 0.895, footnote, fontsize=8.3, color=INK2, va="top", linespacing=1.5)
+    fig.text(0.012, 0.868, footnote, fontsize=8.3, color=INK2, va="top", linespacing=1.5)
 
     _stub_watermark(fig, run_id)
     fig.tight_layout(rect=(0, 0.01, 1, 0.79))
