@@ -82,7 +82,7 @@ ARM_COLOR = {
 def _stub_watermark(fig, run_id: str) -> None:
     if not run_id.startswith("uw_stub"):
         return
-    fig.text(0.5, 0.5, "STUB DATA — no model was called", fontsize=34, fontweight="bold",
+    fig.text(0.5, 0.5, "STUB DATA. No model was called", fontsize=34, fontweight="bold",
               color="#b3400a", alpha=0.28, ha="center", va="center", rotation=28, zorder=50)
 
 
@@ -151,7 +151,7 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
     # regime is visible without needing the caption to explain it.
     ax.axvspan(split, n_cases + 0.5, color=INK2, alpha=0.10, lw=0, zorder=0)
     ax.axvline(split, color=INK, lw=1.1, alpha=0.6, zorder=1)
-    ax.text((split + n_cases + 0.5) / 2, 0.965, "held-out test — memory frozen, no feedback",
+    ax.text((split + n_cases + 0.5) / 2, 0.965, "held-out test: memory frozen, no feedback",
             transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=9.2,
             style="italic", color=INK2, zorder=5)
 
@@ -165,8 +165,8 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
 
     ax.set_xlim(0.3, n_cases + 7.5)
     ax.set_xticks([1, 5, 10, 15, 20, 25, 30, 34, 38])
-    ax.set_xlabel("case number")
-    ax.set_ylabel("rating error, ladder steps")
+    ax.set_xlabel("file number")
+    ax.set_ylabel("rating classes off the correct answer")
     ax.grid(axis="y", color=LINE, lw=0.6, zorder=0)
     ax.set_axisbelow(True)
 
@@ -180,10 +180,10 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
         ax.text(label_x, y_label, DISPLAY[arm], color=ARM_COLOR[arm], fontsize=11.3, fontweight="bold",
                 va="center", ha="left", zorder=4)
 
-    fig.text(0.012, 0.99, "Error falls as the files add up — for the designs that keep something",
+    fig.text(0.012, 0.99, "Error falls as the files add up, for the designs that keep something",
               fontsize=15.5, fontweight="bold", va="top")
     fig.text(0.012, 0.945,
-             "Running average of rating error across all 38 files, one design per line",
+             "Running average of how far off the rating was, across all 38 files, one design per line",
              fontsize=10.3, color=INK2, va="top")
     fig.text(0.012, 0.052,
              "Each line is the average rating error over every file done so far. Lower is better; zero "
@@ -236,7 +236,7 @@ def fig_holdout(summary: dict, run_id: str, out_dir: Path) -> None:
     ax.invert_yaxis()
     ax.set_xlim(0, max_val * 1.4)
     ax.set_ylim(n - 0.35, -0.75)
-    ax.set_xlabel("rating error, ladder steps")
+    ax.set_xlabel("rating classes off the correct answer")
     ax.grid(axis="x", color=LINE, lw=0.6, zorder=0)
     ax.set_axisbelow(True)
 
@@ -293,7 +293,7 @@ def fig_what_each_gets(run_id: str, out_dir: Path) -> None:
     ax.axis("off")
 
     # heading sits in its own band above the boxes so its text never collides with them
-    ax.text(0.3, 9.45, "The shared spine — every design follows the same five steps", fontsize=13.5,
+    ax.text(0.3, 9.45, "The shared spine: every design follows the same five steps", fontsize=13.5,
             fontweight="bold", color=INK, va="top")
 
     # --- top: the shared five-step spine, one plain box per step, plain arrows between
