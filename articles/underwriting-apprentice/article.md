@@ -145,7 +145,14 @@ The **precedent file** is the third instinct, which is to not generalise at all 
 
 This is the whole experiment in one picture. Each line is the running average deviation from the actual rating, over every file done so far. It answers the question a manager actually asks: across everything this person has touched, how good have they been?
 
-For the first seven files all four lines sit exactly on top of one another, which is why you only see one. The first three of those were a registered condition for the experiment to count. At that point no design has been corrected on anything the later files test, so a separation there would have meant information was leaking between them and the results were void. They came out identical. The agreement then held for four more files on its own, which I did not register in advance, and it happens because every house rule firing in that stretch fires there for the first time. A memory can hold a correction and still have nothing useful in it yet. The file above is one of those seven, which is why all four rated it the same way and all four scored 2. A second check was registered too: performance on straightforward files, which the manual fully covers, must not change with experience. It stayed flat at zero for all four, start to finish.
+For the first seven files all four lines sit exactly on top of one another, which is why you only see one. Four things worth pulling out of that:
+
+- **At the start, the four designs are the same thing.** Each has the manual and nothing else that helps yet. Same information in, same answers out.
+- **That is a bug check, not a result.** If one design could see another's notes, or I had wired the memory wrong, they would have split apart straight away. I wrote it down before running anything: the first three files must match, or the whole thing is void. They matched.
+- **The agreement then held for four more files on its own.** I did not predict that, and the reason is simple. Memory only helps the second time you meet a rule. Every hidden rule in that stretch was firing for the first time. The note-takers did have notes by file four. None of them applied yet.
+- **The DUI file from earlier is file six**, inside that stretch. That is why all four rated it the same way and all four were two positions off.
+
+A second check was registered the same way, and it is a separate thing. On straightforward files, the ones the manual fully answers, experience should change nothing. A book that already has the answer does not get better with practice. It stayed at zero for all four designs, first file to last.
 
 From file eight they fan out, and they never come back together.
 
