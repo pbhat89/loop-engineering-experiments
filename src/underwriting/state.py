@@ -13,10 +13,11 @@ File protocol (``docs/OPERATOR_PROTOCOL.md``)::
 from __future__ import annotations
 
 import operator
+from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, Literal, TypedDict
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, create_model, field_validator
 
 from src.underwriting.scorer import normalise_class, normalise_decision
 from src.utils import atomic_write_json, utc_now
@@ -29,6 +30,10 @@ MEMORY_CONDITIONS: tuple[str, ...] = ("notebook", "written_rules", "precedent")
 ASKING_CONDITIONS: tuple[str, ...] = ("ask_senior",)
 REFLECTING_CONDITIONS: tuple[str, ...] = ("written_rules",)
 
+# The default cap on the ask-a-senior questions. ``max_questions`` in
+# config/underwriting.yaml overrides it for a run, and everything that depends on the cap -
+# the instruction text, the response schema and the oracle's own limit - derives from the
+# configured value rather than repeating this number. Defined here once; senior.py imports it.
 MAX_QUESTIONS = 4
 MAX_RATIONALE_WORDS = 80
 MAX_REREQUESTS = 2  # the first request plus two re-requests; then the answer is scored as unparseable
@@ -46,11 +51,34 @@ DECIDE_INSTRUCTIONS = (
     "manual defines. Where the manual says refer to underwriting judgement, decide anyway and say in the "
     "rationale that you did. One attempt: there is no resubmission."
 )
-ASK_INSTRUCTIONS = (
-    "Before you rate this application you may ask a senior underwriter up to four questions. The senior "
-    "answers each one narrowly and literally and will not rate the file for you. Ask none, or ask up to "
-    "four - how many is your call, and how many you used is recorded. Return the questions and nothing else."
+_NUMBER_WORDS: tuple[str, ...] = (
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
 )
+
+
+def _number_word(n: int) -> str:
+    return _NUMBER_WORDS[n] if 0 <= n < len(_NUMBER_WORDS) else str(n)
+
+
+def ask_instructions(max_questions: int = MAX_QUESTIONS) -> str:
+    """The ask-step instructions for a run whose cap is ``max_questions``.
+
+    The number is never hardcoded here: it is the same value :func:`ask_response_model`
+    caps ``questions`` at and the same value the senior oracle will answer. A run
+    configured for one question does not invite four and silently drop three, and a run
+    configured for six does not say four and then reject the operator's fifth.
+    """
+    n = max(int(max_questions), 0)
+    word = _number_word(n)
+    noun = "question" if n == 1 else "questions"
+    return (
+        f"Before you rate this application you may ask a senior underwriter up to {word} {noun}. The senior "
+        "answers each one narrowly and literally and will not rate the file for you. Ask none, or ask up to "
+        f"{word} - how many is your call, and how many you used is recorded. Return the questions and nothing else."
+    )
+
+
+ASK_INSTRUCTIONS = ask_instructions()
 REFLECT_INSTRUCTIONS = (
     "Here is your house-rule book as it stands, the application you have just rated, the answer you gave and "
     "the reviewer's markup on it. Rewrite the whole book, in your own words, so that someone reading only the "
@@ -62,6 +90,13 @@ INSTRUCTIONS_BY_STEP: dict[str, str] = {
     "ask": ASK_INSTRUCTIONS,
     "reflect": REFLECT_INSTRUCTIONS,
 }
+
+
+def instructions_for(step: str, max_questions: int = MAX_QUESTIONS) -> str:
+    """The instruction text for one step. Only the ask step depends on the question cap."""
+    if step == "ask":
+        return ask_instructions(max_questions)
+    return INSTRUCTIONS_BY_STEP[step]
 
 
 # --------------------------------------------------------------------------- responses
@@ -116,7 +151,11 @@ class DecideResponse(_Lenient):
 
 
 class AskResponse(_Lenient):
-    """Zero to four questions for the senior underwriter."""
+    """Questions for the senior underwriter, capped at the default :data:`MAX_QUESTIONS`.
+
+    A run configured with a different ``max_questions`` gets its own model from
+    :func:`ask_response_model`; this is the default-cap case.
+    """
 
     questions: list[str] = Field(default_factory=list, max_length=MAX_QUESTIONS)
 
@@ -134,18 +173,56 @@ RESPONSE_MODELS: dict[str, type[BaseModel]] = {
 }
 
 
-def response_schema_for(step: str) -> dict:
+@lru_cache(maxsize=None)
+def ask_response_model(max_questions: int = MAX_QUESTIONS) -> type[BaseModel]:
+    """The ask-step response model whose ``questions`` cap is ``max_questions``.
+
+    Built rather than hardcoded, so the schema embedded in the request, the instruction
+    text and the oracle's limit are all the one configured number.
+    """
+    n = max(int(max_questions), 0)
+    if n == MAX_QUESTIONS:
+        return AskResponse
+    return create_model(
+        f"AskResponse{n}",
+        __base__=_Lenient,
+        __doc__=f"At most {n} question(s) for the senior underwriter.",
+        questions=(list[str], Field(default_factory=list, max_length=n)),
+    )
+
+
+def response_model_for(step: str, max_questions: int = MAX_QUESTIONS) -> type[BaseModel]:
+    if step == "ask":
+        return ask_response_model(max_questions)
     try:
-        return RESPONSE_MODELS[step].model_json_schema()
+        return RESPONSE_MODELS[step]
     except KeyError as exc:
         raise KeyError(f"{step!r} is not an operator step; expected one of {STEPS}") from exc
 
 
-def validate_response(step: str, raw: object) -> tuple[dict | None, list[str]]:
+def response_schema_for(step: str, max_questions: int = MAX_QUESTIONS) -> dict:
+    return response_model_for(step, max_questions).model_json_schema()
+
+
+def questions_cap(schema: dict | None) -> int:
+    """The question cap an ask request carries, read back out of its response schema.
+
+    The schema is the operator-visible statement of the cap, so anything answering an ask
+    request - the stub operator included - can honour the run's configured value without
+    being handed it by a second route.
+    """
+    field = ((schema or {}).get("properties") or {}).get("questions") or {}
+    try:
+        return int(field["maxItems"])
+    except (KeyError, TypeError, ValueError):
+        return MAX_QUESTIONS
+
+
+def validate_response(step: str, raw: object, max_questions: int = MAX_QUESTIONS) -> tuple[dict | None, list[str]]:
     """Validate one operator answer. Returns ``(normalised answer or None, errors)``."""
     from pydantic import ValidationError
 
-    model = RESPONSE_MODELS.get(step)
+    model = response_model_for(step, max_questions) if step in RESPONSE_MODELS else None
     if model is None:
         return None, [f"unknown step {step!r}"]
     if not isinstance(raw, dict):
@@ -189,6 +266,7 @@ class UwRequest(BaseModel):
         step: str,
         attempt: int,
         payload: dict,
+        max_questions: int = MAX_QUESTIONS,
     ) -> "UwRequest":
         if step not in STEPS:
             raise ValueError(f"{step!r} is not an operator step; expected one of {STEPS}")
@@ -205,9 +283,9 @@ class UwRequest(BaseModel):
             case_id=case_id,
             step=step,
             attempt=attempt,
-            instructions=INSTRUCTIONS_BY_STEP[step],
+            instructions=instructions_for(step, max_questions),
             payload=payload,
-            response_schema=response_schema_for(step),
+            response_schema=response_schema_for(step, max_questions),
         )
 
     def file_stem(self) -> str:

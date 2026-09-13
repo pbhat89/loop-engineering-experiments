@@ -44,7 +44,7 @@ Use it where it fits and ignore it where it does not. The manual still governs e
 
 ## When the step is `ask`
 
-You may put up to four questions to a senior underwriter before you rate the file. You choose how many, including none.
+You may put questions to a senior underwriter before you rate the file, up to the number the request's own `instructions` give you (four, unless the run says otherwise; the `response_schema` caps the list at the same number). You choose how many, including none.
 
 The senior answers each question **narrowly and literally**, one answer per question, and will not rate the file for you. Ask about something the manual already covers and you will be read the manual back — the question is spent for nothing. Ask nothing at all and you rate it alone. Return the questions and nothing else; you will get another request, with the answers, to actually decide.
 

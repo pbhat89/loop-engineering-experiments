@@ -27,9 +27,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from src.underwriting.data import goldens_by_case_id  # noqa: E402
+from src.underwriting.run import load_config  # noqa: E402
 from src.underwriting.scorer import DEFAULT_TRAILING_WINDOW, trailing_mean  # noqa: E402
 from src.underwriting.state import ASKING_CONDITIONS, CONDITIONS  # noqa: E402
-from src.utils import CONFIG_DIR, read_json, read_jsonl, read_yaml  # noqa: E402
+from src.utils import read_json, read_jsonl  # noqa: E402
 
 NOVEL_RULES = ("HR-13", "HR-14")
 DEAD_HEAT_CASES = 3
@@ -40,12 +41,11 @@ def default_window() -> int:
 
     The config key used to be dead - it was copied into run.json but nothing read it, so
     editing it made the log claim a window the analysis never used. This is what reads it.
+    The config file is loaded by the runner's own ``load_config`` rather than by a second
+    copy of it here, so the summariser and the runner can never read different files.
     """
-    path = CONFIG_DIR / "underwriting.yaml"
-    if not path.exists():
-        return DEFAULT_TRAILING_WINDOW
     try:
-        return int((read_yaml(path) or {}).get("trailing_window", DEFAULT_TRAILING_WINDOW))
+        return int((load_config() or {}).get("trailing_window", DEFAULT_TRAILING_WINDOW))
     except (TypeError, ValueError):
         return DEFAULT_TRAILING_WINDOW
 

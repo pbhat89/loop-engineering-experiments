@@ -22,7 +22,7 @@ from src.underwriting.provider import BaseProvider, ProviderSettings
 from src.underwriting.engine import rate, rate_manual_only
 from src.underwriting.house_rules import HOUSE_RULES
 from src.underwriting.memory import EMPTY_RULEBOOK
-from src.underwriting.state import MAX_QUESTIONS
+from src.underwriting.state import MAX_QUESTIONS, questions_cap
 from src.utils import atomic_write_json
 
 STUB_OPERATORS: tuple[str, ...] = ("naive", "learner")
@@ -144,7 +144,10 @@ class UwStubProvider(BaseProvider):
         payload = request.payload
         case = (payload.get("case") or {}).get("fields") or {}
         if request.step == "ask":
-            return {"questions": stub_questions(case) if self.operator_style == "learner" else []}
+            # The cap is read back out of the request's own response schema, so the stub
+            # honours the run's configured ``max_questions`` instead of the module default.
+            limit = questions_cap(request.response_schema)
+            return {"questions": stub_questions(case, limit) if self.operator_style == "learner" else []}
         if request.step == "reflect":
             return {"rulebook_markdown": self._rulebook(payload)}
         if self.operator_style == "naive":

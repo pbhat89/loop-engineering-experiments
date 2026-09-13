@@ -11,7 +11,12 @@ These cover the behaviours a code review found broken:
   (it is computed over all 38 files, not the 30 training ones) nor the held-out
   files-rated-exactly-right count;
 * ``max_questions`` and ``trailing_window`` sat in the config unread while being copied
-  into ``run.json``, so editing them made the log claim a value nothing used.
+  into ``run.json``, so editing them made the log claim a value nothing used;
+* ``max_questions`` then reached only the senior oracle: the instruction text said "four"
+  whatever the config held and the response schema still rejected a fifth question, so a
+  cap of 6 failed validation and a cap of 1 invited four questions and dropped three;
+* ``run.json`` wrote its ``config`` block only when the file did not yet exist, so a knob
+  changed between resumes left the log claiming a value the run was no longer using.
 """
 from __future__ import annotations
 
@@ -220,3 +225,47 @@ def test_the_config_advertises_no_key_the_code_ignores():
                  "mode", "operator", "model_identifier", "stub_operator", "artifacts_root",
                  "poll_interval_seconds", "poll_timeout_seconds"):
         assert kept in config, kept
+
+
+@pytest.mark.parametrize("limit, word", [(1, "one"), (6, "six")])
+def test_the_question_cap_is_consistent_across_instructions_schema_and_oracle(tmp_path, limit, word):
+    """One configured number, three consumers: what the operator is told, what the schema
+    will accept, and what the oracle will answer. They used to disagree for any value but 4."""
+    root = tmp_path / f"cap{limit}"
+    config = {"artifacts_root": str(root), "mode": "stub", "max_questions": limit,
+              "poll_interval_seconds": 0.01}
+    runner.advance("uw_cap", "ask_senior", "train", mode="stub", config=config, max_cases=3, quiet=True)
+    run_root = root / "uw_cap"
+
+    requests = sorted((run_root / "requests" / "ask_senior").glob("*_ask.json"))
+    assert requests
+    for path in requests:
+        request = json.loads(path.read_text(encoding="utf-8"))
+        assert f"up to {word}" in request["instructions"]
+        assert "four" not in request["instructions"]
+        assert request["response_schema"]["properties"]["questions"]["maxItems"] == limit
+
+    answered = [json.loads(line) for line in
+                (run_root / "ask_senior" / "cases.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()]
+    assert answered
+    assert all(r["questions_asked"] <= limit for r in answered)
+    assert max(r["questions_asked"] for r in answered) == limit, "the cap is never reached; it proves nothing"
+    assert not any(r["rerequests"] for r in answered), "the schema must accept what the instructions invite"
+    assert int(json.loads((run_root / "run.json").read_text(encoding="utf-8"))["config"]["max_questions"]) == limit
+
+
+def test_run_json_records_the_knobs_the_current_call_is_using(tmp_path):
+    """The config block is refreshed on every call, not only when run.json is created.
+    Changing a knob between resumes used to leave the log asserting the old value while the
+    code ran the new one - the very defect the config block exists to prevent."""
+    config = {"artifacts_root": str(tmp_path), "mode": "stub", "max_questions": 4, "precedent_k": 3}
+    runner.init_run_state(tmp_path / "uw_knob", "uw_knob", config, "stub", {"operator": "stub"}, "freeze")
+    config["max_questions"] = 2
+    config["precedent_k"] = 5
+    state = runner.init_run_state(tmp_path / "uw_knob", "uw_knob", config, "manual", {"operator": "live"}, "freeze")
+    assert state["config"]["max_questions"] == 2
+    assert state["config"]["precedent_k"] == 5
+    on_disk = json.loads((tmp_path / "uw_knob" / "run.json").read_text(encoding="utf-8"))
+    assert on_disk["config"] == state["config"]
+    assert on_disk["mode"] == "manual" and on_disk["provider"] == {"operator": "live"}
+    assert on_disk["created_at"] == state["created_at"], "a resume must not restamp the run's creation time"

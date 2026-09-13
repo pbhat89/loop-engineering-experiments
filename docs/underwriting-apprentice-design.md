@@ -1,5 +1,13 @@
 # The Underwriting Apprentice - experiment design (v3, approved 2026-09-11)
 
+> **Note added 2026-09-13.** The hidden set grew to **fourteen** house rules after this document was
+> written. HR-13 and HR-14 were added so that two of the eight held-out files turn on practice appearing
+> in no training file, which is what makes the ceiling of six out of eight measurable. **Twelve fire in
+> the training files** - the twelve this document counts, and the twelve its "three firings in at least
+> two shapes" constraint is about. Everything below, the headings and counts included, is the design as
+> first written; it is not rewritten, because a pre-registration that gets edited is no longer one. The
+> README and `docs/decision-log.md` carry the corrected count.
+
 Text export of the design artifact agreed with the lead before the build.
 
 The Underwriting Apprentice

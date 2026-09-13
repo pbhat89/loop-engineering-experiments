@@ -72,11 +72,11 @@ Reason:    a recent DUI is postponed, not rated. The file goes back for the
            charged underneath but does not decide the file.
 ```
 
-Table 4 is a defensible reading of the manual, and it is wrong. The house practice is that a recent conviction is not something you price, it is something you wait out. That rule appears nowhere in the manual. It is one of twelve like it, frozen before anything started and never shown to anyone.
+Table 4 is a defensible reading of the manual, and it is wrong. The house practice is that a recent conviction is not something you price, it is something you wait out. That rule appears nowhere in the manual. It is one of fourteen like it, frozen before anything started and never shown to anyone. Twelve of them turn up in the training files. The other two are held back, and they matter later.
 
 The manual is honest about where it stops, the way real manuals are. Underneath the driving table it says *"For a recent motoring conviction, refer to underwriting judgement."* That tells you a gap exists. It does not tell you what fills it.
 
-The other eleven are the same shape. A treated and controlled blood pressure carries the treatment charge only, not the reading on top. Family history charges lapse once the applicant is over 60. Where the cholesterol band and the ratio band disagree, the ratio governs. A large face amount at a high multiple of income is postponed for financial evidence rather than rated. Each one is discrete, so it is learnable from a single correction, and each fires in at least three training files in at least two different shapes, so nobody can learn it too narrowly and still pass.
+The rest are the same shape. A treated and controlled blood pressure carries the treatment charge only, not the reading on top. Family history charges lapse once the applicant is over 60. Where the cholesterol band and the ratio band disagree, the ratio governs. A large face amount at a high multiple of income is postponed for financial evidence rather than rated. Each one is discrete, so it is learnable from a single correction, and each fires in at least three training files in at least two different shapes, so nobody can learn it too narrowly and still pass.
 
 ## How each design is scored
 
@@ -200,7 +200,7 @@ That is exactly what you would want a junior to write. The real house rule is th
 
 ## Food for thought
 
-> **Is a shared notebook as good as a specialist?** This is the question I would most like a reader to argue with me about. If a new joiner can walk in, pick up the team's updated notes and match the underwriter who spent thirty files writing their own, then specialisation buys nothing and only the shared record matters. On the held-out files the two scored the same, and over the training files the personal rule book was modestly ahead. I would not call that settled either way, and the honest reading is that the shared notebook gets you most of the distance for a fraction of the effort.
+> **Is a shared notebook as good as a specialist?** This is the question I would most like a reader to argue with me about. If a new joiner can walk in, pick up the team's updated notes and match the underwriter who spent thirty files writing their own, then specialisation buys nothing and only the shared record matters. Over the training files, where both ran on the same model, the personal rule book was modestly ahead. On the held-out files the two scored the same, but I would not lean on that: the rule book took that test on a stronger model than the notebook did, for a reason I explain in the repository, so the tie is not a clean one. I would not call that settled either way, and the honest reading is that the shared notebook gets you most of the distance for a fraction of the effort.
 
 > **In this setup, nothing lives in the person.** That is worth saying plainly, because it bounds what the experiment can claim. Every file is decided by a fresh model instance with no memory of anything, so all of the experience has to live in a document. What is being compared is therefore which document carries experience best, not whether an experienced person beats a newcomer holding their notes. For anyone building agent systems that is the more useful comparison anyway, since your agents are stateless too.
 

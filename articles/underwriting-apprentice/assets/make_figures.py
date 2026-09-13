@@ -24,7 +24,10 @@ Files written:
   learning_curve.png   the article's closing chart -- cumulative (running) mean of
                         rating error (ladder steps) over all 38 files per arm: the 30
                         training cases in file order, then the 8 held-out cases, on one
-                        shared axis with the held-out phase shaded
+                        shared axis with the held-out phase shaded. The opening files on
+                        which all four designs agree exactly are drawn once, in a neutral
+                        grey belonging to no design, and each line takes its own colour
+                        from the file where they separate
   holdout.png           horizontal bars: mean rating error on the 8 held-out cases per
                         arm, plus a thin bar for the 2 "novel rule" held-out cases
                         (golden fires only HR-13 or HR-14)
@@ -59,7 +62,9 @@ from summarize_uw_run import NOVEL_RULES, default_window, load_run, summarize  #
 from src.underwriting.data import goldens_by_case_id  # noqa: E402
 
 # --------------------------------------------------------------------------- shared look
-# Same palette / type treatment as articles/loop-engineering-markdown-skills/assets/make_figures.py
+# The palette and type treatment of the loop-engineering articles. This is the only figure
+# script in the repository; the earlier article it was shared with is no longer here, so
+# these values are the definition rather than a copy of one.
 INK, INK2, LINE, PAPER = "#1b2a24", "#5b6b65", "#c9d1cc", "#fbfbf8"
 FAIL = "#b3400a"
 
@@ -79,15 +84,17 @@ DISPLAY = {
     "written_rules": "Written rules",
     "precedent": "Precedent file",
 }
-# Fixed per-arm colour, never cycled -- same colour-blind-safe (Okabe-Ito) palette as the
-# loop-engineering article, reused here so an arm's colour never means two different things
-# across the two articles.
+# Fixed per-arm colour, never cycled -- the colour-blind-safe Okabe-Ito palette, so an
+# arm's colour never means two different things.
 ARM_COLOR = {
     "new_joiner": "#0072B2",
     "notebook": "#56B4E9",
     "written_rules": "#009E73",
     "precedent": "#D55E00",
 }
+# The stretch where every design draws the same line is not any design's colour. This grey
+# is deliberately outside ARM_COLOR so nothing can read it as one of them.
+COINCIDENT = "#7d8783"
 
 
 def is_stub_run(run_id: str, mode: str | None) -> bool:
@@ -106,6 +113,23 @@ def _stub_watermark(fig, run_id: str, mode: str | None = None) -> None:
         return
     fig.text(0.5, 0.5, "STUB DATA. No model was called", fontsize=34, fontweight="bold",
               color="#b3400a", alpha=0.28, ha="center", va="center", rotation=28, zorder=50)
+
+
+def _coincident_prefix(cum_by_arm: dict[str, list[float]], tol: float = 1e-9) -> int:
+    """How many opening files every design agrees on exactly.
+
+    The designs hold identical information until the first correction changes an answer, so
+    their running averages are one number, not four, for that opening stretch.
+    """
+    series = [values for values in cum_by_arm.values() if values]
+    if len(series) < 2:
+        return 0
+    n = 0
+    for step in zip(*series):
+        if max(step) - min(step) > tol:
+            break
+        n += 1
+    return n
 
 
 def _spread_labels(values: dict[str, float], min_gap: float, anchor_first: tuple[str, ...] = ()) -> dict[str, float]:
@@ -177,13 +201,31 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path, mode: str | None 
             transform=ax.get_xaxis_transform(), ha="center", va="top", fontsize=9.2,
             style="italic", color=INK2, zorder=5)
 
+    # The opening files where the four designs coincide exactly. They held identical
+    # information there, so there is one line, not four -- but drawn per design the arm
+    # plotted last simply overpainted the other three, and the stretch came out in that
+    # design's colour and read as its line alone. It is drawn once here, in a neutral grey
+    # that belongs to no design, and each design picks up its own colour at the file where
+    # they separate (starting one point early so the lines join the grey without a gap).
+    n_same = _coincident_prefix(cum_by_arm)
+    halo = [patheffects.Stroke(linewidth=4.5, foreground=PAPER), patheffects.Normal()]
+
     for arm in ARM_ORDER:
         if arm not in cum_by_arm:
             continue
         cum = cum_by_arm[arm]
-        xs = list(range(1, len(cum) + 1))
-        ax.plot(xs, cum, color=ARM_COLOR[arm], lw=2.5, zorder=3, solid_capstyle="round",
-                 path_effects=[patheffects.Stroke(linewidth=4.5, foreground=PAPER), patheffects.Normal()])
+        start = max(n_same - 1, 0)
+        xs = list(range(start + 1, len(cum) + 1))
+        ax.plot(xs, cum[start:], color=ARM_COLOR[arm], lw=2.5, zorder=3, solid_capstyle="round",
+                 path_effects=halo)
+
+    if n_same:
+        shared = next(iter(cum_by_arm.values()))[:n_same]
+        ax.plot(range(1, n_same + 1), shared, color=COINCIDENT, lw=3.0, zorder=3.4,
+                solid_capstyle="round", path_effects=halo)
+        ax.text(1.0, min(shared) - 0.16,
+                f"Files 1 to {n_same}: all four designs\ndraw the same line",
+                ha="left", va="top", fontsize=9.4, style="italic", color=COINCIDENT, zorder=5)
 
     ax.set_xlim(0.3, n_cases + 7.5)
     ax.set_xticks([1, 5, 10, 15, 20, 25, 30, 34, 38])
@@ -240,15 +282,22 @@ def fig_holdout(summary: dict, run_id: str, out_dir: Path, run_root: Path | None
         if g.get("phase") == "holdout" and set(g.get("fired_rule_ids", [])) & set(NOVEL_RULES)
     }
 
-    exact, total = {}, 0
+    exact, counted = {}, {}
     for arm in ARM_ORDER:
         held = [r for r in data_by_arm.get(arm, []) if r["phase"] == "holdout"]
         if not held:
             continue
-        total = len(held)
+        counted[arm] = len(held)
         exact[arm] = sum(1 for r in held if r["ladder_distance"] == 0)
 
     present = [a for a in ARM_ORDER if a in exact]
+    # The denominator is a property of the held-out set, not of one arm. Computing it inside
+    # the loop meant a partially complete run labelled every bar, and the ceiling line, with
+    # whichever arm happened to be last. Of the two options -- take the maximum across arms,
+    # or refuse to draw when they disagree -- the maximum is chosen: the figure still draws
+    # for a run in progress, and an arm that has not finished shows a short bar against the
+    # full eight, which is what it has actually earned so far.
+    total = max(counted.values(), default=0)
     ceiling = total - len(unlearnable)
 
     fig, ax = plt.subplots(figsize=(11, 5.4))

@@ -10,7 +10,7 @@ Python 3.12 or 3.13, and [uv](https://docs.astral.sh/uv/).
 git clone https://github.com/pbhat89/loop-engineering-experiments.git
 cd loop-engineering-experiments
 uv sync --extra dev
-uv run pytest            # 142 tests, about two minutes
+uv run pytest            # 145 tests, about two minutes
 ```
 
 If `uv run` warns that `VIRTUAL_ENV` does not match the project environment, it is telling you it ignored an already-active venv and used the project's own. That is what you want.

@@ -37,6 +37,7 @@ from src.underwriting.data import goldens_by_case_id, load_cases, load_manual, v
 from src.underwriting.graph import build_underwriting_graph
 from src.underwriting.nodes import Services
 from src.underwriting.cases import SEED as CASE_SEED
+from src.underwriting.precedent import DEFAULT_K as DEFAULT_PRECEDENT_K
 from src.underwriting.scorer import DEFAULT_TRAILING_WINDOW
 from src.underwriting.state import CONDITIONS, MAX_QUESTIONS, MAX_REREQUESTS, PHASES, UwRequest, initial_state
 from src.underwriting.stub import STUB_OPERATORS, build_stub_provider
@@ -82,22 +83,20 @@ def load_run_state(root: Path) -> dict:
 def init_run_state(root: Path, run_id: str, config: dict, mode: str, provider_meta: dict, freeze: str) -> dict:
     state = load_run_state(root)
     if not state:
-        state = {
-            "run_id": run_id,
-            "created_at": utc_now(),
-            "freeze_sha256": freeze,
-            # Only values the code actually used. The seed is the frozen generator's own
-            # constant (src/underwriting/cases.py) rather than a config key: the data pack
-            # is hash-frozen, so the seed is not a knob and the log must not imply it is.
-            "config": {
-                "seed": CASE_SEED,
-                "max_rerequests": int(config.get("max_rerequests", MAX_REREQUESTS)),
-                "precedent_k": int(config.get("precedent_k", 3)),
-                "max_questions": int(config.get("max_questions", MAX_QUESTIONS)),
-                "trailing_window": int(config.get("trailing_window", DEFAULT_TRAILING_WINDOW)),
-            },
-            "arms": {},
-        }
+        state = {"run_id": run_id, "created_at": utc_now(), "freeze_sha256": freeze, "arms": {}}
+    # Refreshed on every call, resumes included, alongside ``mode`` and ``provider``. A knob
+    # changed between resumes is a knob the rest of the run used, so writing the config only
+    # at creation made run.json claim a value the code was not using.
+    # Only values the code actually used. The seed is the frozen generator's own constant
+    # (src/underwriting/cases.py) rather than a config key: the data pack is hash-frozen, so
+    # the seed is not a knob and the log must not imply it is.
+    state["config"] = {
+        "seed": CASE_SEED,
+        "max_rerequests": int(config.get("max_rerequests", MAX_REREQUESTS)),
+        "precedent_k": int(config.get("precedent_k", DEFAULT_PRECEDENT_K)),
+        "max_questions": int(config.get("max_questions", MAX_QUESTIONS)),
+        "trailing_window": int(config.get("trailing_window", DEFAULT_TRAILING_WINDOW)),
+    }
     state["mode"] = mode
     state["provider"] = provider_meta
     atomic_write_json(_state_path(root), state)
@@ -140,7 +139,7 @@ def build_services(run_id: str, config: dict, mode: str, stub_operator: str, fre
         run_root=root,
         log=log,
         max_rerequests=int(config.get("max_rerequests", MAX_REREQUESTS)),
-        precedent_k=int(config.get("precedent_k", 3)),
+        precedent_k=int(config.get("precedent_k", DEFAULT_PRECEDENT_K)),
         max_questions=int(config.get("max_questions", MAX_QUESTIONS)),
         extra_log_fields={"freeze_sha256": freeze},
     )

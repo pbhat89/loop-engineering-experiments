@@ -12,7 +12,7 @@ Built on **LangGraph** with a SQLite checkpointer, on **synthetic data only**, s
 
 Thirty training files with a senior's markup after each, then eight held-out files with memory frozen and no feedback at all. Every decision is answered by a **fresh model instance with no conversation history**, so nothing can be remembered except through the design's own memory.
 
-The agent gets a 900-word starter manual containing every rating table, so a straightforward file can be rated exactly right from it alone. **Fourteen house rules are never shown to anyone.** Each is learnable only by being corrected on it. Twelve of them fire in the training files, and each of those twelve fires in at least three training files in at least two different shapes. The other two fire only in the held-out set, so no amount of training feedback can teach them.
+The agent gets a 900-word starter manual containing every rating table, so a straightforward file can be rated exactly right from it alone. **Fourteen house rules are never shown to anyone.** Twelve of them fire in the training files, and each of those twelve fires in at least three training files in at least two different shapes, so the only way to learn one is to be corrected on it. The other two fire only in the held-out files, where there is no feedback at all, so nothing in the training run can teach them.
 
 | Design | Has when opening the file | Keeps when the file is done |
 |---|---|---|
@@ -51,7 +51,7 @@ Read the write-up: **[articles/underwriting-apprentice/article.md](articles/unde
 - **Synthetic data only.** The manual, the house rules and all thirty-eight applications are invented for the experiment. Nothing here is medical, actuarial, underwriting, pricing, legal or regulatory evidence.
 - **External memory, not training.** The learning is Markdown and JSONL retrieved into the agent's context. No model weights change.
 - **One run per design, and the held-out contrast is thinner than eight files sounds.** Two of the eight are straightforward and every design got them right, two are the unlearnable ones and every design got them wrong, so four files carry the whole separation. The ordering is the finding, the decimals are not. There are no error bars.
-- **A model change mid-run.** `uw_001` began on Claude Fable 5.1 and the quota ran out with 34 of 258 calls outstanding, so `written_rules` and `ask_senior` finished on Claude Opus 5. `new_joiner`, `notebook` and `precedent` ran on Fable for all 38 files. `written_rules` ran training files 1 to 28 on Fable, then files 29, 30 and the whole held-out test on Opus 5, so its held-out number is not a like-for-like comparison against the three Fable designs. Every case record in `artifacts/uw/uw_001/<design>/cases.jsonl` stores the model that produced it, so the run splits by model straight from those records. They are the only place it is right: `summary.json` and the run-level provider block each carry one model per design. See decision **D-02**.
+- **A model change mid-run.** `uw_001` began on Claude Fable 5.1 and the quota ran out with 34 of 258 calls outstanding, so `written_rules` and `ask_senior` finished on Claude Opus 5. `new_joiner`, `notebook` and `precedent` ran on Fable for all 38 files. `written_rules` ran training files 1 to 28 on Fable, then files 29, 30 and the whole held-out test on Opus 5, so its held-out number is not a like-for-like comparison against the three Fable designs. Every case record in `artifacts/uw/uw_001/<design>/cases.jsonl` stores the model that produced it, so the run splits by model straight from those records. They are the only place it is right: `summary.json` carries one model per design, taken from that design's first training file, and the run-level provider block is a single value for the whole run. See decision **D-02**.
 - **A fifth design is in the code and excluded from the analysis.** `ask_senior` may ask up to four questions instead of keeping memory. It scored a perfect zero, because its senior was a deterministic lookup that always knew the answer. That measures the oracle, not the loop. See decision **D-03**.
 
 ## Quick start
@@ -64,7 +64,7 @@ cd loop-engineering-experiments
 uv sync --extra dev
 
 uv run python -m src.underwriting.data verify   # regenerates the frozen data and checks the hash
-uv run pytest                                   # 142 tests
+uv run pytest                                   # 145 tests
 ```
 
 To watch the machinery work without calling a model at all:
@@ -101,7 +101,7 @@ artifacts/uw/uw_001/    the committed run: 258 request and response pairs, per-f
 archive/                the stub smoke that gates the machinery before any model is called
 docs/                   the pre-registered design, the decision log, the operator protocol, reproduction
 articles/               the write-up and the figure pipeline that draws from the logs
-tests/                  142 tests, including a leakage audit over every request file
+tests/                  145 tests, including a leakage audit over every request file
 ```
 
 **Where to start reading:** [docs/underwriting-apprentice-design.md](docs/underwriting-apprentice-design.md) is the pre-registration, committed before any code existed. [docs/decision-log.md](docs/decision-log.md) records every design decision and what was rejected. [docs/OPERATOR_PROTOCOL.md](docs/OPERATOR_PROTOCOL.md) is the contract between the runner and whatever answers it.

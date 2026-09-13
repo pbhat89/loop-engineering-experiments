@@ -16,7 +16,7 @@ from typing import Any, Callable
 from src.underwriting.cases import operator_fields, render_case
 from src.underwriting.markup import build_markup
 from src.underwriting.memory import Notebook, RuleBook
-from src.underwriting.precedent import PrecedentFile
+from src.underwriting.precedent import DEFAULT_K as DEFAULT_PRECEDENT_K, PrecedentFile
 from src.underwriting.scorer import score_answer
 from src.underwriting.senior import answer_questions, for_request, usage
 from src.underwriting.state import (
@@ -39,8 +39,8 @@ class Services:
     run_root: Path                                  # artifacts/uw/<run_id>
     log: Callable[[str, dict], None] = lambda condition, record: None
     max_rerequests: int = MAX_REREQUESTS
-    precedent_k: int = 3
-    max_questions: int = MAX_QUESTIONS              # cap the senior oracle will answer
+    precedent_k: int = DEFAULT_PRECEDENT_K          # nearest past cases the precedent arm is shown
+    max_questions: int = MAX_QUESTIONS              # cap on instructions, response schema and oracle alike
     extra_log_fields: dict = field(default_factory=dict)
 
     def notebook(self) -> Notebook:
@@ -93,11 +93,12 @@ class UwNodes:
                 step=step,
                 attempt=attempt,
                 payload=body,
+                max_questions=self.s.max_questions,
             )
             requests.append(rel(request.request_path(self.s.run_root)))
             responses.append(rel(request.response_path(self.s.run_root)))
             raw = self.s.provider.decide(request)
-            parsed, errors = validate_response(step, raw)
+            parsed, errors = validate_response(step, raw, self.s.max_questions)
             if not errors:
                 return parsed, attempt - 1, [], requests, responses
         return None, self.s.max_rerequests, errors, requests, responses

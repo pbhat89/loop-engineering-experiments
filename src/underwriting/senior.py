@@ -10,16 +10,16 @@ A senior answers **narrowly and literally**. For each question, in order:
    along, which is the point of this arm.
 3. Otherwise: "Not something I can answer from here; use the manual."
 
-Knowing what to ask is itself the expertise this arm lacks. Four questions cannot cover
-twelve house rules, and a compound case fires three at once.
+Knowing what to ask is itself the expertise this arm lacks. The question cap (four by
+default, ``max_questions`` in config/underwriting.yaml) cannot cover fourteen house rules,
+and a compound case fires three at once.
 """
 from __future__ import annotations
 
 from src.underwriting.engine import rule_relevance
 from src.underwriting.house_rules import HOUSE_RULES, MANUAL_TOPIC_KEYWORDS, ORACLE_FALLBACK
 from src.underwriting.manual import manual_sections
-
-MAX_QUESTIONS = 4
+from src.underwriting.state import MAX_QUESTIONS  # one definition of the default cap, in state.py
 
 SOURCE_RULE = "senior"
 SOURCE_MANUAL = "manual"
