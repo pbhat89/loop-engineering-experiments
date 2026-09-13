@@ -88,6 +88,8 @@ Rating classes sit in a fixed order, best to worst:
 Preferred Plus · Preferred · Standard Plus · Standard · Table 2 · Table 4 · Table 6 · Table 8 · Decline
 ```
 
+The table numbers are insurance shorthand for extra mortality above standard, conventionally about twenty five percent per table, so Table 4 is an applicant priced at roughly twice standard risk. This experiment never prices anything. It only counts how many positions apart two answers are.
+
 The deviation on a file is how many positions apart the agent's answer and the actual answer are. If the actual answer is Table 2 and the agent says Table 4, that is one position, so the deviation is 1. Say Table 6 and it is 2. Say Table 2 and it is 0, an exact match.
 
 A postpone is not a rating at all, so it sits off that list. When one side postpones and the other puts a price on the file, that counts as a flat 2. **So every design scored 2 on the file above**, because each of them rated at Table 4 what should have gone back unrated.
@@ -117,6 +119,22 @@ The clearest way to think about the middle two is as **two different documents i
 The **running notebook** is the team's shared record. It is the manual being extended as you go: every correction the senior writes is appended, nothing is interpreted, and anyone who walks in can pick it up and read it. It is institutional memory, and it costs nothing to maintain because no thinking is done to it.
 
 The **written rules** book is one underwriter's own reflections. After every file they reread their whole book alongside the new correction and rewrite it in their own words, in the form *when this applies, do this, and here is why*. That is what specialisation looks like, and it costs a second model call every single file.
+
+### What actually happens on one file
+
+Every one of the thirty-eight files runs the same five steps, and the deciding step is a language model:
+
+```text
+fresh model instance, no history
+    -> handed the case file, the manual, and whatever its own design gives it
+    -> reads them and decides: decision, rating class, any modifiers, the factors it charged for
+    -> returns that as JSON
+    -> deterministic code scores it against the frozen answer and writes the senior's markup
+    -> the design's memory is updated, or it is not
+    -> the instance is discarded
+```
+
+Nothing carries over except the memory. The next file starts a new instance that has never seen any of this, which is why the only thing separating the four designs is what their memory hands them at step two. The scoring, the markup and the memory updates are all ordinary code, so the model is never asked to mark its own work.
 
 The **precedent file** is the third instinct, which is to not generalise at all and just find the closest previous case. It matches on attributes rather than meaning, using a weighted distance over age band, build, tobacco, each lab band, occupation class, avocation, driving record and the face-to-income multiple. Deterministic, explainable, and roughly how an underwriter actually searches.
 
