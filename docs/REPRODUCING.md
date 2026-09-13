@@ -10,7 +10,7 @@ Python 3.12 or 3.13, and [uv](https://docs.astral.sh/uv/).
 git clone https://github.com/pbhat89/loop-engineering-experiments.git
 cd loop-engineering-experiments
 uv sync --extra dev
-uv run pytest            # 119 tests, about two minutes
+uv run pytest            # 142 tests, about two minutes
 ```
 
 If `uv run` warns that `VIRTUAL_ENV` does not match the project environment, it is telling you it ignored an already-active venv and used the project's own. That is what you want.
@@ -30,7 +30,7 @@ freeze_sha256: d95f49f1f9301ecf17facd75aa2d63353f179ea161aa18958f029cba882bee8d
 underwriting data pack clean
 ```
 
-That one check covers the starter manual, the fourteen house rules, all thirty-eight application files, every answer, the derived difficulty tiers and the whole schedule, including that every rule fires in at least three training files in at least two different shapes. If it reports drift, nothing downstream compares with the committed results.
+That one check covers the starter manual, the fourteen house rules, all thirty-eight application files, every answer, the derived difficulty tiers and the whole schedule. Twelve of the fourteen rules are used in training, and the check includes that each of those twelve fires in at least three training files in at least two different shapes. The other two fire only in the held-out files, so no training feedback can teach them. If it reports drift, nothing downstream compares with the committed results.
 
 ## 3. Run it with no model at all
 
@@ -44,7 +44,7 @@ done
 uv run python scripts/summarize_uw_run.py --run-id uw_demo
 ```
 
-Stub output is labelled stub everywhere it appears and is not a result about anything.
+A stub run records `mode: stub` in its run log and in every case record, and the figure script stamps a stub watermark on every figure it draws from such a run. The watermark keys on the mode, not on the run id, so it fires whatever you name the run. Stub output is not a result about anything.
 
 ## 4. How the live loop works
 
@@ -166,18 +166,20 @@ Each request is about 11 KB. `uw_001` also ran the excluded `ask_senior` design 
 ```bash
 uv run python -m src.underwriting.run audit --run-id uw_002        # must print 0 problems
 uv run python scripts/summarize_uw_run.py --run-id uw_002 --json artifacts/uw/uw_002/summary.json
-uv run python articles/underwriting-apprentice/assets/make_figures.py --run-id uw_002
+uv run python articles/underwriting-apprentice/assets/make_figures.py --run-id uw_002   # -> artifacts/uw/uw_002/figures/
 ```
 
-Run the **audit** first. It checks every request file for house rule text or identifiers, point values, tier labels, the file's own answer or markup, and any number that appears in a rule statement but nowhere in the manual. Anything other than zero means the agent could see what it was meant to work out, and the run is void.
+Run the **audit** first. It reads each request file whole, not the payload alone, and checks for house rule identifiers, tier words used as values, the file's own golden modifier keys or markup, and house rule statements matched as near-verbatim substrings. What it reliably catches is a verbatim splice of rule text or golden fields into a request, which is the realistic coding-bug failure mode. It does not claim to catch a paraphrase. Anything other than zero means the agent could see what it was meant to work out, and the run is void.
 
-The **summariser** prints per-design results, per-tier means, the running series, and the three checks registered in advance:
+The **summariser** prints per-design results, per-tier means, the running series, decision accuracy over the training files and over all 38, how many of the eight held-out files each design rated exactly right, and the three checks registered in advance:
 
 1. Files 1 to 3 must be a dead heat across the designs that cannot ask.
 2. Files the manual fully covers must stay flat for everyone.
-3. The two held-out files turning on a rule absent from training should be missed by every design that cannot ask.
+3. The two held-out files turning on the two rules absent from training should be missed by every design that cannot ask.
 
 Checks 1 and 2 are pass or fail. If either fails, information leaked between designs and the numbers mean nothing.
+
+The **figure script** writes into `artifacts/uw/<run-id>/figures/`, so your run cannot overwrite the charts published with the article. Redrawing those takes an explicit `--out articles/underwriting-apprentice/assets`.
 
 ## 7. Compare against the committed run
 

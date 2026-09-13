@@ -5,20 +5,25 @@
 # Operators are fresh Claude Fable 5.1 subagents, one instance per request, answering
 # through the manual-mode request/response file protocol. No API key, no SDK client.
 
-experiment: experiment-7-underwriting-apprentice
-seed: 42
-
-# The five loop designs. Arms are independent: five runner processes may run at once.
-conditions:
-  - new_joiner      # starter manual only; keeps nothing
-  - notebook        # + every past markup verbatim, newest first; appends the markup as written
-  - written_rules   # + its own rule book; a reflection call rewrites the book after each case
-  - precedent       # + the 3 nearest past cases with their correct answers; files this one after
-  - ask_senior      # may ask up to 4 questions first, answered by a deterministic oracle; keeps nothing
-
-phases:
-  - train           # 30 cases, a reviewer markup after each
-  - holdout         # 8 cases, memories frozen, no markup
+# Every key below is read by the code. Settings that are NOT knobs used to sit here and
+# were silently ignored; they have been removed, and this is where each one really lives:
+#
+#   experiment  - the experiment's identity is this file's header and the README.
+#   seed        - src/underwriting/cases.py (SEED). The data pack is frozen against
+#                 data/underwriting/freeze_manifest.json, so the seed cannot be a knob;
+#                 the runner records the authoritative constant in run.json.
+#   conditions  - src/underwriting/state.py (CONDITIONS). The five arms are also the
+#                 graph's routing table, so they are code, not configuration.
+#   phases      - src/underwriting/state.py (PHASES).
+#   data_dir    - src/underwriting/data.py (UW_DATA_DIR). Moving the frozen pack would
+#                 break the freeze check, so its location is not configurable.
+#
+# The five arms, for the reader: new_joiner (starter manual only; keeps nothing), notebook
+# (+ every past markup verbatim, newest first), written_rules (+ its own rule book,
+# rewritten by a reflection call after each case), precedent (+ the 3 nearest past cases
+# with their correct answers), ask_senior (may ask questions first; keeps nothing).
+# The two phases: train (30 cases, a reviewer markup after each) and holdout (8 cases,
+# memories frozen, no markup).
 
 mode: manual                      # manual | stub
 operator: claude-code-subagent
@@ -31,11 +36,10 @@ stub_operator: learner            # stub mode only: naive | learner
 
 max_rerequests: 2                 # first request + 2 re-requests, then the answer is scored unparseable
 precedent_k: 3
-max_questions: 4
-trailing_window: 5                # the plot's trailing-case mean
+max_questions: 4                  # cap on the questions the senior oracle will answer (ask_senior arm)
+trailing_window: 5                # default window for the summariser's trailing-case mean
 
 poll_interval_seconds: 5
 poll_timeout_seconds: 3600
 
 artifacts_root: artifacts/uw
-data_dir: data/underwriting

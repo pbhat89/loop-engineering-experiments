@@ -5,8 +5,8 @@
     python -m src.underwriting.run status --run-id uw_001
     python -m src.underwriting.run audit  --run-id uw_001
 
-Manual mode follows the claims runner's protocol exactly (``src/run_experiment.py``): the
-graph pauses on a LangGraph interrupt, the request is written to
+Manual mode (``docs/OPERATOR_PROTOCOL.md``): the graph pauses on a LangGraph interrupt,
+the request is written to
 
     artifacts/uw/<run_id>/requests/<arm>/<phase>_case<NN>_<step>[_rN].json
 
@@ -36,7 +36,9 @@ from src.underwriting.audit import audit_run
 from src.underwriting.data import goldens_by_case_id, load_cases, load_manual, verify_freeze
 from src.underwriting.graph import build_underwriting_graph
 from src.underwriting.nodes import Services
-from src.underwriting.state import CONDITIONS, PHASES, UwRequest, initial_state
+from src.underwriting.cases import SEED as CASE_SEED
+from src.underwriting.scorer import DEFAULT_TRAILING_WINDOW
+from src.underwriting.state import CONDITIONS, MAX_QUESTIONS, MAX_REREQUESTS, PHASES, UwRequest, initial_state
 from src.underwriting.stub import STUB_OPERATORS, build_stub_provider
 from src.utils import (
     CONFIG_DIR,
@@ -84,7 +86,16 @@ def init_run_state(root: Path, run_id: str, config: dict, mode: str, provider_me
             "run_id": run_id,
             "created_at": utc_now(),
             "freeze_sha256": freeze,
-            "config": {k: config.get(k) for k in ("seed", "max_rerequests", "precedent_k", "max_questions", "trailing_window")},
+            # Only values the code actually used. The seed is the frozen generator's own
+            # constant (src/underwriting/cases.py) rather than a config key: the data pack
+            # is hash-frozen, so the seed is not a knob and the log must not imply it is.
+            "config": {
+                "seed": CASE_SEED,
+                "max_rerequests": int(config.get("max_rerequests", MAX_REREQUESTS)),
+                "precedent_k": int(config.get("precedent_k", 3)),
+                "max_questions": int(config.get("max_questions", MAX_QUESTIONS)),
+                "trailing_window": int(config.get("trailing_window", DEFAULT_TRAILING_WINDOW)),
+            },
             "arms": {},
         }
     state["mode"] = mode
@@ -128,8 +139,9 @@ def build_services(run_id: str, config: dict, mode: str, stub_operator: str, fre
         goldens=goldens_by_case_id(),
         run_root=root,
         log=log,
-        max_rerequests=int(config.get("max_rerequests", 2)),
+        max_rerequests=int(config.get("max_rerequests", MAX_REREQUESTS)),
         precedent_k=int(config.get("precedent_k", 3)),
+        max_questions=int(config.get("max_questions", MAX_QUESTIONS)),
         extra_log_fields={"freeze_sha256": freeze},
     )
     return services, provider.describe()

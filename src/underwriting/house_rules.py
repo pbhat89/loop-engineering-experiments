@@ -28,7 +28,7 @@ spirit, and 13-14 appear only in held-out cases.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Callable
 
 from src.underwriting.tables import (
@@ -402,10 +402,6 @@ HOUSE_RULES: tuple[HouseRule, ...] = (
 )
 
 RULES_BY_ID: dict[str, HouseRule] = {r.rule_id: r for r in HOUSE_RULES}
-
-
-def rules_in_scope(scope: str) -> tuple[HouseRule, ...]:
-    return tuple(r for r in HOUSE_RULES if r.scope == scope)
 
 
 def house_rules_records() -> list[dict]:

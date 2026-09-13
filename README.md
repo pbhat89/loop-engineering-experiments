@@ -2,7 +2,7 @@
 
 An experiment in **loop engineering**: the design of the loop *around* an agent. Who tells it that it was wrong, what it is allowed to keep afterwards, and what it gets handed the next time similar work arrives.
 
-One job, repeated thirty-eight times. Rate a life insurance application. Four designs run the identical job on the identical model against the identical feedback, and differ in exactly one thing each: what they keep between files.
+One job, repeated thirty-eight times. Rate a life insurance application. Four designs run the identical job against the identical feedback, and differ in exactly one thing each: what they keep between files.
 
 Built on **LangGraph** with a SQLite checkpointer, on **synthetic data only**, scored by deterministic code against answers frozen by hash before any agent starts.
 
@@ -12,7 +12,7 @@ Built on **LangGraph** with a SQLite checkpointer, on **synthetic data only**, s
 
 Thirty training files with a senior's markup after each, then eight held-out files with memory frozen and no feedback at all. Every decision is answered by a **fresh model instance with no conversation history**, so nothing can be remembered except through the design's own memory.
 
-The agent gets a 900-word starter manual containing every rating table, so a straightforward file can be rated exactly right from it alone. **Twelve house rules are never shown to anyone.** Each is learnable only by being corrected on it, and each fires in at least three training files in at least two different shapes.
+The agent gets a 900-word starter manual containing every rating table, so a straightforward file can be rated exactly right from it alone. **Fourteen house rules are never shown to anyone.** Each is learnable only by being corrected on it. Twelve of them fire in the training files, and each of those twelve fires in at least three training files in at least two different shapes. The other two fire only in the held-out set, so no amount of training feedback can teach them.
 
 | Design | Has when opening the file | Keeps when the file is done |
 |---|---|---|
@@ -34,13 +34,15 @@ The agent gets a 900-word starter manual containing every rating table, so a str
 | Written rules | 0.33 | 0.25 | 6 of 8 |
 | Precedent file | 0.47 | 0.38 | 5 of 8 |
 
+Written rules ran files 29 and 30 and all eight held-out files on a different model. Its held-out number is not a like-for-like comparison with the rest. See the note on the model change below.
+
 Three things the data says:
 
-- **Keeping anything beats keeping nothing, by a wide margin.** 0.25 against 0.88 on unseen work, same model, same manual, same eight files.
-- **Two of the eight held-out files turn on a rule that appears in no training file, and all four designs missed both.** That puts the ceiling at six of eight, and the two note-taking designs reached it: every file that could be got right, they got. A learning loop captures only what its feedback has actually covered, so the coverage of your examples binds harder than the cleverness of your memory.
+- **Keeping anything beats keeping nothing, by a wide margin.** The running notebook scored 0.25 on unseen work against the new joiner's 0.88. Both ran on Claude Fable 5.1 from the first file to the last, on the same manual and the same eight files.
+- **Two of the eight held-out files turn on the two rules that fire in no training file, and all four designs missed both.** That puts the ceiling at six of eight, and the two note-taking designs reached it: every file that could be got right, they got. A learning loop captures only what its feedback has actually covered, so the coverage of your examples binds harder than the cleverness of your memory.
 - **Cheap memory nearly matched clever memory.** Pasting the raw markups in reverse order landed level with a self-written rule book that cost a second model call on every file.
 
-Two checks were registered before the run and both passed: the designs must be a dead heat over the first seven files, where they hold identical information, and performance on files the manual fully covers must not change with experience.
+Three checks were registered before the run. The two that are pass or fail both passed: the designs must be a dead heat over the first three files, where they hold identical information, and performance on files the manual fully covers must not change with experience. In the run the four designs in fact stayed level over the first seven files, which is an observed result rather than a registered one. The third check, that the two held-out files turning on an unseen rule are missed by every design that cannot ask a senior, also held.
 
 Read the write-up: **[articles/underwriting-apprentice/article.md](articles/underwriting-apprentice/article.md)**
 
@@ -48,8 +50,8 @@ Read the write-up: **[articles/underwriting-apprentice/article.md](articles/unde
 
 - **Synthetic data only.** The manual, the house rules and all thirty-eight applications are invented for the experiment. Nothing here is medical, actuarial, underwriting, pricing, legal or regulatory evidence.
 - **External memory, not training.** The learning is Markdown and JSONL retrieved into the agent's context. No model weights change.
-- **One run per design.** The ordering is the finding, the decimals are not. There are no error bars.
-- **A model change mid-run.** `uw_001` began on Claude Fable 5.1 and the quota ran out with 37 of 258 calls outstanding, so `written_rules` and `ask_senior` finished on Claude Opus 5. Every case record stores the model that produced it, so the results split by model straight from the logs. See decision **D-02**.
+- **One run per design, and the held-out contrast is thinner than eight files sounds.** Two of the eight are straightforward and every design got them right, two are the unlearnable ones and every design got them wrong, so four files carry the whole separation. The ordering is the finding, the decimals are not. There are no error bars.
+- **A model change mid-run.** `uw_001` began on Claude Fable 5.1 and the quota ran out with 34 of 258 calls outstanding, so `written_rules` and `ask_senior` finished on Claude Opus 5. `new_joiner`, `notebook` and `precedent` ran on Fable for all 38 files. `written_rules` ran training files 1 to 28 on Fable, then files 29, 30 and the whole held-out test on Opus 5, so its held-out number is not a like-for-like comparison against the three Fable designs. Every case record in `artifacts/uw/uw_001/<design>/cases.jsonl` stores the model that produced it, so the run splits by model straight from those records. They are the only place it is right: `summary.json` and the run-level provider block each carry one model per design. See decision **D-02**.
 - **A fifth design is in the code and excluded from the analysis.** `ask_senior` may ask up to four questions instead of keeping memory. It scored a perfect zero, because its senior was a deterministic lookup that always knew the answer. That measures the oracle, not the loop. See decision **D-03**.
 
 ## Quick start
@@ -62,7 +64,7 @@ cd loop-engineering-experiments
 uv sync --extra dev
 
 uv run python -m src.underwriting.data verify   # regenerates the frozen data and checks the hash
-uv run pytest                                   # 119 tests
+uv run pytest                                   # 142 tests
 ```
 
 To watch the machinery work without calling a model at all:
@@ -99,7 +101,7 @@ artifacts/uw/uw_001/    the committed run: 258 request and response pairs, per-f
 archive/                the stub smoke that gates the machinery before any model is called
 docs/                   the pre-registered design, the decision log, the operator protocol, reproduction
 articles/               the write-up and the figure pipeline that draws from the logs
-tests/                  119 tests, including a leakage audit over every request file
+tests/                  142 tests, including a leakage audit over every request file
 ```
 
 **Where to start reading:** [docs/underwriting-apprentice-design.md](docs/underwriting-apprentice-design.md) is the pre-registration, committed before any code existed. [docs/decision-log.md](docs/decision-log.md) records every design decision and what was rejected. [docs/OPERATOR_PROTOCOL.md](docs/OPERATOR_PROTOCOL.md) is the contract between the runner and whatever answers it.

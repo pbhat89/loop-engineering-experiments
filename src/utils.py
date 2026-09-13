@@ -1,4 +1,4 @@
-"""Shared helpers: repo paths, timestamps, hashing, JSON/JSONL/YAML IO, file lock.
+"""Shared helpers: repo paths, timestamps, hashing, JSON/JSONL/YAML IO.
 
 Kept dependency-free (PyYAML is imported lazily) so every module can import it
 without side effects. Nothing here ever reads environment secrets.
@@ -19,18 +19,11 @@ DATA_DIR = REPO_ROOT / "data"
 DOCS_DIR = REPO_ROOT / "docs"
 LOGS_DIR = REPO_ROOT / "logs"
 ARTIFACTS_DIR = REPO_ROOT / "artifacts"
-SKILLS_DIR = REPO_ROOT / "skills"
-GOLDENS_DIR = REPO_ROOT / "goldens"
 
 
 def utc_now() -> str:
     """ISO-8601 UTC timestamp with second precision, e.g. ``2026-09-06T15:04:05+00:00``."""
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
-
-
-def parse_ts(ts: str) -> datetime:
-    dt = datetime.fromisoformat(ts)
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
 
 
 def rel(path: Path | str) -> str:
@@ -126,45 +119,3 @@ def read_jsonl(path: Path | str) -> list[dict]:
             except json.JSONDecodeError as exc:
                 raise ValueError(f"{p}:{lineno}: invalid JSON line ({exc})") from exc
     return records
-
-
-class FileLock:
-    """Minimal cross-platform advisory lock based on O_EXCL file creation.
-
-    Adequate for the handful of agent processes that touch the tracker; a lock
-    older than ``stale_after`` seconds is assumed abandoned and broken.
-    """
-
-    def __init__(self, path: Path | str, timeout: float = 20.0, stale_after: float = 60.0):
-        self.path = Path(path)
-        self.timeout = timeout
-        self.stale_after = stale_after
-        self._fd: int | None = None
-
-    def __enter__(self) -> "FileLock":
-        ensure_dir(self.path.parent)
-        deadline = time.monotonic() + self.timeout
-        while True:
-            try:
-                self._fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-                os.write(self._fd, str(os.getpid()).encode())
-                return self
-            except FileExistsError:
-                try:
-                    if time.time() - self.path.stat().st_mtime > self.stale_after:
-                        self.path.unlink()
-                        continue
-                except FileNotFoundError:
-                    continue
-                if time.monotonic() > deadline:
-                    raise TimeoutError(f"could not acquire lock {self.path}")
-                time.sleep(0.05)
-
-    def __exit__(self, *exc: object) -> None:
-        if self._fd is not None:
-            os.close(self._fd)
-            self._fd = None
-        try:
-            self.path.unlink()
-        except FileNotFoundError:
-            pass

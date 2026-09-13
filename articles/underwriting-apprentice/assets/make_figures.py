@@ -11,7 +11,16 @@ tier and fired rule ids in from ``data/underwriting/goldens.json`` at analysis t
 exactly as ``scripts/summarize_uw_run.py`` does (its ``load_run``/``summarize`` are
 imported and reused directly here, so the two never drift apart).
 
-Writes into --out (default: this folder):
+Writes into --out, which defaults to ``<root>/<run-id>/figures/`` -- a run's own
+artifacts directory, never the article's committed assets folder. Refreshing the figures
+the article actually publishes is therefore always an explicit
+
+    --out articles/underwriting-apprentice/assets
+
+so following the reproduction guide with your own run id can never overwrite them. The
+output directory is printed on every run.
+
+Files written:
   learning_curve.png   the article's closing chart -- cumulative (running) mean of
                         rating error (ladder steps) over all 38 files per arm: the 30
                         training cases in file order, then the 8 held-out cases, on one
@@ -23,8 +32,10 @@ Writes into --out (default: this folder):
                         four-row table of what each design is handed and keeps, in
                         plain language for a non-technical reader
 
-When --run-id starts with "uw_stub", every figure is stamped with a visible
-"STUB DATA -- no model was called" watermark.
+Every figure is stamped with a visible "STUB DATA -- no model was called" watermark
+whenever the run is a stub: that is, when ``mode`` in ``<root>/<run-id>/run.json`` is
+``stub`` (the reliable signal, whatever the run is called), or as a belt-and-braces
+fallback when the run id starts with "uw_stub".
 """
 from __future__ import annotations
 
@@ -36,16 +47,15 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.colors as mcolors  # noqa: E402
 import matplotlib.patheffects as patheffects  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
-from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle  # noqa: E402
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
-from summarize_uw_run import NOVEL_RULES, load_run, summarize  # noqa: E402
+from summarize_uw_run import NOVEL_RULES, default_window, load_run, summarize  # noqa: E402
 from src.underwriting.data import goldens_by_case_id  # noqa: E402
 
 # --------------------------------------------------------------------------- shared look
@@ -80,8 +90,19 @@ ARM_COLOR = {
 }
 
 
-def _stub_watermark(fig, run_id: str) -> None:
-    if not run_id.startswith("uw_stub"):
+def is_stub_run(run_id: str, mode: str | None) -> bool:
+    """True when the run was produced by the stub operator rather than a real model.
+
+    ``mode`` comes from the run's own ``run.json`` and is the signal that actually
+    tracks reality: the docs tell people to smoke-test with ids like ``uw_demo``, so the
+    run-id prefix alone silently let stub charts out unlabelled. The prefix is kept as a
+    second trigger for runs whose ``run.json`` is missing or unreadable.
+    """
+    return str(mode or "").strip().lower() == "stub" or run_id.startswith("uw_stub")
+
+
+def _stub_watermark(fig, run_id: str, mode: str | None = None) -> None:
+    if not is_stub_run(run_id, mode):
         return
     fig.text(0.5, 0.5, "STUB DATA. No model was called", fontsize=34, fontweight="bold",
               color="#b3400a", alpha=0.28, ha="center", va="center", rotation=28, zorder=50)
@@ -111,7 +132,7 @@ def load_summary(run_id: str, root: Path, window: int) -> dict:
 
 
 # --------------------------------------------------------------------------- figure A: learning curve
-def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
+def fig_learning_curve(run_id: str, root: Path, out_dir: Path, mode: str | None = None) -> None:
     """Cumulative (running) mean of ``ladder_distance`` over all 38 files per arm -- the
     30 training cases in file order, then the 8 held-out cases in their own case-index
     order, numbered 1..38 on one shared axis. No smoothing beyond the running mean
@@ -195,14 +216,14 @@ def fig_learning_curve(run_id: str, root: Path, out_dir: Path) -> None:
              "memory frozen and no feedback. Each design did this once.",
              fontsize=8.3, color=INK2, va="bottom")
 
-    _stub_watermark(fig, run_id)
+    _stub_watermark(fig, run_id, mode)
     fig.tight_layout(rect=(0, 0.09, 1, 0.905))
     fig.savefig(out_dir / "learning_curve.png", dpi=170)
     plt.close(fig)
 
 
 # --------------------------------------------------------------------------- figure B: holdout
-def fig_holdout(summary: dict, run_id: str, out_dir: Path, run_root: Path | None = None) -> None:
+def fig_holdout(summary: dict, run_id: str, out_dir: Path, run_root: Path | None = None, mode: str | None = None) -> None:
     """How many of the eight held-out files each design rated exactly right.
 
     Counted upward on purpose. The earlier version of this figure plotted average error,
@@ -260,7 +281,7 @@ def fig_holdout(summary: dict, run_id: str, out_dir: Path, run_root: Path | None
         width=106)
     fig.text(0.012, 0.945, subtitle, fontsize=9.8, color=INK2, va="top", linespacing=1.45)
 
-    _stub_watermark(fig, run_id)
+    _stub_watermark(fig, run_id, mode)
     fig.tight_layout(rect=(0, 0.01, 1, 0.85))
     fig.savefig(out_dir / "holdout.png", dpi=170)
     plt.close(fig)
@@ -294,7 +315,7 @@ def _box(ax, xy, w, h, text, fc=PAPER, ec=INK, fs=11.5, tc=INK):
     ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=fs, color=tc, linespacing=1.3)
 
 
-def fig_what_each_gets(run_id: str, out_dir: Path) -> None:
+def fig_what_each_gets(run_id: str, out_dir: Path, mode: str | None = None) -> None:
     fig, ax = plt.subplots(figsize=(17, 9.6))
     fig.subplots_adjust(left=0.005, right=0.995, top=0.995, bottom=0.005)
     ax.set_xlim(0, 17)
@@ -341,7 +362,7 @@ def fig_what_each_gets(run_id: str, out_dir: Path) -> None:
         if i < len(TABLE_ROWS) - 1:
             ax.plot([0.3, 16.7], [y - row_h + 0.5, y - row_h + 0.5], color=LINE, lw=0.9)
 
-    _stub_watermark(fig, run_id)
+    _stub_watermark(fig, run_id, mode)
     fig.savefig(out_dir / "what_each_gets.png", dpi=100)
     plt.close(fig)
 
@@ -351,20 +372,29 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--run-id", required=True)
     ap.add_argument("--root", default=None, help="defaults to artifacts/uw")
-    ap.add_argument("--out", default=None, help="override for the output directory (default: this assets folder)")
-    ap.add_argument("--window", type=int, default=5)
+    ap.add_argument("--out", default=None,
+                    help="output directory (default: <root>/<run-id>/figures). Pass "
+                         "--out articles/underwriting-apprentice/assets to refresh the article's own figures.")
+    ap.add_argument("--window", type=int, default=None,
+                    help="trailing-mean window; defaults to trailing_window in config/underwriting.yaml")
     args = ap.parse_args(argv)
 
     root = Path(args.root) if args.root else ROOT / "artifacts" / "uw"
-    out_dir = Path(args.out) if args.out else HERE
+    # Default to the run's own artifacts directory. The article's committed assets folder
+    # is only ever written when it is asked for by name.
+    out_dir = Path(args.out) if args.out else root / args.run_id / "figures"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    summary = load_summary(args.run_id, root, args.window)
+    summary = load_summary(args.run_id, root, args.window if args.window is not None else default_window())
+    mode = summary.get("mode")
 
-    fig_learning_curve(args.run_id, root, out_dir)
-    fig_holdout(summary, args.run_id, out_dir, root)
-    fig_what_each_gets(args.run_id, out_dir)
+    fig_learning_curve(args.run_id, root, out_dir, mode)
+    fig_holdout(summary, args.run_id, out_dir, root, mode)
+    fig_what_each_gets(args.run_id, out_dir, mode)
 
+    print(f"output directory: {out_dir}")
+    if is_stub_run(args.run_id, mode):
+        print("stub run (mode=stub): every figure is watermarked STUB DATA")
     for name in ("learning_curve", "holdout", "what_each_gets"):
         print("wrote", out_dir / f"{name}.png")
     return 0

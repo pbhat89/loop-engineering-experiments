@@ -280,3 +280,61 @@ def test_request_file_names_follow_the_protocol():
         step="decide", attempt=3, payload={},
     )
     assert retry.file_stem() == "holdout_case02_decide_r3"
+
+
+# --------------------------------------------------------------------------- the audit's reach
+# The audit used to walk request["payload"] only, so `instructions` and every other
+# top-level string went unchecked. It now walks the whole request.
+
+
+def _request(**extra) -> dict:
+    base = {"run_id": "r", "condition": "notebook", "phase": "train", "case_index": 1,
+            "case_id": "UW-T01", "step": "decide", "attempt": 1,
+            "created_at": "2026-09-12T14:45:03+00:00",
+            "instructions": "Rate this life-insurance application.",
+            "payload": {"case": {"rendered": "x"}, "manual": "m"}}
+    return {**base, **extra}
+
+
+def test_the_audit_reads_the_instructions_and_not_just_the_payload():
+    from src.underwriting.audit import audit_payload
+
+    assert audit_payload(_request()) == []
+    assert audit_payload(_request(instructions=RULES_BY_ID["HR-04"].statement))
+    assert audit_payload(_request(instructions="Remember HR-04 when you rate this."))
+    assert audit_payload(_request(instructions="Treated readings up to 145 over 90 still count."))
+
+
+def test_the_audit_reads_every_other_top_level_field_too():
+    from src.underwriting.audit import audit_payload
+
+    assert audit_payload(_request(note=RULES_BY_ID["HR-01"].statement))
+    assert audit_payload(_request(tier="compound"))
+    assert audit_payload(_request(hint={"deep": {"er": RULES_BY_ID["HR-02"].statement}}))
+
+
+def test_the_two_deliberate_exemptions_survive_the_wider_scan():
+    """The oracle quotes a rule out loud on purpose, and the rule book is the operator's
+    own prose. Both must stay exempt now that paths are request-relative."""
+    from src.underwriting.audit import audit_payload
+
+    statement = RULES_BY_ID["HR-01"].statement
+    exempt_senior = _request(payload={"case": {"rendered": "x"}, "manual": "m",
+                                      "senior_answers": [{"question": "q", "answer": statement}]})
+    exempt_book = _request(payload={"case": {"rendered": "x"}, "manual": "m",
+                                    "memory": {"kind": "written_rules", "rulebook_markdown": statement}})
+    assert [p for p in audit_payload(exempt_senior) if "HR-" not in p or "statement" in p] == []
+    assert [p for p in audit_payload(exempt_book) if "statement" in p or "hidden point value" in p] == []
+    # the same text anywhere else is still a leak
+    assert audit_payload(_request(payload={"case": {"rendered": "x"}, "manual": "m", "note": statement}))
+
+
+def test_a_clock_reading_is_not_mistaken_for_a_point_value():
+    """Timestamps are machine-generated and carry no case content; their digits collide
+    with rule point values by format alone."""
+    from src.underwriting.audit import audit_payload, hidden_point_values
+
+    assert "45" in hidden_point_values(), "this test is only meaningful while 45 is hidden"
+    assert audit_payload(_request(created_at="2026-09-12T14:45:45+00:00")) == []
+    # but a real number in prose is still caught, timestamp or no timestamp
+    assert audit_payload(_request(instructions="At 2026-09-12T14:45:45+00:00 note the 145 limit."))

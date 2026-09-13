@@ -10,7 +10,7 @@ fired-rule list off the result (:func:`src.underwriting.engine.derive`). A propo
 whose derived fired set is not exactly the target is thrown away and redrawn. The
 targets below are therefore a search objective, not a label.
 
-The training schedule (section 5 of the build brief) asks for 9 clean / 14 judgement /
+The training schedule (``docs/underwriting-apprentice-design.md``) asks for 9 clean / 14 judgement /
 7 compound *and* every rule firing in at least three training cases in at least two
 shapes. Those two are arithmetically incompatible: twelve rules at three firings needs
 36 firings, and 14 judgement cases (one firing each) plus 7 compound cases (at most
@@ -24,7 +24,7 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass
 
-from src.underwriting.engine import derive, rate_house, rate_manual_only
+from src.underwriting.engine import derive
 from src.underwriting.house_rules import CURRENT_YEAR
 from src.underwriting.tables import OCCUPATION_EXAMPLES, bmi_from
 
@@ -742,7 +742,3 @@ def sanity(cases: list[dict], goldens: list[dict]) -> list[str]:
             if not same:
                 problems.append(f"{g['case_id']}: clean tier but manual-only != golden")
     return problems
-
-
-def verify_engines(case: dict) -> tuple[dict, dict]:
-    return rate_manual_only(case).to_record(), rate_house(case).to_record()

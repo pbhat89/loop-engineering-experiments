@@ -22,8 +22,6 @@ from src.underwriting.tables import (
     SYSTOLIC_BANDS,
     TOBACCO_STATUSES,
     TOTAL_CHOLESTEROL_BANDS,
-    band_value,
-    income_multiple,
 )
 from src.utils import append_jsonl, read_jsonl
 

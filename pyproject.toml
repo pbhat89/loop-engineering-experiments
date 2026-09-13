@@ -1,28 +1,28 @@
 [project]
-name = "claims-skill-loop"
+name = "loop-engineering-experiments"
 version = "0.1.0"
-description = "Loop engineering experiments: seven LangGraph studies of what an agent keeps between tasks, scored against frozen answers on synthetic data"
+description = "Loop engineering: a LangGraph study of what an agent keeps between tasks, scored by deterministic code against answers frozen by hash on synthetic data"
 readme = "README.md"
 urls = { Repository = "https://github.com/pbhat89/loop-engineering-experiments" }
 requires-python = ">=3.12,<3.14"
 license = { text = "MIT" }
+# Every entry below is imported by this repo, except langchain-core (see its note).
+# pandas, scikit-learn, networkx and huggingface-hub were left over from deleted work:
+# nothing imported them and they pulled scipy in, so a fresh venv was about 344 MB.
 dependencies = [
   "langgraph>=1.2,<2",
-  "langchain-core>=1.6,<2",
-  "pandas>=2.2,<4",
-  "scikit-learn>=1.6,<2",
-  "matplotlib>=3.9,<4",
-  "pyyaml>=6.0,<7",
-  "pydantic>=2.9,<3",
-  "networkx>=3.3,<4",
-  "huggingface-hub>=0.30,<2",
   "langgraph-checkpoint-sqlite>=3.1.1",
+  # Not imported directly. Declared to hold the floor that langgraph and the optional
+  # langchain-anthropic extra both build on; langgraph itself only asks for >=1.4.7.
+  "langchain-core>=1.6,<2",
+  "matplotlib>=3.9,<4",   # the figure script only
+  "pyyaml>=6.0,<7",       # config/underwriting.yaml
+  "pydantic>=2.9,<3",     # the operator request/response contract
 ]
 
 [project.optional-dependencies]
 # Live LLM modes are optional extras; the baseline installs and runs without them.
 anthropic = ["langchain-anthropic>=1.7,<2"]
-viz = ["pyvis>=0.3.2,<0.4"]
 dev = ["pytest>=8,<10"]
 
 [tool.uv]

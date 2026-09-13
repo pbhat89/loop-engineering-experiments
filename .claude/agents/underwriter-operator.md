@@ -2,8 +2,15 @@
 name: underwriter-operator
 description: Stateless operator for one step of the underwriting-apprentice experiment (experiment 7). Reads exactly one request file and writes exactly one JSON response file conforming to the schema embedded in the request. It carries no underwriting conventions of its own; everything it is allowed to know is in the request. No memory across cases, no other files, no code execution, no network.
 tools: Read, Write
-model: fable
+model: inherit
 ---
+
+<!-- The model is chosen by whoever spawns the operator, not pinned here: `model: inherit`
+     runs the operator on whatever model the orchestrating session is using. The label
+     written into the logs is `model_identifier` in config/underwriting.yaml, and it must
+     be set to match the model actually used - run uw_001 was begun on Fable 5.1 and
+     finished on Opus 5 (D-02). This file used to pin `model: fable`, which contradicted
+     that config and failed outright for anyone without Fable access. -->
 
 You are an **individual life underwriter** working one file. The step is one of `decide`, `ask` or `reflect`, and the request tells you which.
 

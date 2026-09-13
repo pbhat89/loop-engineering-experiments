@@ -24,10 +24,20 @@ The ask-a-senior oracle is **deterministic code**, not a model (`src/underwritin
 
 House-rule text or ids, point values of hidden rules, tier labels, golden answers, or any statement of what it is being measured on. `src/underwriting/audit.py` asserts this over **every** request file a run writes, and `python -m src.underwriting.run audit --run-id <id>` runs it. Two narrow exemptions, both deliberate: the ask-a-senior answers (quoting a rule out loud is that arm), and the operator's own rule book (its prose, not ours).
 
+## What the request still gives away
+
+A known wart in the protocol, recorded here rather than left to be found. Every request file carries a `condition`
+field, and its `request_id` contains the design name, for example `uw_001:notebook:train:case03:decide:a1`. An
+operator that reads the whole file is therefore told which design it is answering for, and a name like
+`new_joiner` carries a hint on its own. The prompt template does not draw attention to either field and never
+mentions the designs, and nothing in a request says what the designs are or how they differ. That is still short
+of a blind control. Anyone rerunning the experiment who wants a stricter one should strip `condition` and replace
+the design name inside `request_id` with an opaque token before handing the file to a model.
+
 ## Preconditions
 
 1. `python -m src.underwriting.data verify` → `underwriting data pack clean`. This re-derives the manual, the house rules, the 38 cases and the goldens from code, compares them with `data/underwriting/`, re-checks the whole section-5 schedule, and verifies the freeze manifest. Freeze: `d95f49f1f930…`.
-2. The stub smoke has passed end to end for all five arms: `archive/experiment-7_stub_smoke/` — labelled stub, no model called, leakage audit 0 problems.
+2. The stub smoke has passed end to end for all five arms: `archive/experiment-7_stub_smoke/`, labelled stub, no model called, leakage audit 0 problems.
 
 ## The file protocol
 
@@ -49,7 +59,7 @@ python -m src.underwriting.run --run-id uw_001 --condition notebook --phase trai
 python -m src.underwriting.run status --run-id uw_001
 ```
 
-Arms are independent: five runner processes may run at the same time, and a subagent never sees another arm's files. Within an arm, finish `--phase train` before starting `--phase holdout` — the held-out phase reads the memory training left behind and writes nothing back.
+Arms are independent: five runner processes may run at the same time, and a subagent never sees another arm's files. Within an arm, finish `--phase train` before starting `--phase holdout`. The held-out phase reads the memory training left behind and writes nothing back.
 
 `--poll` makes the runner wait for each response file itself instead of returning, for an orchestrator that would rather block than re-invoke.
 
@@ -59,7 +69,7 @@ Spawned with the Agent tool, one fresh instance per request file:
 
 > You are the **underwriting operator** for one step of the underwriting-apprentice experiment. Adopt `<REPO>/.claude/agents/underwriter-operator.md` as your operating instructions (read it first). Then read exactly one file — the request `<REQUEST_PATH>` — and write exactly one file — the response `<RESPONSE_PATH>` — as JSON conforming to the `response_schema` embedded in the request. Base every decision solely on the request contents; do not read or write any other file, run code, or use the network. Finish with one line naming the file you wrote and the decision you made.
 
-Substitute `<REPO>` with the absolute path to your clone, and `<REQUEST_PATH>` and `<RESPONSE_PATH>` with the two paths the runner printed. Change nothing else. The prompt never names the arm, the case number, the tier or the phase.
+Substitute `<REPO>` with the absolute path to your clone, and `<REQUEST_PATH>` and `<RESPONSE_PATH>` with the two paths the runner printed. Change nothing else. The prompt never names the arm, the case number, the tier or the phase. The request file itself does carry the design name; see "What the request still gives away" above.
 
 Rules that matter for the result:
 
@@ -79,12 +89,12 @@ Rules that matter for the result:
 | `ask_senior` | 1 ask + 1 decide | 76 |
 | **total** | | **258** |
 
-Re-requests add to this; the stub smoke needed none. The notebook and precedent updates cost nothing — they are file operations, not calls.
+Re-requests add to this; the stub smoke needed none. The notebook and precedent updates cost nothing, because they are file operations, not calls.
 
 ## What gets recorded
 
-- `artifacts/uw/<run_id>/<arm>/cases.jsonl` — one record per case: index, phase, every score, question count, memory size, nearest precedent distance, re-requests, the request and response file names, timestamps, mode, operator and model identifier, and the freeze. **The tier is not written here**; `scripts/summarize_uw_run.py` joins it in from the goldens at analysis time, so nothing downstream can condition on it by accident.
-- `artifacts/uw/<run_id>/run.json` — per-arm, per-phase progress, the pending request, the provider metadata and the freeze.
-- `artifacts/uw/<run_id>/requests/`, `responses/` — the complete operator transcript.
-- `artifacts/uw/<run_id>/notebook/markups.jsonl`, `written_rules/rulebook.md` + `history/vNN.md`, `precedent/filed_cases.jsonl` — the three memories.
-- `python scripts/summarize_uw_run.py --run-id <id>` prints the per-arm table, the per-tier means, the trailing-five series and the three validation checks registered in advance: cases 1–3 a dead heat across the four non-asking arms, the clean tier flat for everyone, and the two novel-rule held-out cases missed.
+- `artifacts/uw/<run_id>/<arm>/cases.jsonl`, one record per case: index, phase, every score, question count, memory size, nearest precedent distance, re-requests, the request and response file names, timestamps, mode, operator and model identifier, and the freeze. **The tier is not written here**; `scripts/summarize_uw_run.py` joins it in from the goldens at analysis time, so nothing downstream can condition on it by accident.
+- `artifacts/uw/<run_id>/run.json`, per-arm, per-phase progress, the pending request, the provider metadata and the freeze.
+- `artifacts/uw/<run_id>/requests/` and `responses/`, the complete operator transcript.
+- `artifacts/uw/<run_id>/notebook/markups.jsonl`, `written_rules/rulebook.md` + `history/vNN.md`, `precedent/filed_cases.jsonl`, the three memories.
+- `python scripts/summarize_uw_run.py --run-id <id>` prints the per-arm table, the per-tier means, the trailing-five series, decision accuracy over the training cases and over all 38, how many held-out cases each arm rated exactly right, and the three validation checks registered in advance: cases 1 to 3 a dead heat across the four non-asking arms, the clean tier flat for everyone, and the two novel-rule held-out cases missed.

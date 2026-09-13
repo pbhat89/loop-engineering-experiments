@@ -7,7 +7,6 @@ from src.underwriting import manual as manual_mod
 from src.underwriting.cases import build_dataset
 from src.underwriting.engine import (
     NO_RULES,
-    fired_rule_ids,
     modifier_key,
     rate,
     rate_house,
@@ -36,7 +35,6 @@ from src.underwriting.tables import (
     DIASTOLIC_BANDS,
     DUI_DEBITS,
     LADDER,
-    LADDER_INDEX,
     LIPID_RATIO_BANDS,
     LIVER_ENZYME_DEBITS,
     MVR_VIOLATION_BANDS,

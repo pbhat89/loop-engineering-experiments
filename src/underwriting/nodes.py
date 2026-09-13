@@ -1,10 +1,9 @@
 """LangGraph node implementations for the underwriting apprentice.
 
-Same shape as ``src/graph_nodes.py``: the nodes are methods on one class so they can share
-injected :class:`Services`, and every node is pure up to the ``provider.decide`` call. In
-manual mode that call raises a LangGraph interrupt, and on resume the node re-executes
-from the top - so nothing is written to disk before the answer is in hand. All the writes
-live in ``update_memory`` and ``advance``.
+The nodes are methods on one class so they can share injected :class:`Services`, and every
+node is pure up to the ``provider.decide`` call. In manual mode that call raises a LangGraph
+interrupt, and on resume the node re-executes from the top - so nothing is written to disk
+before the answer is in hand. All the writes live in ``update_memory`` and ``advance``.
 
 One graph invocation handles one application, start to finish.
 """
@@ -22,8 +21,8 @@ from src.underwriting.scorer import score_answer
 from src.underwriting.senior import answer_questions, for_request, usage
 from src.underwriting.state import (
     ASKING_CONDITIONS,
+    MAX_QUESTIONS,
     MAX_REREQUESTS,
-    REFLECTING_CONDITIONS,
     UwRequest,
     validate_response,
 )
@@ -41,6 +40,7 @@ class Services:
     log: Callable[[str, dict], None] = lambda condition, record: None
     max_rerequests: int = MAX_REREQUESTS
     precedent_k: int = 3
+    max_questions: int = MAX_QUESTIONS              # cap the senior oracle will answer
     extra_log_fields: dict = field(default_factory=dict)
 
     def notebook(self) -> Notebook:
@@ -115,7 +115,7 @@ class UwNodes:
         payload = {"case": self._case_block(state), "manual": self.s.manual}
         questions, _, errors, requests, responses = self._ask(state, "ask", payload)
         asked = list((questions or {}).get("questions") or [])
-        answers = answer_questions(asked, state["case"])
+        answers = answer_questions(asked, state["case"], self.s.max_questions)
         return {
             "route_history": ["ask_senior"],
             "senior_answers": answers,

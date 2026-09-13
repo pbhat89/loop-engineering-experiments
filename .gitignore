@@ -1,7 +1,5 @@
-# Environments and secrets
+# Environments
 .venv/
-.env
-*.env.local
 
 # Python
 __pycache__/
@@ -11,26 +9,25 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Data: raw/processed files are re-created by src/download_data.py (manifest is committed)
+# Leftover CSVs under data/raw from deleted work. The experiment's own data pack lives in
+# data/underwriting/ and IS committed - it is hash-frozen and must stay in the clone.
 data/raw/*.csv
-data/processed/*.csv
-data/processed/*.parquet
-
-# Binary model artifacts
-artifacts/models/*.pkl
-artifacts/models/*.joblib
 
 # OS
 .DS_Store
 Thumbs.db
 
-# LangGraph checkpoint databases (rebuilt by the runner)
-logs/checkpoints/
+# LangGraph checkpoint databases. artifacts/uw/<run>/checkpoints/ is what the current
+# runner writes and can always rebuild; logs/checkpoints/ holds leftovers from deleted runs.
 artifacts/uw/*/checkpoints/
+logs/checkpoints/
 
 # Archived LangGraph checkpoint databases (rebuildable; excluded to keep the clone small)
 archive/**/checkpoints/
 *.sqlite
+
+# Figures redrawn from a run's own logs (the article's committed copies live in articles/)
+artifacts/uw/*/figures/
 
 # Tooling caches
 .ruff_cache/

@@ -7,8 +7,8 @@ One graph serves all five arms; the routers read ``state["condition"]`` and
 
 ``ask_senior`` runs only for the ``ask_senior`` arm. ``reflect`` runs only for
 ``written_rules``, and only in the training phase. In the held-out phase ``markup``
-produces nothing and ``update_memory`` writes nothing - the memories are frozen, which is
-the same read-only discipline decision D-24 used for the claims held-out run.
+produces nothing and ``update_memory`` writes nothing - the memories are frozen, so the
+held-out phase is strictly read-only.
 
 ``interrupt()`` fires inside ``ask_senior``, ``decide`` and ``reflect`` (manual mode).
 Checkpoints live under ``artifacts/uw/<run_id>/checkpoints/``.

@@ -3,8 +3,8 @@
     python -m src.underwriting.data build    # regenerate data/underwriting/* and the freeze manifest
     python -m src.underwriting.data verify   # re-derive and compare; exits 1 on any drift
 
-Four files are frozen, hashed the same way the claims experiment hashes its golden pack
-(``src/run_experiment.py::build_freeze_manifest``):
+Four files are frozen. Each is hashed on its own and the manifest records the SHA-256
+of those hashes, so an edit to any of them fails ``verify``:
 
     starter_manual.md     what every arm is handed, every request
     house_rules.json      never shown to an operator

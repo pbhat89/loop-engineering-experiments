@@ -1,7 +1,7 @@
 """What the notebook and written-rules arms keep between cases.
 
-Both stores follow the raw-log shape of ``src/feedback_memory.py``: one append-only file
-per run and arm under ``artifacts/uw/<run_id>/``, nothing distilled by code.
+Both stores are raw logs: one append-only file per run and arm under
+``artifacts/uw/<run_id>/``, nothing distilled by code.
 
 ``Notebook``  the markups as written, newest first, all of them (thirty at most).
 ``RuleBook``  one markdown file the operator rewrites itself, plus a version history.

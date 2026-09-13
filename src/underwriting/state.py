@@ -5,7 +5,7 @@ one typed state a LangGraph node can update piecemeal, one Pydantic model per op
 step whose JSON schema is embedded in every request, and one request envelope that knows
 where its request and response files live.
 
-File protocol (build brief section 8)::
+File protocol (``docs/OPERATOR_PROTOCOL.md``)::
 
     artifacts/uw/<run_id>/requests/<arm>/<phase>_case<NN>_<step>[_rN].json
     artifacts/uw/<run_id>/responses/<arm>/<same name>.json
@@ -304,8 +304,3 @@ def initial_state(
         route_history=[],
         status="running",
     )
-
-
-def payload_keys() -> tuple[str, ...]:
-    """Every key a request payload may carry - the leakage audit rejects anything else."""
-    return ("case", "manual", "memory", "senior_answers", "validation_errors", "reflection_context")

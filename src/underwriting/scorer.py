@@ -12,7 +12,7 @@ wrong-but-parseable postpone rather than silently disappearing from the mean.
 from __future__ import annotations
 
 from src.underwriting.engine import modifier_key
-from src.underwriting.tables import CLASS_ALIASES, DECISION_ALIASES, LADDER, LADDER_INDEX
+from src.underwriting.tables import CLASS_ALIASES, DECISION_ALIASES, LADDER_INDEX
 
 POSTPONE_DISTANCE = 2
 UNPARSEABLE_DISTANCE = 2
@@ -189,14 +189,13 @@ def score_answer(answer: dict | None, golden: dict, *, unparseable: bool = False
 # --------------------------------------------------------------------------- series
 
 
-def trailing_mean(values: list[float], window: int = 5) -> list[float]:
+DEFAULT_TRAILING_WINDOW = 5  # overridden by ``trailing_window`` in config/underwriting.yaml
+
+
+def trailing_mean(values: list[float], window: int = DEFAULT_TRAILING_WINDOW) -> list[float]:
     """Trailing ``window``-case mean; the first cases use what is available so far."""
     out: list[float] = []
     for i in range(len(values)):
         chunk = values[max(0, i - window + 1) : i + 1]
         out.append(round(sum(chunk) / len(chunk), 4))
     return out
-
-
-def ladder_names() -> tuple[str, ...]:
-    return LADDER
